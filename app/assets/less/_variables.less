@@ -1,0 +1,56 @@
+// ─── Typography ────────────────────────────────────────────────────────
+
+// Fonts
+@heading:       'Satoshi Variable', sans-serif;
+@body:          'Mukta Vaani', sans-serif;
+@handWritten:   "GloriaHallelujah", cursive;
+
+// Font weights
+@light:         300;
+@regular:       400;
+@medium:        500;
+@semiBold:      600;
+@bold:          700;
+@extra-bold:    900;
+
+// ─── Sizing ────────────────────────────────────────────────────────
+// Spacing
+@row-gap:       clamp(1em, 1.75vw, 2em);
+@column-gap:    clamp(1em, 1.75vw, 2em);
+
+// ─── Colors ────────────────────────────────────────────────────────
+// Core palette
+@primary:       #50C887;
+@secondary:     #0F52BA;
+@accent:        #D4AF37;
+
+// Neutrals
+@white:         #F1F2EE;
+@black:         #1C1C1C;
+
+// Semantic colors
+@text:          @white;
+@title:         @white;
+@background:    @black;
+@border:        rgba(@white, 0.15);
+
+// State colors
+@error:        #e74c3c;
+@success:      #2ecc71;
+@warning:      #f39c12;
+
+// ─── Animation ────────────────────────────────────────────────────────
+
+// Easings
+@ease:          cubic-bezier(.6, 0, .2, 1);
+@easeOut:       cubic-bezier(0, 0, .2, 1);
+@easeIn:        cubic-bezier(.6, 0, 1, 1);
+@easeBounce:    cubic-bezier(.34, 1.56, .64, 1);
+
+// Durations
+@durationFast:    0.3s;
+@durationMedium:  0.6s;
+@durationSlow:    0.9s;
+
+// Stagger
+@stagger:       0.05s;

@@ -1,0 +1,249 @@
+/* Force light mode — prevent browsers (Chrome Android Auto Dark, Samsung Internet, etc.)
+   from applying dark-mode color transformations to this site. */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light !important;
+  }
+
+  html {
+    color-scheme: light !important;
+    filter: none !important;
+    background-color: @white;
+    -webkit-color-scheme: light; // older WebKit
+  }
+
+  body {
+    background-color: @white;
+    color: @black;
+    // Disable Chrome's forced dark mode filter
+    -webkit-text-fill-color: unset;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    color: @secondary;
+  }
+}
+
+/* Base typography */
+:root {
+  color-scheme: light !important;
+}
+
+html {
+  scroll-behavior: initial;
+  scrollbar-width: none;
+  overflow-x: hidden;
+  filter: none !important;
+  color-scheme: light !important;
+
+  &.stop-scroll {
+    overflow: hidden;
+
+    body {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+  }
+}
+
+body {
+  overflow-x: clip;
+  font-family: @body;
+  font-size: 16px;
+  font-size: clamp(16px, 1.2vw, 21px);
+  font-weight: 500;
+  color: @text;
+  background-color: @background;
+}
+
+/* Lenis smooth scroll */
+html.lenis {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto;
+
+  [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+}
+
+/* Lenis + GSAP compatibility */
+[data-scroll] {
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-family: @heading;
+  font-weight: 500;
+  color: @title;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2rem, @vw64, 4rem);
+}
+
+/* Text elements */
+p {
+  white-space: pre-line;
+  line-height: 1.4;
+
+  &:empty {
+    display: none;
+  }
+}
+
+/* Layout structure */
+#pageContainer {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 100vh;
+  z-index: 1;
+  width: 100vw;
+}
+
+::-moz-selection {
+  background-color: @primary; /* Background color */
+  color: @text; /* Text color */
+}
+
+/* For Chrome, Safari, and Opera */
+::selection {
+  background-color: @primary;
+  color: @text;
+}
+
+.section {
+  padding: @vw75 0;
+  position: relative;
+}
+
+.container {
+  width: 100%;
+  padding: 0 @vw40;
+
+  &-narrow {
+    padding: 0 @vw100;
+  }
+
+  &-wide {
+    padding: 0 @vw5;
+  }
+}
+
+.footer {
+  padding-bottom: 0;
+}
+
+.header {
+  padding: 0;
+}
+
+.parent-line {
+    position: relative;
+
+    &:hover {
+        .link-line {
+            transform: scaleX(1);
+            transform-origin: left;
+        }
+    }
+    
+    .link-line {
+      .absolute(unset, 0, 100%, 1px);
+      bottom: 0;
+      background-color: @primary;
+      transform-origin: right;
+      transform: scaleX(0);
+      transition: transform 0.45s cubic-bezier(.6, 0, .2, 1);
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1080px) {
+  .section {
+    padding: @vw75-1080 0;
+  }
+
+  .container {
+    width: 100%;
+    padding: 0 @vw40-1080;
+
+    &-narrow {
+      padding: 0 @vw80-1080;
+    }
+    
+    &-wide {
+      padding: 0 @vw5-1080;
+    }
+  }
+
+  .footer {
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: @vw50-580 0;
+  }
+
+  .container {
+    width: 100%;
+    padding: 0 @vw40-580;
+
+    &-narrow {
+      padding: 0 @vw60-580;
+    }
+
+    &-wide {
+      padding: 0 @vw5-580;
+    }
+  }
+
+  .footer {
+    padding-bottom: 0;
+  }
+}
+
+/* Accessibility — honour prefers-reduced-motion.
+   JS composables skip GSAP motion (see useReducedMotion); this neutralises
+   CSS-driven transitions/animations and smooth scroll so any content that is
+   revealed by toggling a class appears instantly instead of animating. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Accessibility — skip-to-content link, off-screen until it receives focus */
+.skip-link {
+  .fixed(auto, auto, 0, 0);
+  z-index: 100000;
+  padding: 0.75em 1.25em;
+  background-color: @black;
+  color: @white;
+  transform: translateY(-150%);
+  transition: transform 0.2s @ease;
+
+  &:focus {
+    transform: translateY(0);
+  }
+}
+
+/* Main landmark is focused programmatically on route change — no focus ring for that */
+#main:focus {
+  outline: none;
+}

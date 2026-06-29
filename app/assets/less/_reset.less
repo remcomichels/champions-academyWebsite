@@ -1,0 +1,110 @@
+/*  Core reset */
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Typogragpy & rendering */
+html {
+	-moz-text-size-adjust: none;
+	-webkit-text-size-adjust: none;
+	text-size-adjust: none;
+	text-rendering: optimizeLegibility;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+body {
+	min-height: 100vh;
+	line-height: 1.5;
+	-webkit-font-smoothing: antialiased;
+	scroll-behavior: smooth;
+	-ms-scroll-chaining: none;
+	overscroll-behavior: none;
+}
+
+/* Text elements */
+h1, h2, h3, h4,
+button, input, label {
+	line-height: 1.1;
+}
+
+h1, h2, h3, h4 {
+	text-wrap: balance;
+}
+
+p, h1, h2, h3, h4, h5, h6 {
+	overflow-wrap: break-word;
+}
+
+/* Lists */
+ul[role='list'],
+ol[role='list'],
+ul {
+	list-style: none;
+	padding: 0;
+}
+
+/* Links */
+a {
+	text-decoration: none;
+	color: inherit;
+
+	&:not([class]) {
+		text-decoration-skip-ink: auto;
+		color: currentColor;
+	}
+}
+
+/* Media */
+img, picture, video, canvas, svg {
+	max-width: 100%;
+	height: auto;
+	display: block;
+}
+
+/* Forms */
+input, button,
+textarea, select {
+	font: inherit;
+	font-size: inherit;
+	border-radius: 0;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+textarea:not([rows]) {
+	min-height: 10em;
+}
+
+input:-webkit-autofill {
+	-webkit-text-fill-color: currentColor !important;
+}
+
+/* Interactivity */
+:focus {
+	outline: none;
+}
+
+:target {
+  scroll-margin-block: 5ex;
+}
+
+/* Selection */
+::-moz-selection {
+	background: rgba(0, 0, 0, 0.3);
+	color: white;
+}
+
+::selection {
+	background: rgba(0, 0, 0, 0.3);
+	color: white;
+}
+
+/* Layout */
+#root, #__next {
+  isolation: isolate;
+}

@@ -1,0 +1,35 @@
+name: CI
+
+# Runs on every push to main and on every pull request, so broken lint or types
+# are caught automatically before they're merged.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # `npm ci` runs the postinstall (`nuxt prepare`), which generates the
+      # .nuxt types + eslint config that lint and typecheck depend on.
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      # Optional — uncomment to also verify a production build compiles.
+      # Add any build-time env as repo secrets first.
+      # - name: Build
+      #   run: npm run build

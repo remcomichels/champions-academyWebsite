@@ -1,0 +1,22 @@
+// Full-screen overlays for the intro (first load) and page transitions (route
+// change). The composables (useIntro / usePageTransition) own the `transform`
+// — everything else (colour, any inner content) lives here.
+
+.intro,
+.pageTransition {
+  .fixed(100vh, 100%, 0, 0);
+  pointer-events: none;
+  will-change: transform;
+  background-color: @black;
+}
+
+// Intro covers from the very first paint (no initial transform), then slides up.
+.intro {
+  z-index: 9999;
+}
+
+// Page-transition overlay sits just below the viewport until a navigation runs.
+.pageTransition {
+  z-index: 9998;
+  transform: translateY(100%);
+}

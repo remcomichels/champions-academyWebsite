@@ -1,0 +1,160 @@
+// =============================================
+// POSITIONING MIXINS
+// =============================================
+
+/**
+ * Absolutely positions an element with customizable dimensions
+ * Usage: @include absolute(100%, 50%, 20px, 10px);
+ */
+.absolute(@top: 0, @left: 0, @width: 100%, @height: 100% ) {
+	position: absolute;
+	top: @top;
+	left: @left;
+	width: @width;
+	height: @height;
+}
+
+/**
+ * Fixes an element to the viewport with customizable dimensions
+ * Usage: @include fixed(100vh, 100%);
+ */
+.fixed(@height: 100%, @width: 100%, @top: 0, @left: 0) {
+	height: @height;
+	left: @left;
+	position: fixed;
+	top: @top;
+	width: @width;
+}
+
+// =============================================
+// TRANSITION & ANIMATION MIXINS
+// =============================================
+
+/**
+ * Recursively applies increasing transition delays to child elements
+ * Usage: @include transitionLoopSplitter(5, 0.1s);
+ */
+.transitionLoopSplitter(@i; @transition; @base: 0s) when (@i > 0) {
+    &:nth-child(@{i}) {
+        transition-delay: (@base + @i * @transition);
+    }
+    // Recursive call: decrement @i and call the mixin again
+    .transitionLoopSplitter(@i - 1; @transition; @base);
+}
+
+/**
+ * Cross-browser animation shorthand
+ * Usage: @include animation(slideIn 1s ease);
+ */
+.animation(@arguments) {
+    animation: @arguments;
+}
+
+/**
+ * Cross-browser animation-delay
+ * Usage: @include animationDelay(0.5s);
+ */
+.animationDelay(@delay) {
+    animation-delay: @delay;
+}
+
+// =============================================
+// BACKGROUND NOISE
+// =============================================
+.backgroundNoise {
+	background: url("../img/noise-texture.png");
+	background-size: cover;
+	opacity: 0.15;
+}
+
+// =============================================
+// TRANSFORM MIXINS
+// =============================================
+
+/**
+ * Generic transform property
+ * Usage: @include transform(rotate(45deg) scale(1.2));
+ */
+.transform(...) {
+    -webkit-transform: @arguments;
+    -moz-transform: @arguments;
+    -o-transform: @arguments;
+    -ms-transform: @arguments;
+    transform: @arguments;
+}
+
+/**
+ * Transform origin point
+ * Usage: @include transform-origin(50%, 100%);
+ */
+.transform-origin(@x: 0%, @y: 0%) {
+	transform-origin: @x @y;
+}
+
+// =============================================
+// TRANSITION MIXINS
+// =============================================
+
+/**
+ * Basic transition for all properties
+ * Usage: @include transition(0.3s, ease-in);
+ */
+.transition(@prop: all, @duration: @durationFast, @ease: @ease) {
+	transition: @prop @duration @ease;
+}
+
+/**
+ * Advanced transition with customizable property
+ * Usage: @include transitionMore(opacity, 0.3s, 0.1s, ease-in);
+ */
+.transitionMore(@what: all, @duration: @durationFast, @delay: 0s, @ease: @ease) {
+	transition: @what @duration @delay @ease;
+}
+
+/**
+ * Multiple transition properties
+ * Usage: @include multipleTransitions(opacity 0.3s, transform 0.5s);
+ */
+.multipleTransitions (@value1,...){
+    @value: ~`"@{arguments}".replace(/[\[\]]|\,\sX/g, '')`;
+    -webkit-transition: @value;
+    -moz-transition: @value;
+    -ms-transition: @value;
+    -o-transition: @value;
+    transition: @value;
+}
+
+// =============================================
+// UTILITY MIXINS
+// =============================================
+
+/**
+ * Maintain aspect ratio using padding
+ * Usage: @include paddingRatio(16, 9);
+ */
+.paddingRatio(@width, @height) {
+	padding-bottom: percentage((@height / @width));
+}
+
+// =============================================
+// RESPONSIVE MIXINS
+// =============================================
+
+/**
+ * Responsive full-width container with negative margins
+ * Usage: @include fullWidth(36px, 32px, 40px);
+ */
+.fullWidth(@default: 36px, @medium: 32px, @small: 40px) {
+	margin-left: -@default;
+	margin-right: -@default;
+
+	@media (max-width: 1080px) {
+		margin-left: -@medium;
+	  	margin-right: -@medium;
+	}
+
+	@media (max-width: 600px) {
+	  	margin-left: -@small;
+	  	margin-right: -@small;
+	}
+}
