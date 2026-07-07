@@ -28,6 +28,13 @@ header {
                     .menuContent ul {
                         display: flex;
                         gap: @vw16;
+
+                        .navItem {
+                            .navLink {
+                                &.router-link-active:not([href='/']) { color: @primary; }
+                                &.router-link-exact-active { color: @primary; }
+                            }
+                        }
                     }
                 }
             }

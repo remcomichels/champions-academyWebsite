@@ -146,26 +146,6 @@ p {
   padding: 0;
 }
 
-.parent-line {
-    position: relative;
-
-    &:hover {
-        .link-line {
-            transform: scaleX(1);
-            transform-origin: left;
-        }
-    }
-    
-    .link-line {
-      .absolute(unset, 0, 100%, 1px);
-      bottom: 0;
-      background-color: @primary;
-      transform-origin: right;
-      transform: scaleX(0);
-      transition: transform 0.45s cubic-bezier(.6, 0, .2, 1);
-    }
-}
-
 /* Responsive adjustments */
 @media (max-width: 1080px) {
   .section {

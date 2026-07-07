@@ -1,0 +1,76 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+
+    // Button primary with plus sign
+    &__primary {
+        background-color: @primary;
+        padding: @vw6 @vw10;
+        border-top-left-radius: @vw4;
+        border-bottom-left-radius: @vw4;
+        color: @black;
+        .transition();
+        transition-property: transform, border-radius;
+    }
+
+    .plus {
+        padding: @vw10;
+        color: @black;
+        background-color: @primary;
+        border-top-right-radius: @vw4;
+        border-bottom-right-radius: @vw4;
+        .transition();
+        transition-property: transform, border-radius;
+    }
+
+    &:hover {
+        .button__primary {
+            transform: translateX(-@vw10);
+            border-top-right-radius: @vw4;
+            border-bottom-right-radius: @vw4;
+        }
+
+        .plus {
+            transform: rotate(90deg);
+            border-top-left-radius: @vw4;
+            border-bottom-left-radius: @vw4;
+        }
+    }
+
+    // Button secondary
+    &__secondary {
+        background-color: @secondary;
+        padding: @vw6 @vw10;
+        border-radius: @vw4;
+        color: @text;
+        .transition();
+        transition-property: color, border-color;
+
+        &:hover {
+            border-color: @primary;
+            color: @primary;
+        }
+    }
+}
+
+/* Link underline hover — put .parent-line on the link, .link-line on an inner span */
+.parent-line {
+  position: relative;
+
+  &:hover {
+    .link-line {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
+  }
+
+  .link-line {
+    .absolute(unset, 0, 100%, 1px);
+    bottom: 5%;
+    background-color: @primary;
+    transform-origin: right;
+    transform: scaleX(0);
+    transition: transform 0.3s @ease;
+  }
+}

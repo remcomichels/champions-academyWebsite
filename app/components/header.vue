@@ -1,4 +1,3 @@
-<!-- eslint-disable vue/multi-word-component-names -->
 <template>
 	<header>
 		<div class="headerWrapper">
@@ -20,9 +19,10 @@
 								<NuxtLink
 									v-if="blok.link?.cached_url"
 									:to="localePath(normalizeSbPath(blok.link.cached_url))"
-									class="navLink"
+									class="navLink parent-line"
 								>
 									{{ blok.label ?? blok.link.cached_url }}
+									<span class="link-line" />
 								</NuxtLink>
 							</li>
 						</ul>
@@ -35,12 +35,12 @@
 						<NuxtLink
 							v-if="blok.link?.cached_url"
 							:to="localePath(normalizeSbPath(blok.link.cached_url))"
-							class="navLink"
+							class="navLink button"
 						>
-							<span class="textWrap">
-								<span class="text original">{{ blok.label }}</span>
-								<!-- <span class="text duplicate">{{ blok.label }}</span> -->
+							<span class="textWrap button__primary">
+								{{ blok.label }}
 							</span>
+							<span class="plus icon-plus" />
 						</NuxtLink>
 					</div>
 				</nav>
@@ -56,6 +56,6 @@ const { headerMenu, ctaMenu, localePath } = useHeader();
 
 const normalizeSbPath = (cachedUrl: string) => {
   const clean = cachedUrl.replace(/^\/+|\/+$/g, "")
-  return `/${clean}`
+  return clean === "home" || clean === "" ? "/" : `/${clean}`
 }
 </script>
