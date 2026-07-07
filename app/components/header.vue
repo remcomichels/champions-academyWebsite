@@ -3,18 +3,18 @@
 	<header>
 		<div class="headerWrapper">
 			<div class="navCol left">
-				<nav v-if="headerMenu" class="mainNav">
-					<button class="navButton" @click="toggleMenu">
-						<span class="icon">
-							<span :class="{ open: isOpen }" />
-							<span :class="{ open: isOpen }" />
-						</span>
+				<NuxtLink :to="localePath(`/`)" class="logoLink">
+					<NuxtAppImage
+						class="logoImage"
+						:src="`/images/logo.svg`"
+						:alt="`Champions Academy Logo`"
 
-						<p class="label">
-							{{ isOpen ? 'Close' : 'Menu' }}
-						</p>
-					</button>
-					<nav class="menuContent" :class="{ open: isOpen }">
+					/>
+				</NuxtLink>
+			</div>
+			<div class="navCol center">
+				<nav v-if="headerMenu" class="mainNav">
+					<nav class="menuContent">
 						<ul>
 							<li v-for="blok in headerMenu" :key="blok._uid" class="navItem">
 								<NuxtLink
@@ -29,11 +29,6 @@
 					</nav>
 				</nav>
 			</div>
-			<div class="navCol center">
-				<NuxtLink :to="localePath(`/`)" class="logoLink">
-					<h1 class="headerTitle">Nuxt 4 Template</h1>
-				</NuxtLink>
-			</div>
 			<div class="navCol right">
 				<nav v-if="ctaMenu" class="ctaNav">
 					<div v-for="blok in ctaMenu" :key="blok._uid" class="navItem">
@@ -44,7 +39,7 @@
 						>
 							<span class="textWrap">
 								<span class="text original">{{ blok.label }}</span>
-								<span class="text duplicate">{{ blok.label }}</span>
+								<!-- <span class="text duplicate">{{ blok.label }}</span> -->
 							</span>
 						</NuxtLink>
 					</div>
@@ -56,15 +51,8 @@
 
 <script setup lang="ts">
 import { useHeader } from "~/assets/js/components/header";
-import { ref } from "vue";
 
 const { headerMenu, ctaMenu, localePath } = useHeader();
-
-const isOpen = ref(false);
-
-const toggleMenu = () => {
-	isOpen.value = !isOpen.value;
-};
 
 const normalizeSbPath = (cachedUrl: string) => {
   const clean = cachedUrl.replace(/^\/+|\/+$/g, "")

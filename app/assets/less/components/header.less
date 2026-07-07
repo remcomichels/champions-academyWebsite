@@ -1,175 +1,39 @@
 header {
-    padding-left: calc((@vw85 * 2) + (@vw20 * 2) + @vw100);
-    padding-right: calc((@vw85 * 2) + (@vw20 * 2) + @vw100);
-    margin-left: -@vw100;
-    margin-right: -@vw100;
+    padding-top: @vw32;
 
     .headerWrapper {
-        background-color: @white;
-        border-radius: @vw7;
-        margin-top: @vw40;
-        padding: @vw10;
         display: flex;
         align-items: center;
         justify-content: space-between;
         position: fixed;
-        width: calc((@vw85 * 8) + (@vw20 * 7));
+        padding-inline: @vw32;
+        width: 100%;
         z-index: 999;
 
         .navCol {
             display: inline-block;
 
             &.left {
-                .mainNav {
-                    .navButton {
-                        display: flex;
-                        align-items: center;
-                        gap: @vw15;
-                        cursor: pointer;
-                        background: transparent;
-                        border: none;
-                        border-radius: @vw3;
-                        padding: @vw8 @vw16;
-                        transition: background-color 0.3s ease;
-
-                        &:hover {
-                            background-color: rgba(@black, 0.1);
-                        }
-
-                        .label {
-                            font-size: @vw20;
-                            color: @black;
-                        }
+                .logoLink {
+                    .logoImage {
+                        width: @vw105;
                     }
-
-                    .icon {
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: center;
-                        gap: @vw9;
-    
-                        span {
-                            width: @vw30;
-                            height: @vw1;
-                            background: @black;
-                            display: block;
-                            transition: all 0.3s ease;
-                        }
-    
-                        span.open:nth-child(1) {
-                            transform: translateY(@vw5) rotate(45deg);
-                        }
-                        span.open:nth-child(2) {
-                            transform: translateY(-@vw5) rotate(-45deg);
-                        }
-                    }
-                }
-
-                .menuContent {
-                    position: absolute;
-                    overflow: hidden;
-                    max-height: 0;
-                    opacity: 0;
-                    transform: translateY(-10px);
-                    transition: 0.3s ease;
-                    margin-top: 10px;
-
-                    ul {
-                        list-style: none;
-                        padding: 0;
-                        margin: 0;
-
-                        li {
-                        margin: 6px 0;
-
-                            a {
-                                text-decoration: none;
-                                color: #000;
-                                font-size: 16px;
-                            }
-                        }
-                    }
-                }
-
-                .menuContent.open {
-                    max-height: 200px;
-                    opacity: 1;
-                    transform: translateY(0);
                 }
             }
 
             &.center {
-                position: absolute;
-                left: 50%;
-                transform: translate(-50%, 0);
+                position: relative;
 
-                .headerTitle {
-                    font-weight: @extra-bold;
-                    text-transform: uppercase;
-                    letter-spacing: -0.11em;
-                    color: @black;
-                    font-size: @vw36;
+                .mainNav {
+                    .menuContent ul {
+                        display: flex;
+                        gap: @vw16;
+                    }
                 }
             }
 
             &.right {
-                overflow: hidden;
-                margin-left: auto; //Temporary fix for alignment issue
-                .ctaNav {
-                    background-color: @secondary;
-                    border-radius: @vw3;
-                    
-                    .navItem {
-                        font-size: @vw20;
-                        color: @black;
-
-                        .navLink {
-                            @textOffset: 200%;
-                            
-                            padding: @vw8 @vw16;
-                            position: relative;
-                            display: inline-block;
-                            text-decoration: none;
-                            color: @white;
-
-                            .textWrap {
-                                position: relative;
-                                display: flex;
-                                width: 100%;
-
-                                .text {
-                                    display: block;
-                                    white-space: nowrap;
-                                    transition: transform 0.35s ease;
-                                }
-    
-                                .original {
-                                    transform: translateX(0);
-                                }
-    
-                                .duplicate {
-                                    position: absolute;
-                                    left: @textOffset;
-                                    transform: translateX(0);
-                                }
-                            }
-
-                            &:hover {
-                                .original {
-                                    transform: translateX(-@textOffset);
-                                }
-
-                                .duplicate {
-                                    transform: translateX(-@textOffset);
-                                }
-                            }
-
-                            &:not(:hover) .text {
-                                transition: none;
-                            }
-                        }
-                    }
-                }
+                position: relative;
             }
         }
     }
