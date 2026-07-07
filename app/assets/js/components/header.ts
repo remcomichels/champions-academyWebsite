@@ -1,5 +1,5 @@
-import { ref, onMounted, computed } from "vue";
-import { useStoryblokApi } from "#imports";
+import { ref, onMounted, computed, watch } from "vue";
+import { useStoryblokApi, useRoute, useNuxtApp } from "#imports";
 import type {
 	HeaderMenuItem,
 	CtaMenuItem,
@@ -17,6 +17,26 @@ export function useHeader() {
 
 	const availableLocales = computed(() => locales.value);
 	const currentLocale = computed(() => locale.value);
+
+	const route = useRoute();
+	const nuxtApp = useNuxtApp();
+	const menuOpen = ref(false);
+
+	const setMenuOpen = (open: boolean) => {
+		menuOpen.value = open;
+		if (import.meta.client) {
+			document.documentElement.classList.toggle("stop-scroll", open);
+			// stop-scroll only blocks native scrolling — Lenis drives scrollTop
+			// itself from wheel events, so it must be halted explicitly
+			if (open) nuxtApp.$lenis?.stop();
+			else nuxtApp.$lenis?.start();
+		}
+	};
+
+	const toggleMenu = () => setMenuOpen(!menuOpen.value);
+
+	// Close the mobile menu on navigation
+	watch(() => route.path, () => setMenuOpen(false));
 
 	onMounted(async () => {
 		try {
@@ -40,5 +60,7 @@ export function useHeader() {
 		currentLocale,
 		localePath,
 		switchLocalePath,
+		menuOpen,
+		toggleMenu,
 	};
 }

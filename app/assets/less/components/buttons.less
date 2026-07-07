@@ -1,6 +1,6 @@
 .button {
     display: inline-flex;
-    align-items: center;
+    align-items: stretch; // label sets the height, .plus always matches it
     cursor: pointer;
 
     // Button primary with plus sign
@@ -15,13 +15,23 @@
     }
 
     .plus {
-        padding: @vw10;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 @vw10;
         color: @black;
         background-color: @primary;
         border-top-right-radius: @vw4;
         border-bottom-right-radius: @vw4;
         .transition();
-        transition-property: transform, border-radius;
+        transition-property: border-radius;
+
+        // rotate the glyph, not the (non-square) segment box
+        &::before {
+            display: block;
+            .transition();
+            transition-property: transform;
+        }
     }
 
     &:hover {
@@ -32,9 +42,12 @@
         }
 
         .plus {
-            transform: rotate(90deg);
             border-top-left-radius: @vw4;
             border-bottom-left-radius: @vw4;
+
+            &::before {
+                transform: rotate(90deg);
+            }
         }
     }
 
@@ -50,6 +63,76 @@
         &:hover {
             border-color: @primary;
             color: @primary;
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .button {
+        // Button primary with plus sign
+        &__primary {
+            padding: @vw6-1080 @vw10-1080;
+            border-top-left-radius: @vw4-1080;
+            border-bottom-left-radius: @vw4-1080;
+        }
+
+        .plus {
+            padding: 0 @vw10-1080;
+            border-top-right-radius: @vw4-1080;
+            border-bottom-right-radius: @vw4-1080;
+        }
+
+        &:hover {
+            .button__primary {
+                transform: translateX(-@vw10-1080);
+                border-top-right-radius: @vw4-1080;
+                border-bottom-right-radius: @vw4-1080;
+            }
+
+            .plus {
+                border-top-left-radius: @vw4-1080;
+                border-bottom-left-radius: @vw4-1080;
+            }
+        }
+
+        // Button secondary
+        &__secondary {
+            padding: @vw6-1080 @vw10-1080;
+            border-radius: @vw4-1080;
+        }
+    }
+}
+
+@media (max-width: 768px) {
+    .button {
+        // Button primary with plus sign
+        gap: @vw10-580;
+
+        &__primary {
+            padding: @vw6-580 @vw10-580;
+            border-radius: @vw4-580;
+        }
+
+        .plus {
+            padding: 0 @vw10-580;
+            border-radius: @vw4-580;
+        }
+
+        &:hover {
+            .button__primary {
+                transform: unset;
+                border-top-right-radius: @vw4-580;
+                border-bottom-right-radius: @vw4-580;
+            }
+
+            .plus {
+                border-top-left-radius: @vw4-580;
+                border-bottom-left-radius: @vw4-580;
+
+                &::before {
+                    transform: unset;
+                }
+            }
         }
     }
 }
