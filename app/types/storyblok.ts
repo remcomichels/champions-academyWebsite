@@ -38,3 +38,16 @@ export interface LogoItem {
 
 export type HeaderMenuItem = MenuLinkItem
 export type CtaMenuItem = MenuLinkItem
+
+export type ButtonVariant = "primary" | "secondary" | "link"
+
+/**
+ * The "button" block — nestable in any blocks-type field (e.g. hero_block.button).
+ */
+export interface ButtonBlok {
+  _uid: string
+  component?: "button"
+  title?: string
+  link?: StoryblokMultilink
+  variant?: ButtonVariant
+}

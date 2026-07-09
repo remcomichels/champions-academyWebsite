@@ -1,0 +1,78 @@
+.hero_block {
+    .hero-container {
+        .text-container {
+            .preText-container {
+                display: inline-block;
+                background-color: @secondary;
+                border-radius: 10px;
+                padding: @vw12 @vw16;
+                
+                .preText {
+                    text-transform: uppercase;
+                    opacity: 0.75;
+                    display: flex;
+                    align-items: center;
+
+                    &::before {
+                        content: '';
+                        display: inline-block;
+                        width: @vw8;
+                        height: @vw8;
+                        background-color: @primary;
+                        border-radius: 50%;
+                        margin-right: @vw8;
+                        filter: blur(@vw2);
+                        animation: preTextPulse 2.5s @ease infinite;
+                    }
+                }
+            }
+
+            .title-container {
+                .title {
+                    position: relative;
+                    font-family: @heading;
+                    font-size: @vw164;
+                    letter-spacing: -0.02em;
+                    margin: @vw24 0 0 0;
+                }
+
+                .subTitle {
+                    position: relative;
+                    font-family: @handWritten;
+                    font-size: @vw128;
+                    color: @primary;
+                    line-height: 0.81;
+                    margin: -@vw30 0 0 0;
+                }
+            }
+
+            .subText-container {
+                .subText {
+                    font-family: @body;
+                    font-size: @vw20;
+                    margin: @vw48 0 0 0;
+                    width: 45%;
+                    opacity: 0.75;
+                }
+            }
+        }
+        .button-container {
+            display: flex;
+            gap: @vw24;
+            margin: @vw48 0 0 0;
+        }
+    }
+}
+/* preText status dot — soft continuous pulse */
+@keyframes preTextPulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.8);
+    }
+}

@@ -6,12 +6,14 @@
     // Button primary with plus sign
     &__primary {
         background-color: @primary;
-        padding: @vw6 @vw10;
+        padding: @vw8 @vw12;
         border-top-left-radius: @vw4;
         border-bottom-left-radius: @vw4;
+        text-transform: uppercase;
+        font-size: @vw14;
         color: @black;
         .transition();
-        transition-property: transform, border-radius;
+        transition-property: border-radius;
     }
 
     .plus {
@@ -24,7 +26,7 @@
         border-top-right-radius: @vw4;
         border-bottom-right-radius: @vw4;
         .transition();
-        transition-property: border-radius;
+        transition-property: transform, border-radius;
 
         // rotate the glyph, not the (non-square) segment box
         &::before {
@@ -36,12 +38,12 @@
 
     &:hover {
         .button__primary {
-            transform: translateX(-@vw10);
             border-top-right-radius: @vw4;
             border-bottom-right-radius: @vw4;
         }
 
         .plus {
+            transform: translateX(@vw10);
             border-top-left-radius: @vw4;
             border-bottom-left-radius: @vw4;
 
@@ -53,9 +55,11 @@
 
     // Button secondary
     &__secondary {
-        background-color: @secondary;
-        padding: @vw6 @vw10;
+        background-color: @buttonSecondary;
+        padding: @vw8 @vw12;
         border-radius: @vw4;
+        font-size: @vw14;
+        text-transform: uppercase;
         color: @text;
         .transition();
         transition-property: color, border-color;
@@ -84,12 +88,12 @@
 
         &:hover {
             .button__primary {
-                transform: translateX(-@vw10-1080);
                 border-top-right-radius: @vw4-1080;
                 border-bottom-right-radius: @vw4-1080;
             }
 
             .plus {
+                transform: translateX(@vw10-1080);
                 border-top-left-radius: @vw4-1080;
                 border-bottom-left-radius: @vw4-1080;
             }
@@ -120,12 +124,12 @@
 
         &:hover {
             .button__primary {
-                transform: unset;
                 border-top-right-radius: @vw4-580;
                 border-bottom-right-radius: @vw4-580;
             }
 
             .plus {
+                transform: unset;
                 border-top-left-radius: @vw4-580;
                 border-bottom-left-radius: @vw4-580;
 
