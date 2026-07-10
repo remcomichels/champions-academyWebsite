@@ -42,7 +42,3 @@ onUnmounted(() => {
   destroy()
 })
 </script>
-
-<style lang="less">
-@import "~/assets/less/components/hero_block.less";
-</style>

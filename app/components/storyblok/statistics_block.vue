@@ -27,7 +27,3 @@ const { initCountUp, destroy } = useCountUp(root);
 onMounted(() => initCountUp());
 onUnmounted(() => destroy());
 </script>
-
-<style lang="less">
-@import "~/assets/less/components/statistics_block.less";
-</style>

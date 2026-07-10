@@ -119,6 +119,11 @@ export default defineNuxtConfig({
 	 * Vite (LESS)
 	 * ----------------------------- */
 	vite: {
+		// Pre-bundle deps that are only discovered at runtime (lazy imports),
+		// so the dev server doesn't pause and reload the page mid-session
+		optimizeDeps: {
+			include: ["@storyblok/vue", "hls.js"],
+		},
 		css: {
 			preprocessorOptions: {
 				less: {

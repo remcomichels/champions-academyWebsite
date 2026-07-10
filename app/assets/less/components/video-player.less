@@ -1,0 +1,437 @@
+// ── Root ─────────────────────────────────────────────────────────────────
+.video-player {
+  position: relative;
+  overflow: hidden;
+  background: @black;
+  display: block;
+  border-radius: @vw10;
+  margin-top: @vw48;
+
+  // ── Video ───────────────────────────────────────────────────────────────
+  &__video {
+    width: 100%;
+    display: block;
+    cursor: pointer;
+  }
+
+  // ── UI wrapper ──────────────────────────────────────────────────────────
+  &__ui {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  // ── Gradient veil ───────────────────────────────────────────────────────
+  &__veil {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 10%;
+    background: linear-gradient(
+      to top,
+      @black 20%,
+      transparent 100%
+    );
+    opacity: 0;
+    transition: opacity 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
+  }
+
+  // ── Control bar ─────────────────────────────────────────────────────────
+  &__controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    height: 5%; // vertically centered in the 10% gradient
+    pointer-events: all;
+    position: relative;
+    z-index: 2;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  &__controls-left,
+  &__controls-right {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  // ── Buttons ─────────────────────────────────────────────────────────────
+  &__btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    color: rgba(@white, 0.7);
+    transition: color 0.2s ease;
+    padding: 0;
+    flex-shrink: 0;
+
+    svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      color: @white;
+    }
+
+    &--play {
+      width: 40px;
+      height: 40px;
+      color: @white;
+
+      svg {
+        width: 21px;
+        height: 21px;
+      }
+
+      &:hover {
+        color: @primary;
+      }
+    }
+  }
+
+  // ── Time display ────────────────────────────────────────────────────────
+  &__time {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-family: @body;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    padding: 0 8px;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  &__time-current {
+    color: @white;
+    font-weight: 600;
+  }
+
+  &__time-sep {
+    border-radius: 50%;
+    height: 0.3em;
+    background-color: @primary;
+    width: 0.3em;
+  }
+
+  &__time-total {
+    color: rgba(@white, 0.45);
+  }
+
+  // ── Volume ──────────────────────────────────────────────────────────────
+  &__volume {
+    display: flex;
+    align-items: center;
+    flex-direction: row-reverse;
+    gap: 0;
+
+    &-track {
+      width: 0;
+      overflow: hidden;
+      transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    &:hover &-track,
+    &-track:focus-within {
+      width: 72px;
+    }
+
+    &-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 66px;
+      height: 20px;
+      background: transparent;
+      outline: none;
+      cursor: pointer;
+      display: block;
+      margin: 0 3px;
+
+      &::-webkit-slider-runnable-track {
+        height: 3px;
+        border-radius: 2px;
+        background: linear-gradient(
+          to right,
+          @primary 0%,
+          @primary var(--vol-pct, 100%),
+          rgba(@white, 0.18) var(--vol-pct, 100%)
+        );
+      }
+
+      &::-moz-range-track {
+        height: 3px;
+        border-radius: 2px;
+        background: rgba(@white, 0.18);
+      }
+
+      &::-moz-range-progress {
+        height: 3px;
+        border-radius: 2px;
+        background: @primary;
+      }
+
+      &::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: @white;
+        margin-top: -4px;
+        transform-origin: center center;
+        transition: transform 0.15s ease;
+      }
+
+      &:hover::-webkit-slider-thumb {
+        transform: scale(1.5);
+        transform-origin: center center;
+      }
+
+      &::-moz-range-thumb {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        border: none;
+        background: @white;
+        box-shadow: 0 0 5px rgba(@primary, 0.55);
+      }
+    }
+  }
+
+  // ── Progress bar ────────────────────────────────────────────────────────
+  &__progress {
+    position: relative;
+    z-index: 2;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    pointer-events: all;
+    padding: 0 16px;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover &-track {
+      transform: scaleY(1.67);
+    }
+
+    &:hover &-thumb {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  &__progress-track {
+    position: relative;
+    flex: 1;
+    height: 3px;
+    background: rgba(@white, 0.12);
+    transform-origin: bottom;
+    transition: transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+    border-radius: 2px;
+  }
+
+  &__progress-fill {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(@primary, 0.75), @primary);
+    transform-origin: left center;
+    border-radius: 2px;
+  }
+
+  &__progress-thumb {
+    position: absolute;
+    top: 50%;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: @white;
+    box-shadow:
+      0 0 0 2px rgba(@primary, 0.35),
+      0 0 10px rgba(@primary, 0.5),
+      0 1px 4px rgba(@black, 0.4);
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+    transition:
+      opacity 0.2s ease,
+      transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+
+  // ── Visible state ────────────────────────────────────────────────────────
+  &.is-controls-visible {
+    .video-player__veil {
+      opacity: 1;
+    }
+
+    .video-player__controls {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .video-player__progress {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .video-player__progress-track {
+      background: rgba(@white, 0.2);
+    }
+  }
+
+  // ── Hide cursor when controls are hidden ─────────────────────────────────
+  &.is-playing:not(.is-controls-visible) {
+    cursor: none;
+
+    * {
+      cursor: none !important;
+    }
+  }
+
+  // ── Fullscreen ───────────────────────────────────────────────────────────
+  &:fullscreen {
+    .video-player__video {
+      height: 100%;
+      object-fit: contain;
+    }
+  }
+}
+
+// ── Tablet ────────────────────────────────────────────────────────────────
+@media (max-width: 1080px) {
+  .video-player {
+    // Volume becomes toggle-only — hide the slider track
+    &__volume-track {
+      display: none;
+    }
+
+    // Smaller play/pause button background
+    &__btn--play {
+      width: 32px;
+      height: 32px;
+
+      svg {
+        width: 17px;
+        height: 17px;
+      }
+    }
+
+    // Smaller progress thumb
+    &__progress-thumb {
+      width: 10px;
+      height: 10px;
+    }
+
+  }
+}
+
+// ── Mobile ────────────────────────────────────────────────────────────────
+@media (max-width: 768px) {
+  .video-player {
+    // Controls always visible on touch — no hover needed
+    &__veil {
+      opacity: 1;
+      height: 15%;
+      background: linear-gradient(
+        to top,
+        @black 30%,
+        transparent 100%
+      );
+    }
+
+    &__controls {
+      opacity: 1;
+      transform: translateY(0);
+      padding: 0 12px;
+      height: 7%;
+    }
+
+    &__progress {
+      opacity: 1;
+      transform: translateY(0);
+      padding: 0 12px;
+      height: 28px; // bigger tap target
+    }
+
+    &__progress-track {
+      background: rgba(@white, 0.2);
+      height: 4px;
+    }
+
+    &__progress-thumb {
+      // Always visible on mobile — no hover needed
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    // Bigger touch targets for buttons
+    &__btn {
+      width: 44px;
+      height: 44px;
+
+      svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      &--play {
+        width: 48px;
+        height: 48px;
+
+        svg {
+          width: 24px;
+          height: 24px;
+        }
+      }
+    }
+
+    // Never hide cursor on touch devices
+    &.is-playing:not(.is-controls-visible) {
+      cursor: auto;
+
+      * {
+        cursor: auto !important;
+      }
+    }
+
+  }
+}
+
+// ── Icon swap transition ──────────────────────────────────────────────────
+.vp-icon-enter-active,
+.vp-icon-leave-active {
+  transition: opacity 0.13s ease, transform 0.13s ease;
+}
+
+.vp-icon-enter-from {
+  opacity: 0;
+  transform: scale(0.65) rotate(-8deg);
+}
+
+.vp-icon-leave-to {
+  opacity: 0;
+  transform: scale(0.65) rotate(8deg);
+}
+

@@ -1,0 +1,164 @@
+.marquee {
+    margin-bottom: @vw150;
+
+    .text-group {
+        .title {
+            font-size: @vw18;
+            opacity: 0.5;
+            text-transform: uppercase;
+            text-align: center;
+        }
+    }
+
+    .marquee-group {
+        padding-top: @vw32;
+        position: relative;
+        overflow: hidden;
+
+        .marquee {
+            position: relative;
+
+            .marquee-scroll {
+                position: relative;
+                display: flex;
+                width: 140%;
+                margin-left: -20%;
+                
+                .marquee-content {
+                    position: relative;
+                    display: flex;
+                    gap: @vw48;
+
+                    &:first-child {
+                        padding-right: @vw48;
+                    }
+
+                    .marquee-item {
+                        display: flex;
+                        align-items: center;
+                        gap: @vw48;
+
+                        .word {
+                            max-width: unset;
+                            height: @vw64;
+                            width: auto;
+                        }
+                        
+                        .divider {
+                            height: @vw8;
+                            width: @vw8;
+                            border-radius: 50%;
+                            background-color: @primary;
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* Samsung Internet forced dark (the only browser ignoring our light-mode
+   opt-out) darkens the page background but leaves image pixels alone, hiding
+   the black-filtered logos. It exposes no signal when its dark mode is active
+   (prefers-color-scheme keeps reporting light), so instead of detecting it we
+   add a cream outline+glow to the logos via drop-shadow: invisible on the
+   normal cream background, but it keeps the logos readable once Samsung
+   darkens the page. Scoped to the UA-sniffed class from nuxt.config.ts so no
+   other browser is affected. */
+html.samsung-internet .marquee {
+    // The section normally clips vertically too (overflow: hidden), which cuts
+    // the halo off at the bottom edge of the strip. Keep the horizontal clip
+    // the marquee needs, let the halo escape vertically.
+    position: relative;
+    z-index: 1;
+
+    .marquee-group {
+        overflow-x: clip;
+        overflow-y: visible;
+    }
+
+    .marquee-group .marquee .marquee-scroll .marquee-content .marquee-item .word {
+        filter: grayscale(100%) contrast(0) brightness(0)
+            drop-shadow(2px 0 0 @white) drop-shadow(-2px 0 0 @white)
+            drop-shadow(0 2px 0 @white) drop-shadow(0 -2px 0 @white)
+            drop-shadow(0 0 8px @white);
+    }
+}
+
+@media (max-width: 1080px) {
+    .marquee {
+        .text-group {
+            .title {
+                font-size: @vw18-1080;
+            }
+        }
+
+        .marquee-group {
+            padding-top: @vw32-1080;
+
+            .marquee {
+                .marquee-scroll {
+                    .marquee-content {
+                        gap: @vw48-1080;
+
+                        &:first-child {
+                            padding-right: @vw48-1080;
+                        }
+
+                        .marquee-item {
+                            gap: @vw48-1080;
+
+                            .word {
+                                height: @vw64-1080;
+                            }
+                            
+                            .divider {
+                                height: @vw8-1080;
+                                width: @vw8-1080;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .marquee {
+        .text-group {
+            .title {
+                font-size: @vw18-580;
+            }
+        }
+
+        .marquee-group {
+            padding-top: @vw32-580;
+
+            .marquee {
+                .marquee-scroll {
+                    .marquee-content {
+                        gap: @vw48-580;
+
+                        &:first-child {
+                            padding-right: @vw48-580;
+                        }
+
+                        .marquee-item {
+                            gap: @vw48-580;
+
+                            .word {
+                                height: @vw48-580;
+                            }
+                            
+                            .divider {
+                                height: @vw8-580;
+                                width: @vw8-580;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
