@@ -39,6 +39,16 @@ export interface LogoItem {
 export type HeaderMenuItem = MenuLinkItem
 export type CtaMenuItem = MenuLinkItem
 
+/**
+ * The "statistic" block — nested in statistics_block's `statistic` blocks field.
+ */
+export interface StatisticBlok {
+  _uid: string
+  component?: "statistic"
+  count?: string
+  sub_title?: string
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**

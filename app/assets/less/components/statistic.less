@@ -1,0 +1,55 @@
+.statistic-container {
+    display: flex;
+    align-items: center;
+
+    .statistic {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+        flex: 1;
+
+        .statistic-count {
+            font-size: @vw48;
+            color: @primary;
+            line-height: 1;
+        }
+
+        .statistic-subtitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            opacity: 0.75;
+        }
+
+        @media (max-width: 1080px) {
+            gap: @vw8-1080;
+
+            .statistic-count {
+                font-size: @vw64-1080;
+            }
+
+            .statistic-subtitle {
+                font-size: @vw16-1080;
+            }
+        }
+
+        @media (max-width: 580px) {
+            gap: @vw8-580;
+
+            .statistic-count {
+                font-size: @vw48-580;
+            }
+
+            .statistic-subtitle {
+                font-size: @vw16-580;
+            }
+        }
+    }
+
+    .statistic-divider {
+        display: inline-block;
+        margin: 0 @vw48;
+        width: @vw1;
+        height: @vw48;
+        background-color: @buttonSecondary;
+    }
+}

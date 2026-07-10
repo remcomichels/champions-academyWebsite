@@ -1,0 +1,24 @@
+.statistics_block {
+    padding: @vw64 0 0 0;
+
+    .statistics-list {
+        display: inline-flex;
+
+        // No divider after the last statistic
+        .statistic-container:last-child .statistic-divider {
+            display: none;
+        }
+
+        @media (max-width: 1080px) {
+
+        }
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+
+        @media (max-width: 580px) {
+
+        }
+    }
+}
