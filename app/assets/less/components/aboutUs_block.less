@@ -1,0 +1,272 @@
+.aboutUs_block {
+    display: flex;
+    align-items: center;
+    min-height: 100vh;
+
+    .aboutUs-container {
+        display: flex;
+        align-items: center;
+        gap: @vw80;
+        width: 100%;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            align-items: stretch;
+            gap: @vw48-1080;
+        }
+    }
+
+    // ── Left column — subtitle / title / text / indicator ──────────────────
+    .text-container {
+        flex: 1 1 0;
+
+        .subTitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            text-transform: uppercase;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+
+        .text {
+            font-family: @body;
+            font-size: @vw18;
+            opacity: 0.75 !important;
+            width: 85%;
+            margin: @vw24 0 0 0;
+
+            @media (max-width: 1080px) {
+                font-size: @vw18-1080;
+                width: 100%;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw16-580;
+            }
+        }
+    }
+
+    // ── Indicator — rolling counter + one line per card ────────────────────
+    .indicator {
+        display: flex;
+        align-items: center;
+        gap: @vw16;
+        margin: @vw32 0 0 0;
+
+        @media (max-width: 580px) {
+            margin: @vw40-580 0 0 0;
+        }
+    }
+
+    .indicator-count,
+    .indicator-total {
+        font-family: @heading;
+        font-size: @vw16;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+        color: @title;
+    }
+
+    .indicator-count {
+        position: relative;
+        display: inline-block;
+        overflow: hidden;
+    }
+
+    .indicator-current {
+        display: inline-block;
+    }
+
+    .indicator-total {
+        opacity: 0.4;
+    }
+
+    // Rolling counter — old number slides up and out, new one rolls in from below
+    .indicator-roll-enter-active,
+    .indicator-roll-leave-active {
+        .transition(transform, @durationMedium, @ease);
+    }
+
+    .indicator-roll-leave-active {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .indicator-roll-enter-from {
+        transform: translateY(100%);
+    }
+
+    .indicator-roll-leave-to {
+        transform: translateY(-100%);
+    }
+
+    .indicator-lines {
+        display: flex;
+        gap: @vw8;
+    }
+
+    .indicator-line {
+        position: relative;
+        width: @vw32;
+        height: @vw2;
+        border-radius: @vw2;
+        background-color: @border;
+        overflow: hidden;
+    }
+
+    // Scrubbed by useCardDeck — no CSS transition on purpose.
+    .indicator-line-fill {
+        .absolute();
+        background-color: @primary;
+        border-radius: @vw2;
+        transform: scaleX(0);
+        transform-origin: left center;
+    }
+
+    // ── Right column — the card deck ───────────────────────────────────────
+    .cards-container {
+        position: relative;
+        flex: 1 1 0;
+        aspect-ratio: 3 / 2;
+        counter-reset: about-card;
+
+        @media (max-width: 768px) {
+            aspect-ratio: 4 / 3;
+        }
+    }
+
+    .about-card {
+        .absolute();
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: @vw48;
+        background-color: lighten(@black, 4%);
+        border: 1px solid @border;
+        border-radius: @vw24;
+        counter-increment: about-card;
+        will-change: transform;
+
+        @media (max-width: 1080px) {
+            padding: @vw40-1080;
+        }
+
+        @media (max-width: 580px) {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+    }
+
+    .about-card-number {
+        font-family: @heading;
+        font-size: @vw64;
+        color: @primary;
+        line-height: 1;
+
+        &::before {
+            content: counter(about-card, decimal-leading-zero);
+        }
+
+        @media (max-width: 1080px) {
+            font-size: @vw56-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw40-580;
+        }
+    }
+
+    .about-card-title {
+        font-size: @vw48;
+        text-transform: uppercase;
+
+        @media (max-width: 1080px) {
+            font-size: @vw28-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw24-580;
+        }
+    }
+
+    .about-card-text {
+        font-family: @body;
+        font-size: @vw18;
+        opacity: 0.75;
+
+        @media (max-width: 1080px) {
+            font-size: @vw16-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw16-580;
+        }
+    }
+
+    // ── Entrance — staggered fade-up once the section is in view ───────────
+    .subTitle,
+    .text,
+    .indicator,
+    .cards-container {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .text { transition-delay: 0.1s; }
+    .indicator { transition-delay: 0.2s; }
+    .cards-container { transition-delay: 0.3s; }
+
+    &.inView {
+        .subTitle,
+        .text,
+        .indicator,
+        .cards-container {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    // ── Static fallback — reduced motion or a single card ──────────────────
+    &.deck-static {
+        min-height: auto;
+
+        .indicator {
+            display: none;
+        }
+
+        .cards-container {
+            aspect-ratio: auto;
+            display: flex;
+            flex-direction: column;
+            gap: @vw24;
+        }
+
+        .about-card {
+            position: relative;
+            top: auto;
+            left: auto;
+            width: 100%;
+            height: auto;
+        }
+    }
+}

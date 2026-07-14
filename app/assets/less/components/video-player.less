@@ -12,6 +12,10 @@
     width: 100%;
     display: block;
     cursor: pointer;
+    // Reserve the box before metadata loads — otherwise the element grows on
+    // load and shifts every ScrollTrigger position measured below it.
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
   }
 
   // ── UI wrapper ──────────────────────────────────────────────────────────

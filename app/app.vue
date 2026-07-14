@@ -8,6 +8,11 @@ useState('introComplete', () => false)
 // the markup below.
 useIntro()
 usePageTransition()
+
+// Single global inview instance: reveals every [data-scroll-inview] section
+// once the intro/transition is done. Blocks only need the attribute + CSS.
+const { initInview } = useInview()
+onMounted(() => initInview())
 </script>
 
 <template>

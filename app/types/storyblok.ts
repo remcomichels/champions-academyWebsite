@@ -49,6 +49,29 @@ export interface StatisticBlok {
   sub_title?: string
 }
 
+/**
+ * The "card" block — nested in aboutUs_block's `cards` blocks field.
+ * The card number (01, 02, …) is derived from its position, not a field.
+ */
+export interface AboutCardBlok {
+  _uid: string
+  component?: "card"
+  title?: string
+  text?: string
+}
+
+/**
+ * The "aboutUs_block" — pinned section that flips through its cards on scroll.
+ */
+export interface AboutUsBlok {
+  _uid: string
+  component?: "aboutUs_block"
+  sub_title?: string
+  title?: string
+  text?: string
+  cards?: AboutCardBlok[]
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**
