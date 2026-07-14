@@ -1,0 +1,25 @@
+.hero-logo {
+    .absolute(@top: 10%, @left: auto, @width: 45%, @height: 100%);
+    right: 0;
+    z-index: 0;
+    pointer-events: none;
+
+    canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    // Fades in once the hero section is revealed
+    opacity: 0;
+    .transition(opacity, @durationSlow, @easeOut);
+    transition-delay: 0.4s;
+
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
+.hero_block.inView .hero-logo {
+    opacity: 1;
+}

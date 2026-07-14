@@ -1,7 +1,10 @@
 .hero_block {
+    position: relative; // anchors the absolutely-positioned 3D logo
     padding: @vw164 0 0 0 !important;
-    
+
     .hero-container {
+        position: relative;
+        z-index: 1; // text stays above the 3D logo canvas
         .text-container {
             .preText-container {
                 display: inline-block;
