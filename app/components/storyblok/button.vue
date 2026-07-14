@@ -4,7 +4,7 @@
 		v-if="href && variant === 'link'"
 		v-editable="blok"
 		:to="href"
-		class="button-link parent-line"
+		class="button-link parent-link"
 	>
 		{{ blok.title }}
 		<span class="link-line" />

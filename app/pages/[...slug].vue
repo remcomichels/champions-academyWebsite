@@ -51,7 +51,7 @@ useSeoMeta({
 });
 
 // --- Storyblok fetch (reactive to locale & route) ---
-const resolveRelations = [];
+const resolveRelations = ["benefits_block.benefit"];
 const previewMode = import.meta.dev || route.query._storyblok !== undefined
 
 const { story, error } = await useAsyncStoryblok(

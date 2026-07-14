@@ -72,6 +72,31 @@ export interface AboutUsBlok {
   cards?: AboutCardBlok[]
 }
 
+/**
+ * A story reference resolved via resolve_relations (e.g. the benefits_block's
+ * `benefit` multi-options field). `name` is the story title in Storyblok.
+ */
+export interface BenefitStoryRef {
+  uuid?: string
+  name?: string
+  full_slug?: string
+  content?: Record<string, unknown>
+}
+
+/**
+ * The "benefits_block" — intro text plus a 3×2 grid of referenced benefit stories.
+ */
+export interface BenefitsBlok {
+  _uid: string
+  component?: "benefits_block"
+  sub_text?: string
+  title?: string
+  sub_title?: string
+  text?: string
+  button?: ButtonBlok[]
+  benefit?: (string | BenefitStoryRef)[]
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**

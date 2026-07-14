@@ -1,0 +1,152 @@
+.benefits_block {
+
+    // ── Text — sub_text / title / handwritten sub_title / text / button ─────
+    .text-container {
+        .subText {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title-container {
+            .title {
+                font-family: @body;
+                font-size: @vw64;
+                font-weight: @bold;
+                text-transform: uppercase;
+
+                @media (max-width: 1080px) {
+                    font-size: @vw56-1080;
+                }
+
+                @media (max-width: 580px) {
+                    font-size: @vw40-580;
+                }
+            }
+
+            .subTitle {
+                font-family: @handWritten;
+                font-size: @vw72;
+                color: @primary;
+                margin: -@vw10 0 0 0;
+
+                @media (max-width: 1080px) {
+                    font-size: @vw56-1080;
+                }
+
+                @media (max-width: 580px) {
+                    font-size: @vw32-580;
+                }
+            }
+        }
+
+        .text {
+            font-family: @body;
+            font-size: @vw18;
+            opacity: 0.75 !important;
+            margin: @vw32 0 0 0;
+
+            @media (max-width: 1080px) {
+                font-size: @vw18-1080;
+                margin: @vw32-1080 0 0 0;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw16-580;
+                margin: @vw32-580 0 0 0;
+            }
+        }
+
+        .button-container {
+            display: flex;
+            gap: @vw24;
+            margin: @vw8 0 0 0;
+        }
+    }
+
+    // ── Benefits — 3 × 2 grid of square cards ───────────────────────────────
+    .benefits-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: @vw16;
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 1080px) {
+            gap: @vw16-1080;
+        }
+
+        @media (max-width: 768px) {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        @media (max-width: 580px) {
+            gap: @vw12-580;
+            margin: @vw40-580 0 0 0;
+        }
+    }
+
+    .benefit-card {
+        aspect-ratio: 1 / 1;
+        display: flex;
+        padding: @vw32;
+        background-color: @secondary;
+        border-radius: @vw10;
+
+        @media (max-width: 1080px) {
+            padding: @vw24-1080;
+        }
+
+        @media (max-width: 580px) {
+            padding: @vw16-580;
+            border-radius: @vw16-580;
+        }
+    }
+
+    .benefit-title {
+        font-size: @vw18;
+        font-family: @body;
+
+        @media (max-width: 1080px) {
+            font-size: @vw20-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw16-580;
+        }
+    }
+
+    // ── Entrance — staggered fade-up once the section is in view ────────────
+    .subText,
+    .text,
+    .button-container,
+    .benefit-card {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .text { transition-delay: 0.1s; }
+    .button-container { transition-delay: 0.2s; }
+
+    .benefit-card:nth-child(1) { transition-delay: 0.25s; }
+    .benefit-card:nth-child(2) { transition-delay: 0.31s; }
+    .benefit-card:nth-child(3) { transition-delay: 0.37s; }
+    .benefit-card:nth-child(4) { transition-delay: 0.43s; }
+    .benefit-card:nth-child(5) { transition-delay: 0.49s; }
+    .benefit-card:nth-child(6) { transition-delay: 0.55s; }
+
+    &.inView {
+        .subText,
+        .text,
+        .button-container,
+        .benefit-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
