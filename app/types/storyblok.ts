@@ -97,6 +97,42 @@ export interface BenefitsBlok {
   benefit?: (string | BenefitStoryRef)[]
 }
 
+/**
+ * The "text" block — a single plain-text line, nestable anywhere
+ * (e.g. paymentCard's `benefit` list).
+ */
+export interface TextBlok {
+  _uid: string
+  component?: "text"
+  text?: string
+}
+
+/**
+ * The "paymentCard" block — nested in paymentPlans_block's `paymentCard` field.
+ */
+export interface PaymentCardBlok {
+  _uid: string
+  component?: "paymentCard"
+  title?: string
+  price?: string
+  price_adjative?: string
+  benefit?: TextBlok[]
+  Bonus_benefit?: string
+  subText_button?: string
+  button?: ButtonBlok[]
+}
+
+/**
+ * The "paymentPlans_block" — sub_title/title plus two 50% payment cards.
+ */
+export interface PaymentPlansBlok {
+  _uid: string
+  component?: "paymentPlans_block"
+  sub_title?: string
+  title?: string
+  paymentCard?: PaymentCardBlok[]
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**

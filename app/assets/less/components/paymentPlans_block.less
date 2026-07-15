@@ -1,0 +1,259 @@
+.paymentPlans_block {
+
+    // ── Text — sub_title / title, full width like the other sections ────────
+    .text-container {
+        .subTitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            text-transform: uppercase;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+    }
+
+    // ── Cards — two 50% columns ──────────────────────────────────────────────
+    .cards-container {
+        display: flex;
+        gap: @vw32;
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 1080px) {
+            gap: @vw24-1080;
+        }
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+
+        @media (max-width: 580px) {
+            gap: @vw16-580;
+            margin: @vw40-580 0 0 0;
+        }
+    }
+
+    .payment-card {
+        position: relative;
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        padding: @vw48 @vw32;
+        background-color: @secondary;
+        border-radius: @vw10;
+
+        @media (max-width: 1080px) {
+            padding: @vw32-1080;
+        }
+
+        @media (max-width: 580px) {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+    }
+
+    // Light trail orbiting the featured (right) card: a ring-only overlay —
+    // the mask pair xor's the padding-box out of the full box, leaving just
+    // the 2px edge — filled with a conic gradient that fades from transparent
+    // into @primary at its head, rotated endlessly via --trail-angle.
+    .payment-card:last-child::before {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 2px;
+        background: conic-gradient(
+            from var(--trail-angle),
+            transparent 0deg,
+            transparent 264deg,
+            fade(@primary, 0%) 264deg,
+            @primary 360deg
+        );
+        -webkit-mask: linear-gradient(@black 0 0) content-box, linear-gradient(@black 0 0);
+        -webkit-mask-composite: xor;
+        mask: linear-gradient(@black 0 0) content-box, linear-gradient(@black 0 0);
+        mask-composite: exclude;
+        filter: drop-shadow(0 0 @vw6 fade(@primary, 50%));
+        pointer-events: none;
+        animation: paymentTrail 16s linear infinite;
+    }
+
+    .payment-card-title {
+        font-family: @body;
+        font-size: @vw24;
+        text-transform: uppercase;
+
+        @media (max-width: 1080px) {
+            font-size: @vw20-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw18-580;
+        }
+    }
+
+    // ── Price + adjective on its right ───────────────────────────────────────
+    .payment-card-price {
+        display: flex;
+        align-items: baseline;
+        gap: @vw8;
+        margin: @vw32 0 0 0;
+
+        .price {
+            font-family: @body;
+            font-size: @vw56;
+            font-weight: @bold;
+            line-height: 1;
+            color: @primary;
+
+            @media (max-width: 1080px) {
+                font-size: @vw48-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+
+        .price-adjective {
+            font-family: @body;
+            font-size: @vw18;
+            margin-left: -@vw8;
+            opacity: 0.75;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+    }
+
+    // ── Benefits — divider lines between rows only ───────────────────────────
+    .payment-card-benefits {
+        list-style: none;
+        margin: @vw32 0 0 0;
+        padding: 0;
+    }
+
+    .payment-card-benefit {
+        padding: @vw16 0 @vw16 @vw8;
+
+        &:first-child {
+            padding-top: 0;
+        }
+
+        // Divider between rows only — none above the first or below the last
+        + .payment-card-benefit {
+            border-top: 1px solid @border;
+        }
+
+        .text-item {
+            font-family: @body;
+            font-size: @vw16;
+
+            @media (max-width: 1080px) {
+                font-size: @vw16-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+    }
+
+    // ── Bonus — below the benefits, no divider ───────────────────────────────
+    .payment-card-bonus-container {
+        display: flex;
+        margin: @vw32 0 0 0;
+
+        .payment-card-bonus {
+            font-family: @body;
+            font-size: @vw14;
+            display: flex;
+            margin-left: @vw8;
+
+            &::before {
+                content: 'BONUS:';
+                margin-right: @vw5;
+                display: block;
+                font-weight: @bold;
+                font-size: @vw14;
+                text-transform: uppercase;
+            }
+
+            @media (max-width: 1080px) {
+                font-size: @vw16-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+    }
+
+    // ── Footer — pinned to the card bottom ───────────────────────────────────
+    .payment-card-footer {
+        margin-top: auto;
+        padding-top: @vw32;
+    }
+
+    .payment-card-subText {
+        font-family: @body;
+        font-size: @vw14;
+        text-transform: uppercase;
+        opacity: 0.6;
+        margin: 0 0 @vw16 0;
+
+        @media (max-width: 580px) {
+            font-size: @vw12-580;
+        }
+    }
+
+    // ── Entrance — staggered fade-up once the section is in view ─────────────
+    .subTitle,
+    .payment-card {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .payment-card:nth-child(1) { transition-delay: 0.15s; }
+    .payment-card:nth-child(2) { transition-delay: 0.25s; }
+
+    &.inView {
+        .subTitle,
+        .payment-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+// Registered so the conic gradient's start angle interpolates smoothly —
+// without @property, custom properties can't animate.
+@property --trail-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+}
+
+@keyframes paymentTrail {
+    to {
+        --trail-angle: 360deg;
+    }
+}
