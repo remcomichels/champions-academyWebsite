@@ -1,0 +1,177 @@
+.testimonials_block {
+    overflow: hidden;
+
+    // ── Text — pre_title / title / handwritten sub_title ────────────────────
+    .text-container {
+        .preTitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            text-transform: uppercase;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+
+        .subTitle {
+            font-family: @handWritten;
+            font-size: @vw72;
+            color: @primary;
+            margin: -@vw10 0 0 0;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw32-580;
+            }
+        }
+    }
+
+    // ── Marquee — full-bleed, both tracks translated by useMarquee ──────────
+    .testimonials-marquee-group {
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 580px) {
+            margin: @vw32-580 0 0 0;
+        }
+    }
+
+    .testimonials-marquee {
+        overflow: hidden;
+    }
+
+    .marquee-scroll {
+        display: flex;
+    }
+
+    .marquee-content {
+        display: flex;
+        gap: @vw32;
+        // Matches the gap so the seam between track copies is invisible —
+        // padding counts toward the measured track width, a flex gap between
+        // tracks would not.
+        padding-right: @vw32;
+
+        @media (max-width: 1080px) {
+            gap: @vw24-1080;
+            padding-right: @vw24-1080;
+        }
+
+        @media (max-width: 580px) {
+            gap: @vw16-580;
+            padding-right: @vw16-580;
+        }
+    }
+
+    // ── Testimonial card ─────────────────────────────────────────────────────
+    .testimonial {
+        flex: 0 0 @vw300;
+        width: @vw300;
+
+        @media (max-width: 1080px) {
+            flex-basis: @vw280-1080;
+            width: @vw280-1080;
+        }
+
+        @media (max-width: 580px) {
+            flex-basis: @vw240-580;
+            width: @vw240-580;
+        }
+    }
+
+    // Portrait video on top
+    .testimonial-video {
+        .video-player {
+            margin-top: 0;
+            border-radius: @vw10;
+        }
+
+        .video-player__video {
+            aspect-ratio: 9 / 16;
+            object-fit: cover;
+        }
+    }
+
+    // Name left, flag right
+    .testimonial-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: @vw16 0 0 0;
+
+        @media (max-width: 580px) {
+            margin: @vw12-580 0 0 0;
+        }
+    }
+
+    .testimonial-name {
+        font-family: @body;
+        font-size: @vw18;
+        font-weight: @bold;
+        text-transform: uppercase;
+
+        @media (max-width: 580px) {
+            font-size: @vw16-580;
+        }
+    }
+
+    .testimonial-flag {
+        width: @vw28;
+        height: auto;
+        border-radius: @vw2;
+
+        @media (max-width: 580px) {
+            width: @vw24-580;
+        }
+    }
+
+    .testimonial-text {
+        font-family: @body;
+        font-size: @vw14;
+        opacity: 0.75;
+        margin: @vw12 0 0 0;
+
+        @media (max-width: 580px) {
+            font-size: @vw14-580;
+        }
+    }
+
+    // ── Entrance — fade-up once the section is in view ───────────────────────
+    .preTitle,
+    .subTitle,
+    .testimonials-marquee-group {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .subTitle { transition-delay: 0.1s; }
+    .testimonials-marquee-group { transition-delay: 0.2s; }
+
+    &.inView {
+        .preTitle,
+        .subTitle,
+        .testimonials-marquee-group {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

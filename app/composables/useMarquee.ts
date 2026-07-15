@@ -96,6 +96,9 @@ function readEnumAttr<T extends string>(
  *                                 before the velocity boost decays.   Default 80
  *   data-marquee-sample-window    Time window (ms) over which scroll
  *                                 velocity is averaged.               Default 120
+ *   data-marquee-paused           "true" eases the marquee to a stop; any
+ *                                 other value (or absent) lets it run.
+ *                                 Toggle it live (e.g. on hover).
  *   data-marquee-status           Set BY the composable ("normal" |
  *                                 "inverted"); you normally don't set it.
  *
@@ -123,6 +126,10 @@ export function useMarquee(
   // eased into smoothedVelocity so the speed boost never jumps abruptly.
   let rawVelocity = 0;
   let smoothedVelocity = 0;
+
+  // Eased pause factor (1 = running, 0 = stopped) driven by
+  // data-marquee-paused, so pausing glides to a halt instead of freezing.
+  let pauseFactor = 1;
 
   // Rolling buffer of recent scroll positions used to compute rawVelocity, plus
   // bookkeeping for the last scroll event time / position.
@@ -306,8 +313,12 @@ export function useMarquee(
       const dirSign = direction === "left" ? -1 : 1;
       const statusSign = status === "normal" ? 1 : -1;
 
+      // Ease toward stopped/running as data-marquee-paused toggles.
+      const pauseTarget = marquee.getAttribute("data-marquee-paused") === "true" ? 0 : 1;
+      pauseFactor = lerp(pauseFactor, pauseTarget, 0.12);
+
       const speed =
-        baseSpeed * scrollSpeedMul * velocityMultiplier * dirSign * statusSign;
+        baseSpeed * scrollSpeedMul * velocityMultiplier * dirSign * statusSign * pauseFactor;
 
       // Advance and wrap. Whenever x passes a full track-width in either
       // direction, fold it back by that width so the offset stays bounded and

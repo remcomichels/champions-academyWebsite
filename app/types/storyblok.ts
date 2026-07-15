@@ -133,6 +133,57 @@ export interface PaymentPlansBlok {
   paymentCard?: PaymentCardBlok[]
 }
 
+/**
+ * The "step" block — nested in amethyst_block's `steps` field.
+ */
+export interface StepBlok {
+  _uid: string
+  component?: "step"
+  number?: string
+  title?: string
+  text?: string
+}
+
+/**
+ * The "amethyst_block" — text + numbered steps on the left, Bunny video right.
+ */
+export interface AmethystBlok {
+  _uid: string
+  component?: "amethyst_block"
+  sub_title?: string
+  title?: string
+  text?: string
+  steps?: StepBlok[]
+  button?: ButtonBlok[]
+  video_id?: string
+}
+
+/**
+ * The "testimonial" block — nested in testimonials_block's `testimonial` field.
+ * `country` is a multi-option field, so Storyblok stores it as an array; its
+ * values map to flag SVGs via resolveCountryFlag (app/utils).
+ */
+export interface TestimonialBlok {
+  _uid: string
+  component?: "testimonial"
+  name?: string
+  text?: string
+  country?: string[]
+  video_id?: string
+}
+
+/**
+ * The "testimonials_block" — titles plus a marquee of testimonial cards.
+ */
+export interface TestimonialsBlok {
+  _uid: string
+  component?: "testimonials_block"
+  pre_title?: string
+  title?: string
+  sub_title?: string
+  testimonial?: TestimonialBlok[]
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**

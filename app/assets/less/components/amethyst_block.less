@@ -1,0 +1,186 @@
+.amethyst_block {
+
+    // ── Two columns — text left, video right ────────────────────────────────
+    .amethyst-container {
+        display: flex;
+        gap: @vw32;
+
+        @media (max-width: 1080px) {
+            gap: @vw40-1080;
+        }
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+    }
+
+    // ── Left — sub_title / title / text / steps / button ────────────────────
+    .text-container {
+        flex: 1 1 0;
+
+        .subTitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            text-transform: uppercase;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+
+        .text {
+            font-family: @body;
+            width: 80%;
+            opacity: 0.75 !important;
+            margin: @vw24 0 0 0;
+
+            @media (max-width: 1080px) {
+                font-size: @vw18-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw16-580;
+            }
+        }
+    }
+
+    // ── Steps — number left, title + text right ─────────────────────────────
+    .steps-container {
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 580px) {
+            margin: @vw32-580 0 0 0;
+        }
+    }
+
+    .step {
+        display: flex;
+        gap: @vw32;
+        padding: @vw32 0;
+        border-top: 1px solid @border;
+
+        &:last-child {
+            border-bottom: 1px solid @border;
+        }
+
+        @media (max-width: 580px) {
+            gap: @vw16-580;
+            padding: @vw16-580 0;
+        }
+    }
+
+    .step-number {
+        font-size: @vw24;
+        font-weight: @bold;
+        line-height: 1.2;
+        padding-left: @vw8;
+        color: @primary;
+
+        @media (max-width: 580px) {
+            min-width: @vw32-580;
+            font-size: @vw20-580;
+        }
+    }
+
+    .step-title {
+        font-family: @body;
+        font-size: @vw24;
+        font-weight: @bold;
+        text-transform: uppercase;
+
+        @media (max-width: 580px) {
+            font-size: @vw16-580;
+        }
+    }
+
+    .step-text {
+        font-family: @body;
+        font-size: @vw16;
+        opacity: 0.75;
+        margin: @vw4 0 0 0;
+
+        @media (max-width: 580px) {
+            font-size: @vw14-580;
+        }
+    }
+
+    .button-container {
+        display: flex;
+        gap: @vw24;
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 580px) {
+            margin: @vw32-580 0 0 0;
+        }
+    }
+
+    // ── Right — the 16:9 video, vertically centered ─────────────────────────
+    .amethyst-video {
+        flex: 1 1 0;
+        display: flex;
+        align-items: center;
+
+        .video-player {
+            width: 100%;
+            margin-top: 0;
+        }
+    }
+
+    // ── Entrance — staggered fade-up once the section is in view ────────────
+    .subTitle,
+    .text,
+    .button-container,
+    .amethyst-video {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .text { transition-delay: 0.1s; }
+    .button-container { transition-delay: 0.33s; }
+    .amethyst-video { transition-delay: 0.2s; }
+
+    &.inView {
+        .subTitle,
+        .text,
+        .button-container,
+        .amethyst-video {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    // Steps carry their own data-scroll-inview — each one reveals when IT
+    // scrolls into view (not when the section does), staggered per row.
+    .step {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+
+        &:nth-child(1) { transition-delay: 0.05s; }
+        &:nth-child(2) { transition-delay: 0.15s; }
+        &:nth-child(3) { transition-delay: 0.25s; }
+
+        &.inView {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
