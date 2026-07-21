@@ -1,0 +1,221 @@
+.team_block {
+
+    // ── Text — sub_title / title (40% width on desktop) ─────────────────────
+    .text-container {
+        .subTitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            text-transform: uppercase;
+            width: 40%;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+                width: 60%;
+            }
+
+            @media (max-width: 768px) {
+                width: 100%;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+    }
+
+    // ── Cards — 1/3 stacked team cards left, 2/3 text card right ─────────────
+    .cards-container {
+        display: flex;
+        align-items: stretch; // text card matches the team column's height
+        gap: @vw24;
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+        }
+
+        @media (max-width: 580px) {
+            gap: @vw16-580;
+            margin: @vw40-580 0 0 0;
+        }
+    }
+
+    .team-cards-column {
+        flex: 1 1 0; // 1/3
+        display: flex;
+        flex-direction: column;
+        gap: @vw24;
+
+        @media (max-width: 580px) {
+            gap: @vw16-580;
+        }
+    }
+
+    // ── Team card ────────────────────────────────────────────────────────────
+    .team-card {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: @vw16;
+        min-height: @vw100;
+        padding: @vw32;
+        background-color: @secondary;
+        border-radius: @vw10;
+        // Image pokes above the top edge — must not be clipped
+        overflow: visible;
+
+        &.is-right {
+            flex-direction: row; // text left, image right
+        }
+
+        &.is-left {
+            flex-direction: row-reverse; // image left, text right
+        }
+
+        @media (max-width: 580px) {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+    }
+
+    .team-card-content {
+        flex: 1 1 0;
+        display: flex;
+        flex-direction: column;
+        z-index: 1; // above the image if they ever overlap
+    }
+
+    .team-card-name {
+        font-family: @body;
+        font-size: @vw18;
+        font-weight: @bold;
+        line-height: 1.2;
+
+        @media (max-width: 580px) {
+            font-size: @vw18-580;
+        }
+    }
+
+    .team-card-subtext {
+        font-family: @body;
+        font-size: @vw14;
+        opacity: 0.5;
+        margin: @vw8 0 0 0;
+
+        @media (max-width: 580px) {
+            font-size: @vw12-580;
+        }
+    }
+
+    // Image: no padding, flush to the bottom edge, sticks out @vw6 above the top.
+    .team-card-image {
+        flex: 0 0 40%;
+        align-self: stretch;
+        position: relative;
+
+        img {
+            position: absolute;
+            top: -(@vw32 + @vw6); // cancel top padding + stick out @vw6
+            width: 100%;
+            height: @vw120;
+            object-fit: contain;
+            object-position: bottom center;
+        }
+    }
+
+    .is-left .team-card-image img {
+        object-position: bottom center;
+    }
+
+    // ── Text card — rich text, spans the full column height ─────────────────
+    .text-card {
+        flex: 2 1 0; // 2/3
+        display: flex;
+        flex-direction: column;
+        padding: @vw32;
+        background-color: @secondary;
+        border-radius: @vw10;
+
+        @media (max-width: 580px) {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+    }
+
+    .text-card-title {
+        font-family: @body;
+        font-size: @vw32;
+        font-weight: @bold;
+        text-transform: uppercase;
+        margin: 0 0 @vw24 0;
+
+        @media (max-width: 1080px) {
+            font-size: @vw28-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw24-580;
+            margin: 0 0 @vw16-580 0;
+        }
+    }
+
+    .text-card-body {
+        font-family: @body;
+        font-size: @vw16;
+        font-weight: @regular;
+
+        @media (max-width: 1080px) {
+            font-size: @vw16-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw14-580;
+        }
+
+        p + p {
+            margin-top: @vw24;
+        }
+
+        strong {
+            font-weight: @bold;
+            color: @title;
+            opacity: 1;
+        }
+    }
+
+    // ── Entrance — staggered fade-up once the section is in view ────────────
+    .subTitle,
+    .team-card,
+    .text-card {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .team-card:nth-child(1) { transition-delay: 0.1s; }
+    .team-card:nth-child(2) { transition-delay: 0.16s; }
+    .team-card:nth-child(3) { transition-delay: 0.22s; }
+    .team-card:nth-child(4) { transition-delay: 0.28s; }
+    .text-card { transition-delay: 0.2s; }
+
+    &.inView {
+        .subTitle,
+        .team-card,
+        .text-card {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

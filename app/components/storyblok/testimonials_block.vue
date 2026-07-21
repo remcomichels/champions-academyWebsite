@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
+defineProps({
 	blok: {
 		type: Object,
 		required: true,

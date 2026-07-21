@@ -184,6 +184,32 @@ export interface TestimonialsBlok {
   testimonial?: TestimonialBlok[]
 }
 
+/**
+ * The "teamCard" block — nested in team_block's `teamCard` field.
+ * `positioning` picks which side the portrait image sits on.
+ */
+export interface TeamCardBlok {
+  _uid: string
+  component?: "teamCard"
+  name?: string
+  sub_text?: string
+  image?: StoryblokAsset
+  positioning?: "Left" | "Right"
+}
+
+/**
+ * The "team_block" — stacked team cards (1/3) beside a rich-text card (2/3).
+ */
+export interface TeamBlok {
+  _uid: string
+  component?: "team_block"
+  sub_title?: string
+  title?: string
+  teamCard?: TeamCardBlok[]
+  textCard_title?: string
+  textCard_textArea?: unknown // Storyblok rich-text document
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**
