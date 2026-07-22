@@ -1,0 +1,199 @@
+.faq_block {
+
+    // ── Text — sub_title / title / text_line ────────────────────────────────
+    .text-container {
+        .subTitle {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            width: 40%;
+            text-transform: uppercase;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+
+        .text {
+            font-family: @body;
+            font-size: @vw18;
+            opacity: 0.75 !important;
+            margin: @vw16 0 0 0;
+
+            @media (max-width: 1080px) {
+                font-size: @vw18-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw16-580;
+            }
+        }
+    }
+
+    // ── FAQ list ─────────────────────────────────────────────────────────────
+    .faq-list {
+        display: flex;
+        flex-direction: column;
+        gap: @vw12;
+        margin: @vw48 0 0 0;
+
+        @media (max-width: 580px) {
+            gap: @vw8-580;
+            margin: @vw40-580 0 0 0;
+        }
+    }
+
+    // ── FAQ item ─────────────────────────────────────────────────────────────
+    .faq-item-question {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw24;
+        width: 100%;
+        padding: @vw20 @vw24;
+        background-color: @secondary;
+        border: none;
+        border-radius: @vw10;
+        cursor: pointer;
+        text-align: left;
+
+        @media (max-width: 580px) {
+            padding: @vw16-580 @vw20-580;
+            border-radius: @vw16-580;
+        }
+    }
+
+    .faq-item-title {
+        font-family: @body;
+        font-size: @vw18;
+        font-weight: @medium;
+        color: @title;
+
+        @media (max-width: 1080px) {
+            font-size: @vw18-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw16-580;
+        }
+    }
+
+    // ── The + → − icon: horizontal bar stays, vertical bar collapses to center
+    .faq-item-icon {
+        position: relative;
+        flex-shrink: 0;
+        width: @vw20;
+        height: @vw20;
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background-color: @title;
+            border-radius: @vw2;
+            .transition(transform, @durationMedium, @ease);
+        }
+
+        // Horizontal bar (the minus) — always visible
+        &::before {
+            width: 100%;
+            height: @vw2;
+            transform: translate(-50%, -50%);
+        }
+
+        // Vertical bar — shrinks from both ends to the middle when open
+        &::after {
+            width: @vw2;
+            height: 100%;
+            transform: translate(-50%, -50%) scaleY(1);
+        }
+    }
+
+    .faq-item.is-open .faq-item-icon::after {
+        transform: translate(-50%, -50%) scaleY(0);
+    }
+
+    // ── Smooth open/close — grid rows animate 0fr → 1fr, no JS measuring ─────
+    .faq-item-answer {
+        display: grid;
+        grid-template-rows: 0fr;
+        .transition(grid-template-rows, @durationMedium, @ease);
+    }
+
+    .faq-item.is-open .faq-item-answer {
+        grid-template-rows: 1fr;
+    }
+
+    .faq-item-answer-inner {
+        overflow: hidden;
+        min-height: 0;
+        opacity: 0;
+        .transition(opacity, @durationMedium, @ease);
+    }
+
+    .faq-item.is-open .faq-item-answer-inner {
+        opacity: 1;
+    }
+
+    .faq-item-answer-text {
+        font-family: @body;
+        font-size: @vw16;
+        opacity: 0.75;
+        padding: @vw20 @vw24 @vw8 @vw24;
+
+        @media (max-width: 1080px) {
+            font-size: @vw16-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw14-580;
+            padding: @vw16-580 @vw20-580 @vw4 @vw20-580;
+        }
+    }
+
+    // ── Entrance — staggered fade-up once the section is in view ────────────
+    .subTitle,
+    .text,
+    .faq-item {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .text { transition-delay: 0.1s; }
+
+    .faq-item:nth-child(1) { transition-delay: 0.15s; }
+    .faq-item:nth-child(2) { transition-delay: 0.19s; }
+    .faq-item:nth-child(3) { transition-delay: 0.23s; }
+    .faq-item:nth-child(4) { transition-delay: 0.27s; }
+    .faq-item:nth-child(5) { transition-delay: 0.31s; }
+    .faq-item:nth-child(6) { transition-delay: 0.35s; }
+    .faq-item:nth-child(7) { transition-delay: 0.39s; }
+    .faq-item:nth-child(8) { transition-delay: 0.43s; }
+
+    &.inView {
+        .subTitle,
+        .text,
+        .faq-item {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

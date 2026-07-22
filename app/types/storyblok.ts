@@ -210,6 +210,28 @@ export interface TeamBlok {
   textCard_textArea?: unknown // Storyblok rich-text document
 }
 
+/**
+ * The "faq_item" block — nested in faq_block's `faq_item` field.
+ */
+export interface FaqItemBlok {
+  _uid: string
+  component?: "faq_item"
+  question_title?: string
+  answer_text?: string
+}
+
+/**
+ * The "faq_block" — sub_title/title/text plus a list of collapsible FAQ items.
+ */
+export interface FaqBlok {
+  _uid: string
+  component?: "faq_block"
+  sub_title?: string
+  title?: string
+  text_line?: string
+  faq_item?: FaqItemBlok[]
+}
+
 export type ButtonVariant = "primary" | "secondary" | "link"
 
 /**
