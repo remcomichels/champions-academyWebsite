@@ -1,63 +1,131 @@
-footer {
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-    margin-top: auto;
-    margin-bottom: @vw20;
+.footer {
+    margin-top: auto; // stick to the bottom of the page
 
-    .footerRights {
-        position: absolute;
-        width: 100%;
-        text-align: center;
-        z-index: -1;
-    }
+    .footer-inner {
+        padding-top: @vw80;
+        padding-bottom: @vw24;
 
-    .createdBy {
-        text-transform: uppercase;
-
-        span {
-            padding: 0 @vw5;
-            background-color: @primary;
-            color: @black;
-            border-radius: @vw3;
+        @media (max-width: 580px) {
+            padding-top: @vw48-580;
         }
     }
-}
 
-@media (max-width: 1080px) {
-    footer {
-        margin-bottom: @vw20-1080;
+    // ── Main row — brand left, link columns right; bordered top and bottom ──
+    .footer-main {
+        display: flex;
+        justify-content: space-between;
+        gap: @vw48;
+        padding: @vw40 0;
+        border-top: 1px solid @border;
+        border-bottom: 1px solid @border;
 
-        .createdBy {
-            span {
-                padding: 0 @vw5-1080;
-                border-radius: @vw3-1080;
-            }
+        @media (max-width: 768px) {
+            flex-direction: column;
+            gap: @vw40-1080;
+        }
+
+        @media (max-width: 580px) {
+            padding: @vw32-580 0;
         }
     }
-}
 
-@media (max-width: 768px) {
-    footer {
+    .footer-brand {
+        display: flex;
         flex-direction: column;
-        align-items: center;
-        gap: @vw20-1080;
+        gap: @vw16;
+    }
 
-        .footerRights {
-            position: relative;
+    .footer-logo {
+        width: @vw120;
+        height: auto;
+
+        @media (max-width: 580px) {
+            width: @vw100-580;
         }
     }
-}
 
-@media (max-width: 580px) {
-    footer {
-        gap: @vw20-580;
+    .footer-subtitle {
+        font-family: @handWritten;
+        font-size: @vw40;
+        color: @primary;
+        line-height: 1;
 
-        .createdBy {
-            span {
-                padding: 0 @vw5-580;
-                border-radius: @vw3-580;
-            }
+        @media (max-width: 580px) {
+            font-size: @vw32-580;
         }
+    }
+
+    // ── Link columns ────────────────────────────────────────────────────────
+    .footer-columns {
+        display: flex;
+        gap: @vw64;
+
+        @media (max-width: 580px) {
+            gap: @vw32-580;
+            flex-wrap: wrap;
+        }
+    }
+
+    .footer-column-title {
+        font-family: @body;
+        font-size: @vw14;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.5;
+        margin: 0 0 @vw20 0;
+
+        @media (max-width: 580px) {
+            font-size: @vw12-580;
+            margin: 0 0 @vw16-580 0;
+        }
+    }
+
+    .footer-column-links {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: @vw12;
+    }
+
+    .footer-link {
+        font-family: @body;
+        font-size: @vw16;
+        color: @text;
+
+        @media (max-width: 1080px) {
+            font-size: @vw16-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw16-580;
+        }
+    }
+
+    // ── Sub row — copyright · disclaimer · credit ───────────────────────────
+    .footer-sub {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: @vw24;
+        padding: @vw24 0 0 0;
+        font-family: @body;
+        font-size: @vw14;
+        opacity: 0.6;
+
+        @media (max-width: 768px) {
+            flex-direction: column;
+            gap: @vw12;
+            text-align: center;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw12-580;
+        }
+    }
+
+    // Remco credit uses the "link" button style (.parent-link — green +
+    // underline hover), but without the → arrow.
+    .footer-credit-link::after {
+        display: none;
     }
 }

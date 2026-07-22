@@ -40,6 +40,24 @@ export type HeaderMenuItem = MenuLinkItem
 export type CtaMenuItem = MenuLinkItem
 
 /**
+ * The "footer_menu" block from the config story — brand, three link columns,
+ * and the sub-footer disclaimer line.
+ */
+export interface FooterMenu {
+  _uid: string
+  component?: "footer_menu"
+  footer_image?: StoryblokAsset
+  footer_subTitle?: string
+  footer_titleLeft?: string
+  footer_titleMiddle?: string
+  footer_titleRight?: string
+  footer_linkLeft?: MenuLinkItem[]
+  footer_linkMiddle?: MenuLinkItem[]
+  footer_linkRight?: MenuLinkItem[]
+  subFooter_text?: string
+}
+
+/**
  * The "statistic" block — nested in statistics_block's `statistic` blocks field.
  */
 export interface StatisticBlok {
@@ -230,6 +248,20 @@ export interface FaqBlok {
   title?: string
   text_line?: string
   faq_item?: FaqItemBlok[]
+}
+
+/**
+ * The "cta_block" — centered sub_text / title / handwritten sub_title, two
+ * buttons, and a text line, with a 3D beam figure behind the title.
+ */
+export interface CtaBlok {
+  _uid: string
+  component?: "cta_block"
+  sub_text?: string
+  title?: string
+  sub_title?: string
+  button?: ButtonBlok[]
+  text?: string
 }
 
 export type ButtonVariant = "primary" | "secondary" | "link"
