@@ -3,6 +3,7 @@
 
 <template>
 	<div id="pageContainer">
+		<div class="bgSun" aria-hidden="true" />
 		<NuxtHeader />
 		<main id="main" tabindex="-1">
 			<NuxtPage />

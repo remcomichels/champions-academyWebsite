@@ -109,6 +109,41 @@ p {
   width: 100vw;
 }
 
+/* Decorative "green sun" — a white grid revealed by a green radial glow whose
+   centre sits exactly on the page's top-right corner, fading into the
+   background. Sits behind all content (z-index: -1) and is non-interactive. */
+@sunGridCell: 3.5vw; // ~50px square cells at desktop
+
+.bgSun {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100vw;
+  height: 120vh;
+  z-index: -1;
+  pointer-events: none;
+
+  // The green glow — centred on the top-right corner, fading to the background.
+  background: radial-gradient(
+    100vw 120vh at 100% 0%,
+    fade(@primary, 38%) 0%,
+    fade(@primary, 12%) 34%,
+    transparent 72%
+  );
+
+  // White grid, revealed only inside the glow (same radial shape as a mask).
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      repeating-linear-gradient(to right, rgba(@white, 0.24) 0, rgba(@white, 0.24) 1px, transparent 1px, transparent @sunGridCell),
+      repeating-linear-gradient(to bottom, rgba(@white, 0.24) 0, rgba(@white, 0.24) 1px, transparent 1px, transparent @sunGridCell);
+    -webkit-mask-image: radial-gradient(100vw 120vh at 100% 0%, @black 0%, transparent 66%);
+    mask-image: radial-gradient(100vw 120vh at 100% 0%, @black 0%, transparent 66%);
+  }
+}
+
 ::-moz-selection {
   background-color: @primary; /* Background color */
   color: @text; /* Text color */
