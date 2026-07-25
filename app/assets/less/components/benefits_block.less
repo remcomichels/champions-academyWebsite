@@ -1,3 +1,8 @@
+// Liquid reveal mask — one soft circle per trail node (positions written by JS
+// as --x0/--y0 … --x5/--y5, relative to each card). Radii taper head→tail and
+// the leading nodes keep a solid core so overlaps merge into one flowing mass.
+@blobMask: ~"radial-gradient(circle var(--spot) at var(--x0, 50%) var(--y0, 50%), #000 0%, #000 34%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.9) at var(--x1, 50%) var(--y1, 50%), #000 0%, #000 30%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.78) at var(--x2, 50%) var(--y2, 50%), #000 0%, #000 26%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.64) at var(--x3, 50%) var(--y3, 50%), #000 0%, #000 20%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.5) at var(--x4, 50%) var(--y4, 50%), #000 0%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.36) at var(--x5, 50%) var(--y5, 50%), #000 0%, transparent 100%)";
+
 .benefits_block {
 
     // ── Text — sub_text / title / handwritten sub_title / text / button ─────
@@ -92,7 +97,6 @@
 
     .benefit-card {
         --spot: @vw130;
-        --spot-blur: @vw20;
         position: relative;
         overflow: hidden;
         aspect-ratio: 1 / 1;
@@ -103,34 +107,12 @@
         background-color: @secondary;
         border-radius: @vw10;
 
-        // Flashlight glow — a soft @primary circle following the cursor
-        &::before {
-            content: '';
-            .absolute();
-            z-index: 0;
-            background: radial-gradient(
-                circle var(--spot) at var(--spot-x, var(--mx, 50%)) var(--spot-y, var(--my, 50%)),
-                fade(@primary, 45%),
-                transparent 100%
-            );
-            filter: blur(var(--spot-blur));
-            opacity: 0;
-            .transition(opacity, @durationMedium);
-            pointer-events: none;
-        }
-
-        // Gray grid — only visible inside the flashlight circle via the mask
+        // Legibility scrim between the image and the title/text.
         &::after {
             content: '';
             .absolute();
             z-index: 1;
-            background-image:
-                repeating-linear-gradient(to right, rgba(@white, 0.2) 0, rgba(@white, 0.2) 1px, transparent 1px, transparent @vw30),
-                repeating-linear-gradient(to bottom, rgba(@white, 0.2) 0, rgba(@white, 0.2) 1px, transparent 1px, transparent @vw30);
-            -webkit-mask-image: radial-gradient(circle var(--spot) at var(--spot-x, var(--mx, 50%)) var(--spot-y, var(--my, 50%)), @black 0%, transparent 100%);
-            mask-image: radial-gradient(circle var(--spot) at var(--spot-x, var(--mx, 50%)) var(--spot-y, var(--my, 50%)), @black 0%, transparent 100%);
-            opacity: 0;
-            .transition(opacity, @durationMedium);
+            background: linear-gradient(to top, fade(@black, 60%) 0%, fade(@black, 12%) 55%, transparent 100%);
             pointer-events: none;
         }
 
@@ -140,10 +122,52 @@
 
         @media (max-width: 580px) {
             --spot: @vw280-580;
-            --spot-blur: @vw40-580;
             padding: @vw16-580;
             border-radius: @vw16-580;
         }
+    }
+
+    // ── Square image behind the card — dim base, brightened inside the blob ──
+    .benefit-media {
+        .absolute();
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .benefit-image {
+        .absolute();
+        object-fit: cover; // keeps any source square within the 1:1 card
+    }
+
+    // Image sits as a dark, desaturated base so the green trail reads over it.
+    .benefit-image--dim {
+        filter: grayscale(0.85) brightness(0.4);
+    }
+
+    // The liquid trail — always a soft green tint over the image or bare card.
+    // The wrapper runs the gooey filter over the masked shape so the trail
+    // circles neck together into one flowing liquid mass instead of dots.
+    .benefit-blob {
+        .absolute();
+        opacity: 0.4;
+        filter: url(#benefitGoo);
+        will-change: filter;
+    }
+
+    .benefit-blob-shape {
+        .absolute();
+        background-color: @primary;
+        -webkit-mask-image: @blobMask;
+        mask-image: @blobMask;
+        will-change: mask-image;
+    }
+
+    // Filter def carrier — no layout footprint.
+    .benefit-goo-defs {
+        position: absolute;
+        width: 0;
+        height: 0;
+        pointer-events: none;
     }
 
     .benefit-title {
@@ -181,42 +205,21 @@
         }
     }
 
-    // Interactive flashlight — desktop only: a real hover pointer and >1080px.
+    // Desktop only (real hover pointer, >1080px): reveal the text on card hover.
+    // The blob reveal itself is always live (the JS animates the trail nodes).
     @media (hover: hover) and (min-width: 1081px) {
-        // Flashlight follows the pointer anywhere over the grid — including the
-        // gaps between cards, where it spills onto the neighboring edges.
-        // `has-pointer` (set on the first pointermove) prevents a flash of
-        // center-positioned glows when the grid scrolls under a still cursor.
-        .benefits-grid.has-pointer:hover .benefit-card::before,
-        .benefits-grid.has-pointer:hover .benefit-card::after {
-            opacity: 1;
-        }
-
-        // The text only reveals when hovering the card itself, not the gap.
         .benefit-card:hover .benefit-text {
-            opacity: 0.85;
+            opacity: 0.9;
             transform: translateY(0);
         }
     }
 
-    // Below 1081px or on touch screens: no pointer effect at all — the text
-    // shows statically and every card gets a fixed glow in its bottom-right
-    // corner (the gradients fall back to the --mx/--my values set here).
+    // Touch / small screens: no hover, so show the text statically. The blob
+    // keeps auto-wandering (the JS runs on every screen size).
     @media (hover: none), (max-width: 1080px) {
         .benefit-text {
-            opacity: 0.85;
+            opacity: 0.9;
             transform: none;
-        }
-
-        .benefit-card {
-            // --spot-x/y outrank the JS-written --mx/--my inline values
-            --spot-x: 100%;
-            --spot-y: 100%;
-
-            &::before,
-            &::after {
-                opacity: 1;
-            }
         }
     }
 
