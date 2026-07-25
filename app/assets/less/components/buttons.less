@@ -21,6 +21,10 @@
         align-items: center;
         justify-content: center;
         padding: 0 @vw10;
+        // Overlap the label segment by 1px so a fractional ancestor transform
+        // (e.g. the header's scrolled nudge) can't round a subpixel seam between
+        // the two same-colour segments into a visible gap.
+        margin-left: -1px;
         color: @black;
         background-color: @primary;
         border-top-right-radius: @vw4;
