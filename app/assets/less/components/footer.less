@@ -11,21 +11,37 @@
     }
 
     // ── Main row — brand left, link columns right; bordered top and bottom ──
+    // The borders run full-bleed: negative margins (matching the container's
+    // padding) pull the row out to the viewport edges, then the same amount is
+    // re-added as horizontal padding so the content lines back up with the
+    // container. Horizontal values track the container breakpoints (1080/600).
     .footer-main {
         display: flex;
         justify-content: space-between;
         gap: @vw48;
-        padding: @vw40 0;
+        .fullWidth(@vw128, @vw128-1080, @vw32-580);
+        padding: @vw40 @vw128;
         border-top: 1px solid @border;
         border-bottom: 1px solid @border;
+
+        @media (max-width: 1080px) {
+            padding-left: @vw128-1080;
+            padding-right: @vw128-1080;
+        }
 
         @media (max-width: 768px) {
             flex-direction: column;
             gap: @vw40-1080;
         }
 
+        @media (max-width: 600px) {
+            padding-left: @vw32-580;
+            padding-right: @vw32-580;
+        }
+
         @media (max-width: 580px) {
-            padding: @vw32-580 0;
+            padding-top: @vw32-580;
+            padding-bottom: @vw32-580;
         }
     }
 
@@ -58,10 +74,10 @@
     // ── Link columns ────────────────────────────────────────────────────────
     .footer-columns {
         display: flex;
-        gap: @vw64;
+        gap: @vw128;
 
         @media (max-width: 580px) {
-            gap: @vw32-580;
+            gap: @vw64-580;
             flex-wrap: wrap;
         }
     }
@@ -110,7 +126,6 @@
         padding: @vw24 0 0 0;
         font-family: @body;
         font-size: @vw14;
-        opacity: 0.6;
 
         @media (max-width: 768px) {
             flex-direction: column;
@@ -123,9 +138,23 @@
         }
     }
 
+    .footer-copyright, .footer-disclaimer {
+        opacity: 0.6;
+    }
+
+    // Fade the credit line via text colour, not opacity: opacity composites the
+    // whole subtree so the link couldn't be made fully opaque again. A faded
+    // colour only touches inherited text — the link sets its own @primary colour
+    // and stays full-strength.
+    .footer-credit {
+        color: fade(@text, 60%);
+    }
+
     // Remco credit uses the "link" button style (.parent-link — green +
     // underline hover), but without the → arrow.
-    .footer-credit-link::after {
-        display: none;
+    .footer-credit-link {
+        &::after {
+            display: none;
+        }
     }
 }
