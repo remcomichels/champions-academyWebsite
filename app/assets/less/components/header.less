@@ -6,12 +6,35 @@ header {
         align-items: center;
         justify-content: space-between;
         position: fixed;
-        padding-inline: @vw32;
+        top: 0;
+        left: 0;
+        // Vertical padding lives here (not on <header>) so the frosted band below
+        // covers the top and bottom spacing as well as the header content.
+        padding: @vw32 @vw32 @vw24;
         width: 100%;
         z-index: 999;
 
+        // Frosted band — fades in once the page is scrolled (header.scrolled).
+        // Sits behind the header content and spans the full padded band.
+        &::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-color: fade(@background, 55%);
+            backdrop-filter: blur(@vw8);
+            -webkit-backdrop-filter: blur(@vw8);
+            opacity: 0;
+            z-index: -1;
+            pointer-events: none;
+            .transition(all, @durationMedium);
+            transition-property: opacity;
+        }
+
         .navCol {
             display: inline-block;
+            // Eased inward a touch on scroll (see header.scrolled)
+            .transition(all, @durationMedium);
+            transition-property: transform;
 
             &.left {
                 .logoLink {
@@ -53,6 +76,21 @@ header {
             display: none;
         }
     }
+
+    // ── Scrolled state — frost fades in, logo + CTA ease inward ──────────────
+    &.scrolled {
+        .headerWrapper::before {
+            opacity: 1;
+        }
+
+        .navCol.left {
+            transform: translateX(@vw16);
+        }
+
+        .navCol.right {
+            transform: translateX(-@vw16);
+        }
+    }
 }
 
 @media (max-width: 1080px) {
@@ -60,7 +98,7 @@ header {
         padding-top: @vw32-1080;
 
         .headerWrapper {
-            padding-inline: @vw32-1080;
+            padding: @vw32-1080 @vw32-1080 @vw24-1080;
 
             .navCol {
                 &.left {
@@ -165,7 +203,7 @@ header {
         padding-top: @vw32-580;
 
         .headerWrapper {
-            padding-inline: @vw32-580;
+            padding: @vw32-580 @vw32-580 @vw24-580;
 
             .navCol {
                 &.left {

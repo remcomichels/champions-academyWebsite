@@ -1,9 +1,14 @@
-import { ref, onMounted, computed, watch } from "vue";
+import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
 import { useStoryblokApi, useRoute, useNuxtApp } from "#imports";
+import type Lenis from "lenis";
 import type {
 	HeaderMenuItem,
 	CtaMenuItem,
 } from "~/types/storyblok";
+
+// Distance (px) the page must be scrolled before the header switches to its
+// compact, frosted state.
+const SCROLL_THRESHOLD = 24;
 
 export function useHeader() {
 	const storyblokApi = useStoryblokApi();
@@ -21,6 +26,37 @@ export function useHeader() {
 	const route = useRoute();
 	const nuxtApp = useNuxtApp();
 	const menuOpen = ref(false);
+
+	// True once the page is scrolled past SCROLL_THRESHOLD — drives the frosted
+	// background + inward nudge of the logo/CTA (styled via header.scrolled).
+	const scrolled = ref(false);
+	let stopScrollListener: (() => void) | null = null;
+
+	const updateScrolled = (y: number) => {
+		scrolled.value = y > SCROLL_THRESHOLD;
+	};
+
+	onMounted(() => {
+		// Prefer Lenis' smoothed scroll value; fall back to native scroll if the
+		// plugin isn't around (e.g. reduced-motion builds).
+		const lenis = nuxtApp.$lenis;
+		if (lenis?.on) {
+			const onLenisScroll = (instance: Lenis) => updateScrolled(instance.scroll);
+			lenis.on("scroll", onLenisScroll);
+			stopScrollListener = () => lenis.off("scroll", onLenisScroll);
+		}
+		else {
+			const onWindowScroll = () => updateScrolled(window.scrollY);
+			window.addEventListener("scroll", onWindowScroll, { passive: true });
+			stopScrollListener = () => window.removeEventListener("scroll", onWindowScroll);
+		}
+		updateScrolled(window.scrollY);
+	});
+
+	onBeforeUnmount(() => {
+		stopScrollListener?.();
+		stopScrollListener = null;
+	});
 
 	const setMenuOpen = (open: boolean) => {
 		menuOpen.value = open;
@@ -62,5 +98,6 @@ export function useHeader() {
 		switchLocalePath,
 		menuOpen,
 		toggleMenu,
+		scrolled,
 	};
 }

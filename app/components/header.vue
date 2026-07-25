@@ -1,5 +1,5 @@
 <template>
-	<header>
+	<header :class="{ scrolled }">
 		<div class="headerWrapper">
 			<div class="navCol left">
 				<NuxtLink :to="localePath(`/`)" class="logoLink">
@@ -65,7 +65,7 @@
 <script setup lang="ts">
 import { useHeader } from "~/assets/js/components/header";
 
-const { headerMenu, ctaMenu, localePath, menuOpen, toggleMenu } = useHeader();
+const { headerMenu, ctaMenu, localePath, menuOpen, toggleMenu, scrolled } = useHeader();
 
 const normalizeSbPath = (cachedUrl: string) => {
   const clean = cachedUrl.replace(/^\/+|\/+$/g, "")
