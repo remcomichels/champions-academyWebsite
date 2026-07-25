@@ -152,7 +152,7 @@ export interface PaymentPlansBlok {
 }
 
 /**
- * The "step" block — nested in amethyst_block's `steps` field.
+ * The "step" block — nested in an ai_panel's `steps` field.
  */
 export interface StepBlok {
   _uid: string
@@ -163,17 +163,33 @@ export interface StepBlok {
 }
 
 /**
- * The "amethyst_block" — text + numbered steps on the left, Bunny video right.
+ * The "ai_panel" block — one AI's content, nested in amethyst_block's `panels`.
+ * Text + numbered steps on the left, Bunny video on the right. `tab_label` is
+ * the text shown on this panel's switch button in the segmented toggle.
  */
-export interface AmethystBlok {
+export interface AiPanelBlok {
   _uid: string
-  component?: "amethyst_block"
+  component?: "ai_panel"
+  tab_label?: string
   sub_title?: string
   title?: string
   text?: string
   steps?: StepBlok[]
   button?: ButtonBlok[]
   video_id?: string
+}
+
+/**
+ * The "amethyst_block" — the AI switcher. Holds two (or more) `ai_panel` bloks
+ * and shows one at a time; a segmented toggle switches between them and
+ * auto-advances every `auto_switch_seconds` (default 15), the active tab's
+ * slider filling over that interval.
+ */
+export interface AmethystBlok {
+  _uid: string
+  component?: "amethyst_block"
+  panels?: AiPanelBlok[]
+  auto_switch_seconds?: number
 }
 
 /**

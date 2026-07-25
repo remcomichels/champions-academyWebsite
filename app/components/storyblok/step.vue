@@ -1,5 +1,5 @@
 <template>
-	<div v-editable="blok" data-scroll-inview class="step">
+	<div v-editable="blok" class="step">
 		<span class="step-number">{{ blok.number }}</span>
 		<div class="step-content">
 			<h3 class="step-title">{{ blok.title }}</h3>

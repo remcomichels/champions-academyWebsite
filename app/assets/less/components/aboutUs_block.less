@@ -1,7 +1,9 @@
 .aboutUs_block {
+    // No min-height: the section is exactly as tall as its content. The card
+    // deck pins for a scroll distance derived from window.innerHeight (see
+    // useCardDeck), so the section itself never needs to be a full viewport.
     display: flex;
     align-items: center;
-    min-height: 100vh;
 
     .aboutUs-container {
         display: flex;
@@ -248,8 +250,6 @@
 
     // ── Static fallback — reduced motion or a single card ──────────────────
     &.deck-static {
-        min-height: auto;
-
         .indicator {
             display: none;
         }

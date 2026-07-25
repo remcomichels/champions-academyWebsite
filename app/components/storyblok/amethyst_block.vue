@@ -1,45 +1,85 @@
 <template>
-	<section v-editable="blok" data-scroll-inview class="section amethyst_block">
-		<div class="container amethyst-container">
-			<div class="text-container">
-				<p class="subTitle">{{ blok.sub_title }}</p>
-				<h2 data-scroll-letters class="title">{{ blok.title }}</h2>
-				<p class="text">{{ blok.text }}</p>
-
-				<div v-if="blok.steps?.length" class="steps-container">
-					<StoryblokComponent
-						v-for="stepBlok in blok.steps"
-						:key="stepBlok._uid"
-						:blok="stepBlok"
-					/>
-				</div>
-
-				<div v-if="blok.button?.length" class="button-container">
-					<StoryblokComponent
-						v-for="buttonBlok in blok.button"
-						:key="buttonBlok._uid"
-						:blok="buttonBlok"
-					/>
-				</div>
+	<section ref="root" v-editable="blok" data-scroll-inview class="section amethyst_block">
+		<div class="container amethyst-inner">
+			<div v-if="panels.length > 1" class="ai-tabs" role="tablist">
+				<button
+					v-for="(panel, i) in panels"
+					:key="panel._uid"
+					type="button"
+					class="ai-tab"
+					:class="{ active: i === activeIndex }"
+					role="tab"
+					:aria-selected="i === activeIndex"
+					@click="select(i)"
+				>
+					<span class="ai-tab-label">{{ panel.tab_label }}</span>
+					<span class="ai-tab-track">
+						<span
+							v-if="i === activeIndex && !reduced"
+							class="ai-tab-fill"
+							:style="fillStyle"
+							@animationend="onCycleEnd"
+						/>
+					</span>
+				</button>
 			</div>
 
-			<div class="amethyst-video">
-				<NuxtVideoPlayer v-if="blok.video_id" :video-id="blok.video_id" />
+			<div class="ai-panel-viewport">
+				<Transition :name="transitionName" mode="out-in">
+					<StoryblokComponent
+						v-if="activePanel"
+						:key="activePanel._uid"
+						:blok="activePanel"
+					/>
+				</Transition>
 			</div>
 		</div>
 	</section>
 </template>
 
 <script setup lang="ts">
-defineProps({
+import type { AiPanelBlok } from "~/types/storyblok";
+import { useAmethystSwitcher } from "~/assets/js/components/amethyst_block";
+
+const props = defineProps({
 	blok: {
 		type: Object,
 		required: true,
 	},
 });
 
-const { initLetters, destroy } = useLetterAnimation();
+// Typed for the tab list (index + tab_label). `activePanel` below stays loose
+// because <StoryblokComponent>'s `blok` prop is the broad SbBlokData.
+const panels = computed<AiPanelBlok[]>(() => props.blok.panels ?? []);
 
+// Storyblok sends the number field as a string ("15"); fall back to 15.
+const seconds = computed(() => {
+	const parsed = Number(props.blok.auto_switch_seconds);
+	return Number.isFinite(parsed) && parsed > 0 ? parsed : 15;
+});
+
+const root = useTemplateRef<HTMLElement>("root");
+const { reduced } = useReducedMotion();
+
+const { activeIndex, direction, paused, select, onCycleEnd } = useAmethystSwitcher(
+	root,
+	() => panels.value.length,
+);
+
+const activePanel = computed(() => props.blok.panels?.[activeIndex.value] ?? null);
+const transitionName = computed(() => (direction.value >= 0 ? "ai-fwd" : "ai-back"));
+
+// The fill length is the auto-switch interval; play-state freezes it (and the
+// `animationend` that advances the panel) whenever the block is off-screen.
+const fillStyle = computed(() => ({
+	animationDuration: `${seconds.value}s`,
+	animationPlayState: paused.value ? "paused" : "running",
+}));
+
+// Letter reveal for the initially-active panel's title (scroll-triggered). Only
+// the first panel is in the DOM at mount, so only it is split/animated; later
+// panels render their title as-is.
+const { initLetters, destroy } = useLetterAnimation();
 onMounted(() => initLetters());
 onUnmounted(() => destroy());
 </script>
