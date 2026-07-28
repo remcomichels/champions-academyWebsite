@@ -1,8 +1,5 @@
-// Liquid reveal mask — one soft circle per trail node (positions written by JS
-// as --x0/--y0 … --x5/--y5, relative to each card). Radii taper head→tail and
-// the leading nodes keep a solid core so overlaps merge into one flowing mass.
-@blobMask: ~"radial-gradient(circle var(--spot) at var(--x0, 50%) var(--y0, 50%), #000 0%, #000 34%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.9) at var(--x1, 50%) var(--y1, 50%), #000 0%, #000 30%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.78) at var(--x2, 50%) var(--y2, 50%), #000 0%, #000 26%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.64) at var(--x3, 50%) var(--y3, 50%), #000 0%, #000 20%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.5) at var(--x4, 50%) var(--y4, 50%), #000 0%, transparent 100%), radial-gradient(circle calc(var(--spot) * 0.36) at var(--x5, 50%) var(--y5, 50%), #000 0%, transparent 100%)";
-
+// The card grid, cards and liquid blob live in benefits_grid.less (shared with
+// benefitsOverview_block). This file only styles this block's intro text.
 .benefits_block {
 
     // ── Text — sub_text / title / handwritten sub_title / text / button ─────
@@ -73,161 +70,10 @@
         }
     }
 
-    // ── Benefits — 3 × 2 grid of square cards ───────────────────────────────
-    .benefits-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: @vw16;
-        margin: @vw48 0 0 0;
-
-        @media (max-width: 1080px) {
-            gap: @vw16-1080;
-        }
-
-        @media (max-width: 768px) {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        @media (max-width: 580px) {
-            gap: @vw12-580;
-            margin: @vw40-580 0 0 0;
-            grid-template-columns: repeat(1, 1fr);
-        }
-    }
-
-    .benefit-card {
-        --spot: @vw130;
-        position: relative;
-        overflow: hidden;
-        aspect-ratio: 1 / 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: @vw32;
-        background-color: @secondary;
-        border-radius: @vw10;
-
-        // Legibility scrim between the image and the title/text.
-        &::after {
-            content: '';
-            .absolute();
-            z-index: 1;
-            background: linear-gradient(to top, fade(@black, 60%) 0%, fade(@black, 12%) 55%, transparent 100%);
-            pointer-events: none;
-        }
-
-        @media (max-width: 1080px) {
-            padding: @vw24-1080;
-        }
-
-        @media (max-width: 580px) {
-            --spot: @vw280-580;
-            padding: @vw16-580;
-            border-radius: @vw16-580;
-        }
-    }
-
-    // ── Square image behind the card — dim base, brightened inside the blob ──
-    .benefit-media {
-        .absolute();
-        z-index: 0;
-        pointer-events: none;
-    }
-
-    .benefit-image {
-        .absolute();
-        object-fit: cover; // keeps any source square within the 1:1 card
-    }
-
-    // Image sits as a dark, desaturated base so the green trail reads over it.
-    .benefit-image--dim {
-        filter: grayscale(0.85) brightness(0.4);
-    }
-
-    // The liquid trail — always a soft green tint over the image or bare card.
-    // The wrapper runs the gooey filter over the masked shape so the trail
-    // circles neck together into one flowing liquid mass instead of dots.
-    .benefit-blob {
-        .absolute();
-        opacity: 0.4;
-        filter: url(#benefitGoo);
-        will-change: filter;
-    }
-
-    .benefit-blob-shape {
-        .absolute();
-        background-color: @primary;
-        -webkit-mask-image: @blobMask;
-        mask-image: @blobMask;
-        will-change: mask-image;
-    }
-
-    // Filter def carrier — no layout footprint.
-    .benefit-goo-defs {
-        position: absolute;
-        width: 0;
-        height: 0;
-        pointer-events: none;
-    }
-
-    .benefit-title {
-        position: relative;
-        z-index: 2;
-        font-size: @vw18;
-        font-family: @body;
-
-        @media (max-width: 1080px) {
-            font-size: @vw18-1080;
-        }
-
-        @media (max-width: 580px) {
-            font-size: @vw24-580;
-        }
-    }
-
-    // Story text — hidden at the bottom, revealed on hover
-    .benefit-text {
-        position: relative;
-        z-index: 2;
-        font-family: @body;
-        font-size: @vw16;
-        opacity: 0;
-        transform: translateY(@vw16);
-        .transition(opacity, @durationFast, @easeOut);
-        transition-property: opacity, transform;
-
-        @media (max-width: 1080px) {
-            font-size: @vw16-1080;
-        }
-
-        @media (max-width: 580px) {
-            font-size: @vw14-580;
-        }
-    }
-
-    // Desktop only (real hover pointer, >1080px): reveal the text on card hover.
-    // The blob reveal itself is always live (the JS animates the trail nodes).
-    @media (hover: hover) and (min-width: 1081px) {
-        .benefit-card:hover .benefit-text {
-            opacity: 0.9;
-            transform: translateY(0);
-        }
-    }
-
-    // Touch / small screens: no hover, so show the text statically. The blob
-    // keeps auto-wandering (the JS runs on every screen size).
-    @media (hover: none), (max-width: 1080px) {
-        .benefit-text {
-            opacity: 0.9;
-            transform: none;
-        }
-    }
-
     // ── Entrance — staggered fade-up once the section is in view ────────────
     .subText,
     .text,
-    .button-container,
-    .benefit-card {
+    .button-container {
         opacity: 0;
         transform: translateY(@vw24);
         .transition(opacity, @durationSlow, @easeOut);
@@ -237,6 +83,7 @@
     .text { transition-delay: 0.1s; }
     .button-container { transition-delay: 0.2s; }
 
+    // Cards follow the intro text here (the shared stagger starts sooner).
     .benefit-card:nth-child(1) { transition-delay: 0.25s; }
     .benefit-card:nth-child(2) { transition-delay: 0.31s; }
     .benefit-card:nth-child(3) { transition-delay: 0.37s; }
@@ -247,8 +94,7 @@
     &.inView {
         .subText,
         .text,
-        .button-container,
-        .benefit-card {
+        .button-container {
             opacity: 1;
             transform: translateY(0);
         }

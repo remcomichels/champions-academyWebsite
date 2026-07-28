@@ -1,5 +1,5 @@
 <template>
-	<section v-editable="blok" data-scroll-inview class="section hero_block">
+	<section :id="blok.anchor || undefined" v-editable="blok" data-scroll-inview class="section hero_block">
 		<NuxtHeroLogo />
 		<div class="container hero-container">
 			<div class="text-container">

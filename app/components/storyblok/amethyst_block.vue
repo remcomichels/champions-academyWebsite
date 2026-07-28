@@ -1,5 +1,5 @@
 <template>
-	<section ref="root" v-editable="blok" data-scroll-inview class="section amethyst_block">
+	<section :id="blok.anchor || undefined" ref="root" v-editable="blok" data-scroll-inview class="section amethyst_block">
 		<div class="container amethyst-inner">
 			<div v-if="panels.length > 1" class="ai-tabs" role="tablist">
 				<button

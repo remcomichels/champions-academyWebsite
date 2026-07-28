@@ -4,6 +4,7 @@
 		v-if="href && variant === 'link'"
 		v-editable="blok"
 		:to="href"
+		v-bind="storyblokLinkAttrs(blok.link)"
 		class="button-link parent-link"
 	>
 		{{ blok.title }}
@@ -15,13 +16,14 @@
 		v-else-if="href && variant === 'secondary'"
 		v-editable="blok"
 		:to="href"
+		v-bind="storyblokLinkAttrs(blok.link)"
 		class="button button__secondary"
 	>
 		{{ blok.title }}
 	</NuxtLink>
 
 	<!-- primary (default): label segment + plus segment -->
-	<NuxtLink v-else-if="href" v-editable="blok" :to="href" class="button">
+	<NuxtLink v-else-if="href" v-editable="blok" :to="href" v-bind="storyblokLinkAttrs(blok.link)" class="button">
 		<span class="textWrap button__primary">{{ blok.title }}</span>
 		<span class="plus icon-plus" />
 	</NuxtLink>

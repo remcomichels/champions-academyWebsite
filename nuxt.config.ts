@@ -32,6 +32,34 @@ export default defineNuxtConfig({
   },
 
   /* -----------------------------
+  * Storyblok block name aliases
+  * ----------------------------- */
+  hooks: {
+    // @storyblok/vue checks whether a block is registered by calling
+    // resolveComponent() with the raw name from the CMS ("hero_block"), but
+    // renders the underscores-to-dashes version ("hero-block"). Nuxt registers
+    // the PascalCase name ("HeroBlock"), which only the dashed form resolves
+    // to — so blocks render correctly while the check logs a false
+    // "Component could not be found" error. Registering the snake_case name as
+    // an extra alias makes the check pass.
+    "components:extend"(components) {
+      const aliases = [];
+
+      for (const component of components) {
+        if (!component.filePath.includes("/components/storyblok/")) continue;
+
+        const fileName = component.filePath.split("/").pop()?.replace(/\.vue$/, "");
+        if (!fileName?.includes("_")) continue;
+        if (components.some(c => c.pascalName === fileName)) continue;
+
+        aliases.push({ ...component, pascalName: fileName, kebabName: fileName });
+      }
+
+      components.push(...aliases);
+    },
+  },
+
+  /* -----------------------------
 	 * Global styles (LESS only)
 	 * ----------------------------- */
 	css: [

@@ -1,5 +1,5 @@
 <template>
-	<section v-editable="blok" data-scroll-inview class="section cta_block">
+	<section :id="blok.anchor || undefined" v-editable="blok" data-scroll-inview class="section cta_block">
 		<NuxtCtaFigure class="cta-figure-layer" />
 
 		<div class="container cta-container">

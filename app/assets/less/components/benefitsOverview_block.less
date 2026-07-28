@@ -1,0 +1,103 @@
+// The /benefits page — heading + counter above the shared card grid. The grid,
+// cards and liquid blob live in benefits_grid.less.
+.benefitsOverview_block {
+
+    // ── Heading — eyebrow, title and the live benefit counter ───────────────
+    .text-container {
+        .subText {
+            font-size: @vw18;
+            text-transform: uppercase;
+            color: @primary;
+
+            @media (max-width: 580px) {
+                font-size: @vw14-580;
+            }
+        }
+
+        .title-row {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: @vw24;
+
+            @media (max-width: 580px) {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: @vw8-580;
+            }
+        }
+
+        .title {
+            font-family: @body;
+            font-size: @vw64;
+            font-weight: @bold;
+            text-transform: uppercase;
+
+            @media (max-width: 1080px) {
+                font-size: @vw56-1080;
+            }
+
+            @media (max-width: 580px) {
+                font-size: @vw40-580;
+            }
+        }
+    }
+
+    // Counter — derived from the number of stories in the benefits folder.
+    .benefits-count {
+        display: flex;
+        align-items: baseline;
+        gap: @vw8;
+        flex-shrink: 0;
+        font-family: @body;
+
+        @media (max-width: 580px) {
+            gap: @vw8-580;
+        }
+    }
+
+    .benefits-count-number {
+        font-size: @vw40;
+        font-weight: @bold;
+        line-height: 1;
+        color: @primary;
+
+        @media (max-width: 1080px) {
+            font-size: @vw32-1080;
+        }
+
+        @media (max-width: 580px) {
+            font-size: @vw32-580;
+        }
+    }
+
+    .benefits-count-label {
+        font-size: @vw14;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.5;
+
+        @media (max-width: 580px) {
+            font-size: @vw12-580;
+        }
+    }
+
+    // ── Entrance — heading fades up, then the shared card stagger ───────────
+    .subText,
+    .benefits-count {
+        opacity: 0;
+        transform: translateY(@vw24);
+        .transition(opacity, @durationSlow, @easeOut);
+        transition-property: opacity, transform;
+    }
+
+    .benefits-count { transition-delay: 0.1s; }
+
+    &.inView {
+        .subText,
+        .benefits-count {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}

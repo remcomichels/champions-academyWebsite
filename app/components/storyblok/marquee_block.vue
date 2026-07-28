@@ -1,5 +1,5 @@
 <template>
-  <section v-editable="blok" class="section marquee" aria-label="Scrolling roles marquee">
+  <section :id="blok.anchor || undefined" v-editable="blok" class="section marquee" aria-label="Scrolling roles marquee">
     <!-- For claude scan, fix data-scroll-inview and data-letters in this file -->
     <div class="container-wide">
         <div class="text-group" data-scroll-inview>

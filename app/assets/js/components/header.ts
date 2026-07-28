@@ -71,8 +71,9 @@ export function useHeader() {
 
 	const toggleMenu = () => setMenuOpen(!menuOpen.value);
 
-	// Close the mobile menu on navigation
-	watch(() => route.path, () => setMenuOpen(false));
+	// Close the mobile menu on navigation — fullPath, not path, so jumping to an
+	// anchor on the page you're already on still closes it.
+	watch(() => route.fullPath, () => setMenuOpen(false));
 
 	onMounted(async () => {
 		try {

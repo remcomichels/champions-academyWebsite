@@ -1,5 +1,5 @@
 <template>
-	<section ref="root" v-editable="blok" data-scroll-inview class="statistics_block">
+	<section :id="blok.anchor || undefined" ref="root" v-editable="blok" data-scroll-inview class="statistics_block">
 		<div class="container statistics-container">
             <p class="preText">{{ blok.pre_text_line }}</p>
             <div v-if="blok.statistic?.length" class="statistics-list">

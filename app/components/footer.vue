@@ -19,8 +19,9 @@
 						<ul class="footer-column-links">
 							<li v-for="link in column.links" :key="link._uid">
 								<NuxtLink
-									v-if="linkPath(link)"
-									:to="linkPath(link)!"
+									v-if="linkPath(link.link)"
+									:to="linkPath(link.link)!"
+									v-bind="storyblokLinkAttrs(link.link)"
 									class="footer-link parent-line"
 								>
 									{{ link.label }}
@@ -55,10 +56,12 @@
 
 <script setup lang="ts">
 import { useFooter } from "~/assets/js/components/footer";
-import type { MenuLinkItem } from "~/types/storyblok";
 
 const { footer } = useFooter();
-const localePath = useLocalePath();
+
+// Resolves a Storyblok multilink to a localized href, keeping any section
+// anchor set in the CMS (e.g. /about#pricing).
+const linkPath = useStoryblokLink();
 
 const year = new Date().getFullYear();
 
@@ -71,12 +74,6 @@ const columns = computed(() => {
 	];
 });
 
-// Returns a routable path for a menu link, or null when the story link is
-// unset (e.g. social placeholders) — those render as plain text instead.
-function linkPath(link: MenuLinkItem): string | null {
-	const cached = link.link?.cached_url;
-	if (!cached) return null;
-	const clean = cached.replace(/^\/+|\/+$/g, "");
-	return localePath(clean === "home" || clean === "" ? "/" : `/${clean}`);
-}
+// Links with nothing set (e.g. social placeholders) resolve to null and render
+// as plain text instead — see the v-if/v-else in the template.
 </script>

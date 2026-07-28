@@ -8,6 +8,17 @@ export interface StoryblokMultilink {
   linktype: StoryblokLinkType
   fieldtype?: "multilink"
   cached_url?: string
+  /**
+   * Section anchor set in the link field's "Anchor" input (stored without the
+   * leading #). resolveStoryblokLink appends it, and blocks expose matching ids
+   * via their own `anchor` field.
+   */
+  anchor?: string
+  /**
+   * "_blank" when the link field's open-in-new-tab toggle is on. Apply it with
+   * storyblokLinkAttrs so the matching rel is set too.
+   */
+  target?: string
 }
 
 export interface StoryblokAsset {
@@ -113,6 +124,18 @@ export interface BenefitsBlok {
   text?: string
   button?: ButtonBlok[]
   benefit?: (string | BenefitStoryRef)[]
+}
+
+/**
+ * The "benefitsOverview_block" — the /benefits page. Every story in the
+ * Storyblok `benefits/` folder is fetched at render time (no reference field),
+ * so the grid and its counter stay in sync as benefits are added.
+ */
+export interface BenefitsOverviewBlok {
+  _uid: string
+  component?: "benefitsOverview_block"
+  sub_text?: string
+  title?: string
 }
 
 /**

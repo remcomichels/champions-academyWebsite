@@ -30,7 +30,10 @@ export default defineNuxtPlugin(() => {
 	}
 
 	const router = useRouter();
-	router.afterEach(() => {
+	router.afterEach((to) => {
+		// Anchor navigations scroll to their target section instead (see
+		// app/router.options.ts) — jumping to the top here would undo that.
+		if (to.hash) return;
 		lenis.scrollTo(0, { immediate: true });
 	});
 

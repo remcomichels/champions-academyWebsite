@@ -132,13 +132,18 @@
         }
     }
 
+    // Circle flags (HatScripts/circle-flags) — square 512×512 artwork that already
+    // draws a circle, so keep the box square. border-radius is belt-and-braces in
+    // case a non-circular flag is ever dropped in.
     .testimonial-flag {
         width: @vw28;
-        height: auto;
-        border-radius: @vw2;
+        height: @vw28;
+        flex-shrink: 0;
+        border-radius: 50%;
 
         @media (max-width: 580px) {
             width: @vw24-580;
+            height: @vw24-580;
         }
     }
 

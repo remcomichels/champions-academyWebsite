@@ -1,5 +1,5 @@
 <template>
-	<section v-editable="blok" data-scroll-inview class="section testimonials_block" aria-label="Member testimonials">
+	<section :id="blok.anchor || undefined" v-editable="blok" data-scroll-inview class="section testimonials_block" aria-label="Member testimonials">
 		<div class="container text-container">
 			<p class="preTitle">{{ blok.pre_title }}</p>
 			<h2 data-scroll-letters class="title">{{ blok.title }}</h2>

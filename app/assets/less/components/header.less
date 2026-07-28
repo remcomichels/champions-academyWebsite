@@ -54,8 +54,12 @@ header {
 
                         .navItem {
                             .navLink {
-                                &.router-link-active:not([href='/']) { color: @primary; }
-                                &.router-link-exact-active { color: @primary; }
+                                // Anchor links (href contains #) are excluded: the
+                                // active classes match on path only, so a link to a
+                                // section of the current page would always read as
+                                // active and sit there green.
+                                &.router-link-active:not([href='/']):not([href*='#']) { color: @primary; }
+                                &.router-link-exact-active:not([href*='#']) { color: @primary; }
                             }
                         }
                     }

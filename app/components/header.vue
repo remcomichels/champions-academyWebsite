@@ -18,11 +18,12 @@
 							<ul>
 								<li v-for="blok in headerMenu" :key="blok._uid" class="navItem">
 									<NuxtLink
-										v-if="blok.link?.cached_url"
-										:to="localePath(normalizeSbPath(blok.link.cached_url))"
+										v-if="linkTo(blok.link)"
+										:to="linkTo(blok.link)!"
+										v-bind="storyblokLinkAttrs(blok.link)"
 										class="navLink parent-line"
 									>
-										{{ blok.label ?? blok.link.cached_url }}
+										{{ blok.label ?? blok.link?.cached_url }}
 										<span class="link-line" />
 									</NuxtLink>
 								</li>
@@ -34,8 +35,9 @@
 					<nav v-if="ctaMenu" class="ctaNav">
 						<div v-for="blok in ctaMenu" :key="blok._uid" class="navItem">
 							<NuxtLink
-								v-if="blok.link?.cached_url"
-								:to="localePath(normalizeSbPath(blok.link.cached_url))"
+								v-if="linkTo(blok.link)"
+								:to="linkTo(blok.link)!"
+								v-bind="storyblokLinkAttrs(blok.link)"
 								class="navLink button"
 							>
 								<span class="textWrap button__primary">
@@ -67,8 +69,7 @@ import { useHeader } from "~/assets/js/components/header";
 
 const { headerMenu, ctaMenu, localePath, menuOpen, toggleMenu, scrolled } = useHeader();
 
-const normalizeSbPath = (cachedUrl: string) => {
-  const clean = cachedUrl.replace(/^\/+|\/+$/g, "")
-  return clean === "home" || clean === "" ? "/" : `/${clean}`
-}
+// Resolves a Storyblok multilink to a localized href, keeping any section
+// anchor set in the CMS (e.g. /about#pricing).
+const linkTo = useStoryblokLink();
 </script>
