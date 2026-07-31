@@ -16,20 +16,6 @@
     grid-template-columns: repeat(3, 1fr);
     gap: @vw16;
     margin: @vw48 0 0 0;
-
-    @media (max-width: 1080px) {
-        gap: @vw16-1080;
-    }
-
-    @media (max-width: 768px) {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
-    @media (max-width: 600px) {
-        gap: @vw12-580;
-        margin: @vw40-580 0 0 0;
-        grid-template-columns: repeat(1, 1fr);
-    }
 }
 
 .benefit-card {
@@ -44,6 +30,15 @@
     background-color: @secondary;
     border-radius: @vw10;
 
+    // Entrance — cards fade up once their section is in view. Driven by
+    // `.inView` on the ancestor section (added by the global useInview), so both
+    // blocks share it. benefits_block re-times its six cards to follow its intro
+    // text; this generic stagger covers any number of cards.
+    opacity: 0;
+    transform: translateY(@vw24);
+    .transition(opacity, @durationSlow, @easeOut);
+    transition-property: opacity, transform;
+
     // Legibility scrim between the image and the title/text.
     &::after {
         content: '';
@@ -53,15 +48,23 @@
         pointer-events: none;
     }
 
-    @media (max-width: 1080px) {
-        padding: @vw24-1080;
-    }
+    &:nth-child(1) { transition-delay: 0.05s; }
+    &:nth-child(2) { transition-delay: 0.11s; }
+    &:nth-child(3) { transition-delay: 0.17s; }
+    &:nth-child(4) { transition-delay: 0.23s; }
+    &:nth-child(5) { transition-delay: 0.29s; }
+    &:nth-child(6) { transition-delay: 0.35s; }
+    &:nth-child(7) { transition-delay: 0.41s; }
+    &:nth-child(8) { transition-delay: 0.47s; }
+    &:nth-child(9) { transition-delay: 0.53s; }
+    &:nth-child(10) { transition-delay: 0.59s; }
+    &:nth-child(11) { transition-delay: 0.65s; }
+    &:nth-child(12) { transition-delay: 0.71s; }
+}
 
-    @media (max-width: 600px) {
-        --spot: @vw280-580;
-        padding: @vw16-580;
-        border-radius: @vw16-580;
-    }
+.inView .benefit-card {
+    opacity: 1;
+    transform: translateY(0);
 }
 
 // ── Square image behind the card — dim base under the green trail ───────────
@@ -118,35 +121,88 @@
 .benefit-title {
     position: relative;
     z-index: 2;
-    font-size: @vw18;
+    font-size: max(1em, @vw18);
     font-family: @body;
-
-    @media (max-width: 1080px) {
-        font-size: @vw18-1080;
-    }
-
-    @media (max-width: 600px) {
-        font-size: @vw24-580;
-    }
 }
 
-// Story text — hidden at the bottom, revealed on hover
+// Story text — hidden at the bottom, revealed on hover. The translateY only
+// applies above 1080 where the hover reveal runs, so it needs no smaller-tier
+// variants — the touch rule below resets it to none.
 .benefit-text {
     position: relative;
     z-index: 2;
     font-family: @body;
+    // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px, so
+    // max(1em, …) here would push it past its design size on desktop. The
+    // mobile tiers below do floor it.
     font-size: @vw16;
     opacity: 0;
     transform: translateY(@vw16);
     .transition(opacity, @durationFast, @easeOut);
     transition-property: opacity, transform;
+}
 
-    @media (max-width: 1080px) {
-        font-size: @vw16-1080;
+@media (max-width: 1080px) {
+    .benefits-grid {
+        gap: @vw16-1080;
+        margin: @vw48-1080 0 0 0;
     }
 
-    @media (max-width: 600px) {
-        font-size: @vw14-580;
+    .benefit-card {
+        --spot: @vw130-1080;
+        padding: @vw24-1080;
+        border-radius: @vw10-1080;
+        transform: translateY(@vw24-1080);
+    }
+
+    .benefit-title {
+        font-size: max(1em, @vw18-1080);
+    }
+
+    .benefit-text {
+        font-size: max(1em, @vw16-1080);
+    }
+}
+
+@media (max-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 600px) {
+    .benefits-grid {
+        gap: @vw12-580;
+        margin: @vw40-580 0 0 0;
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .benefit-card {
+        // One column makes the card as wide as the container, so a 1:1 ratio
+        // turns it into a 534px-tall block at 600 and the six-card grid runs to
+        // ~3300px. 4:3 keeps the image readable without the dead height.
+        aspect-ratio: 4 / 3;
+        --spot: @vw280-580;
+        padding: @vw32-580;
+        border-radius: @vw16-580;
+        transform: translateY(@vw24-580);
+    }
+
+    .benefit-title {
+        font-size: max(1em, @vw24-580);
+    }
+
+    .benefit-text {
+        font-size: max(1em, @vw14-580);
+    }
+}
+
+// Layout-only: the narrower the card, the more the story text wraps, so 4:3
+// stops being tall enough to hold it — the longest card clips at 320. Back to a
+// square here, which at this width is ~285px and leaves room for the image.
+@media (max-width: 480px) {
+    .benefit-card {
+        aspect-ratio: 1 / 1;
     }
 }
 
@@ -174,31 +230,28 @@
     }
 }
 
-// ── Entrance — cards fade up once their section is in view ──────────────────
-// Driven by `.inView` on the ancestor section (added by the global useInview),
-// so both blocks share it. benefits_block re-times its six cards to follow its
-// intro text; this generic stagger covers any number of cards.
-.benefit-card {
-    opacity: 0;
-    transform: translateY(@vw24);
-    .transition(opacity, @durationSlow, @easeOut);
-    transition-property: opacity, transform;
+// Touch: there is no pointer to drive the trail, so the blob is dead weight —
+// drop it and show the images in their own colour. The dim/grayscale base only
+// existed so the green trail would read over it; with no trail it just leaves
+// the cards flat. useLiquidBlob skips its observer and RAF loop here too.
+// Last in the file so it also beats the reduced-motion rule above.
+@media (hover: none) {
+    .benefit-blob {
+        display: none;
+    }
 
-    &:nth-child(1) { transition-delay: 0.05s; }
-    &:nth-child(2) { transition-delay: 0.11s; }
-    &:nth-child(3) { transition-delay: 0.17s; }
-    &:nth-child(4) { transition-delay: 0.23s; }
-    &:nth-child(5) { transition-delay: 0.29s; }
-    &:nth-child(6) { transition-delay: 0.35s; }
-    &:nth-child(7) { transition-delay: 0.41s; }
-    &:nth-child(8) { transition-delay: 0.47s; }
-    &:nth-child(9) { transition-delay: 0.53s; }
-    &:nth-child(10) { transition-delay: 0.59s; }
-    &:nth-child(11) { transition-delay: 0.65s; }
-    &:nth-child(12) { transition-delay: 0.71s; }
-}
+    .benefit-image--dim {
+        filter: none;
+    }
 
-.inView .benefit-card {
-    opacity: 1;
-    transform: translateY(0);
+    // Without the dimmed base the title sits over full-brightness artwork, so
+    // the scrim has to carry the legibility on its own.
+    .benefit-card::after {
+        background: linear-gradient(
+            to top,
+            fade(@black, 75%) 0%,
+            fade(@black, 45%) 45%,
+            fade(@black, 35%) 100%
+        );
+    }
 }

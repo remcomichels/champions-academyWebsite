@@ -8,13 +8,31 @@
                 text-align: center;
                 text-transform: uppercase;
                 margin: @vw16 0 0 0;
+
+                @media (max-width: 1080px) {
+                    font-size: @vw72-1080;
+                    margin: @vw16-1080 0 0 0;
+                }
+
+                @media (max-width: 600px) {
+                    font-size: @vw84-580;
+                    margin: @vw16-580 0 0 0;
+                }
             }
 
             .subTitle {
-                font-size: @vw18;
+                font-size: max(1em, @vw18);
                 text-align: center;
                 text-transform: uppercase;
                 color: @primary;
+
+                @media (max-width: 1080px) {
+                    font-size: max(1em, @vw18-1080);
+                }
+
+                @media (max-width: 600px) {
+                    font-size: max(1em, @vw14-580);
+                }
             }
         }
     }

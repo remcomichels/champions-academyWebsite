@@ -76,6 +76,12 @@ export function useLiquidBlob(
     return desktopHover.matches
   }
 
+  // Any hover-capable pointer. Mirrors the `(hover: none)` rule in
+  // benefits_grid.less that hides the blob on touch.
+  function hasHover(): boolean {
+    return window.matchMedia('(hover: hover)').matches
+  }
+
   // Move every trail node to a point at once — used when seeding so the blob
   // doesn't fly in from (0,0) on first appearance.
   function snapTo(x: number, y: number): void {
@@ -161,7 +167,11 @@ export function useLiquidBlob(
 
   function initBlob(): void {
     const el = grid.value
-    if (!el || reduced.value) return
+    // No hover pointer means nothing can ever drive the trail, and CSS hides the
+    // blob there — so skip the observer and RAF entirely rather than animating
+    // an invisible element. An auto-wander grid would otherwise keep a loop
+    // running on every phone, writing custom properties to every card.
+    if (!el || reduced.value || !hasHover()) return
 
     io = new IntersectionObserver(
       (entries) => {
