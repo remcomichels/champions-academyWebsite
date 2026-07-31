@@ -10,12 +10,6 @@
         align-items: center;
         gap: @vw80;
         width: 100%;
-
-        @media (max-width: 768px) {
-            flex-direction: column;
-            align-items: stretch;
-            gap: @vw48-1080;
-        }
     }
 
     // ── Left column — subtitle / title / text / indicator ──────────────────
@@ -23,13 +17,13 @@
         flex: 1 1 0;
 
         .subTitle {
-            font-size: @vw18;
+            // Body-copy sizes are floored at the inherited paragraph size (see
+            // body in _general.less) — the raw vw values fall under 9px on a
+            // phone. At 1440 every one of these already exceeds it, so desktop
+            // is untouched.
+            font-size: max(1em, @vw18);
             text-transform: uppercase;
             color: @primary;
-
-            @media (max-width: 600px) {
-                font-size: @vw14-580;
-            }
         }
 
         .title {
@@ -37,31 +31,14 @@
             font-size: @vw64;
             font-weight: @bold;
             text-transform: uppercase;
-
-            @media (max-width: 1080px) {
-                font-size: @vw56-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw40-580;
-            }
         }
 
         .text {
             font-family: @body;
-            font-size: @vw18;
+            font-size: max(1em, @vw18);
             opacity: 0.75 !important;
             width: 85%;
             margin: @vw24 0 0 0;
-
-            @media (max-width: 1080px) {
-                font-size: @vw18-1080;
-                width: 100%;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw16-580;
-            }
         }
     }
 
@@ -71,15 +48,14 @@
         align-items: center;
         gap: @vw16;
         margin: @vw32 0 0 0;
-
-        @media (max-width: 600px) {
-            margin: @vw40-580 0 0 0;
-        }
     }
 
     .indicator-count,
     .indicator-total {
         font-family: @heading;
+        // Deliberately smaller than body copy, so no floor at this tier — it
+        // would push the numerals above their design size on desktop. The
+        // mobile tiers below do floor them.
         font-size: @vw16;
         font-variant-numeric: tabular-nums;
         line-height: 1;
@@ -149,10 +125,6 @@
         flex: 1 1 0;
         aspect-ratio: 3 / 2;
         counter-reset: about-card;
-
-        @media (max-width: 768px) {
-            aspect-ratio: 4 / 3;
-        }
     }
 
     .about-card {
@@ -166,15 +138,6 @@
         border-radius: @vw24;
         counter-increment: about-card;
         will-change: transform;
-
-        @media (max-width: 1080px) {
-            padding: @vw40-1080;
-        }
-
-        @media (max-width: 600px) {
-            padding: @vw24-580;
-            border-radius: @vw16-580;
-        }
     }
 
     .about-card-number {
@@ -186,41 +149,17 @@
         &::before {
             content: counter(about-card, decimal-leading-zero);
         }
-
-        @media (max-width: 1080px) {
-            font-size: @vw56-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw40-580;
-        }
     }
 
     .about-card-title {
-        font-size: @vw48;
+        font-size: max(1em, @vw48);
         text-transform: uppercase;
-
-        @media (max-width: 1080px) {
-            font-size: @vw28-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw24-580;
-        }
     }
 
     .about-card-text {
         font-family: @body;
-        font-size: @vw18;
+        font-size: max(1em, @vw18);
         opacity: 0.75;
-
-        @media (max-width: 1080px) {
-            font-size: @vw16-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw16-580;
-        }
     }
 
     // ── Entrance — staggered fade-up once the section is in view ───────────
@@ -267,6 +206,172 @@
             left: auto;
             width: 100%;
             height: auto;
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .aboutUs-container {
+            gap: @vw80-1080;
+        }
+
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw18-1080);
+            }
+
+            .title {
+                font-size: @vw56-1080;
+            }
+
+            .text {
+                font-size: max(1em, @vw18-1080);
+                width: 100%;
+                margin: @vw24-1080 0 0 0;
+            }
+        }
+
+        .indicator {
+            gap: @vw16-1080;
+            margin: @vw32-1080 0 0 0;
+        }
+
+        .indicator-count,
+        .indicator-total {
+            font-size: max(1em, @vw16-1080);
+        }
+
+        .indicator-lines {
+            gap: @vw8-1080;
+        }
+
+        .indicator-line {
+            width: @vw32-1080;
+            height: @vw2-1080;
+            border-radius: @vw2-1080;
+        }
+
+        .indicator-line-fill {
+            border-radius: @vw2-1080;
+        }
+
+        .about-card {
+            padding: @vw40-1080;
+            border-radius: @vw24-1080;
+        }
+
+        .about-card-number {
+            font-size: @vw56-1080;
+        }
+
+        .about-card-title {
+            font-size: max(1em, @vw28-1080);
+        }
+
+        .about-card-text {
+            font-size: max(1em, @vw16-1080);
+        }
+
+        .subTitle,
+        .text,
+        .indicator,
+        .cards-container {
+            transform: translateY(@vw24-1080);
+        }
+
+        &.deck-static .cards-container {
+            gap: @vw24-1080;
+        }
+    }
+
+    // Layout switch — the two columns stack, so the deck goes wider and shorter.
+    @media (max-width: 768px) {
+        .aboutUs-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: @vw48-1080;
+        }
+
+        .cards-container {
+            aspect-ratio: 4 / 3;
+        }
+    }
+
+    @media (max-width: 600px) {
+        // The deck pins for the whole of its scroll, so this section is all the
+        // viewport shows the entire time. The standard .section padding costs
+        // ~330px of that on a phone and pushes the bottom of the deck below the
+        // fold; trimmed so text + indicator + deck fit a short viewport.
+        padding: @vw64-580 0;
+
+        .aboutUs-container {
+            gap: @vw48-580;
+        }
+
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw14-580);
+            }
+
+            .title {
+                font-size: @vw40-580;
+            }
+
+            .text {
+                font-size: max(1em, @vw16-580);
+                margin: @vw24-580 0 0 0;
+            }
+        }
+
+        .indicator {
+            gap: @vw16-580;
+            margin: @vw40-580 0 0 0;
+        }
+
+        .indicator-count,
+        .indicator-total {
+            font-size: max(1em, @vw16-580);
+        }
+
+        .indicator-lines {
+            gap: @vw8-580;
+        }
+
+        .indicator-line {
+            width: @vw32-580;
+            height: max(1px, @vw2-580);
+            border-radius: @vw2-580;
+        }
+
+        .indicator-line-fill {
+            border-radius: @vw2-580;
+        }
+
+        .about-card {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+
+        .about-card-number {
+            font-size: @vw40-580;
+        }
+
+        .about-card-title {
+            font-size: max(1em, @vw24-580);
+        }
+
+        .about-card-text {
+            font-size: max(1em, @vw16-580);
+        }
+
+        .subTitle,
+        .text,
+        .indicator,
+        .cards-container {
+            transform: translateY(@vw24-580);
+        }
+
+        &.deck-static .cards-container {
+            gap: @vw24-580;
         }
     }
 }

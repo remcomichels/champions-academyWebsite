@@ -102,7 +102,14 @@ export function useCardDeck(
       defaults: { ease: 'none', duration: 1 },
       scrollTrigger: {
         trigger: section,
-        start: 'top top',
+        // Centre the whole block in the viewport whenever it fits. Stacked on
+        // mobile the section is shorter than the screen, and pinning it at
+        // 'top top' pushes the heading up under the fixed header while leaving
+        // dead space below the deck. Anchoring on the section's midpoint keeps
+        // heading, indicator and deck framed together. Taller than the viewport
+        // (the side-by-side desktop layout, or a short window) there is nothing
+        // to centre, so fall back to pinning from the top.
+        start: () => (section.offsetHeight < window.innerHeight ? 'center center' : 'top top'),
         end: () => `+=${last * window.innerHeight * distance}`,
         pin: true,
         anticipatePin: 1,
