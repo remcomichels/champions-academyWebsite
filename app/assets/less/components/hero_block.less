@@ -120,16 +120,17 @@
                 .subText-container {
                     .subText {
                         width: 100%;
-                        // Floored like the global `body` rule in _general.less — the
-                        // raw vw value bottoms out around 6px at a 320 viewport.
-                        font-size: clamp(15px, @vw20-1080, 18px);
+                        // Never smaller than body copy — the raw vw value bottoms out
+                        // around 6px at a 320 viewport. 1em inherits the paragraph
+                        // size set on body in _general.less.
+                        font-size: max(1em, @vw20-1080);
                     }
                 }
             }
         }
     }
 
-    @media (max-width: 580px) {
+    @media (max-width: 600px) {
         // @vw88-580 continues the @vw164-1080 curve across the breakpoint instead of
         // near-doubling the offset; the 80px floor keeps the eyebrow clear of the
         // fixed header at 320.

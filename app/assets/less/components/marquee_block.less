@@ -1,7 +1,11 @@
 .marquee {
     .text-group {
         .title {
-            font-size: @vw18;
+            // Never smaller than body copy — the raw vw value computes to ~10px at
+            // a 320 viewport. 1em inherits the paragraph size set on body in
+            // _general.less; max() rather than clamp() so nothing already above the
+            // floor moves, and so the title isn't capped above 1440.
+            font-size: max(1em, @vw18);
             opacity: 0.5;
             text-transform: uppercase;
             text-align: center;
@@ -53,6 +57,80 @@
             }
         }
     }
+
+    @media (max-width: 1080px) {
+        .text-group {
+            .title {
+                font-size: max(1em, @vw18-1080);
+            }
+        }
+
+        .marquee-group {
+            padding-top: @vw32-1080;
+
+            .marquee {
+                .marquee-scroll {
+                    .marquee-content {
+                        gap: @vw48-1080;
+
+                        &:first-child {
+                            padding-right: @vw48-1080;
+                        }
+
+                        .marquee-item {
+                            gap: @vw48-1080;
+
+                            .word {
+                                height: @vw64-1080;
+                            }
+
+                            .divider {
+                                height: @vw8-1080;
+                                width: @vw8-1080;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @media (max-width: 600px) {
+        .text-group {
+            .title {
+                font-size: max(1em, @vw18-580);
+            }
+        }
+
+        .marquee-group {
+            padding-top: @vw32-580;
+
+            .marquee {
+                .marquee-scroll {
+                    .marquee-content {
+                        gap: @vw48-580;
+
+                        &:first-child {
+                            padding-right: @vw48-580;
+                        }
+
+                        .marquee-item {
+                            gap: @vw48-580;
+
+                            .word {
+                                height: @vw48-580;
+                            }
+
+                            .divider {
+                                height: @vw8-580;
+                                width: @vw8-580;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 /* Samsung Internet forced dark (the only browser ignoring our light-mode
@@ -83,80 +161,3 @@ html.samsung-internet .marquee {
     }
 }
 
-@media (max-width: 1080px) {
-    .marquee {
-        .text-group {
-            .title {
-                font-size: @vw18-1080;
-            }
-        }
-
-        .marquee-group {
-            padding-top: @vw32-1080;
-
-            .marquee {
-                .marquee-scroll {
-                    .marquee-content {
-                        gap: @vw48-1080;
-
-                        &:first-child {
-                            padding-right: @vw48-1080;
-                        }
-
-                        .marquee-item {
-                            gap: @vw48-1080;
-
-                            .word {
-                                height: @vw64-1080;
-                            }
-                            
-                            .divider {
-                                height: @vw8-1080;
-                                width: @vw8-1080;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@media (max-width: 600px) {
-    .marquee {
-        .text-group {
-            .title {
-                font-size: @vw18-580;
-            }
-        }
-
-        .marquee-group {
-            padding-top: @vw32-580;
-
-            .marquee {
-                .marquee-scroll {
-                    .marquee-content {
-                        gap: @vw48-580;
-
-                        &:first-child {
-                            padding-right: @vw48-580;
-                        }
-
-                        .marquee-item {
-                            gap: @vw48-580;
-
-                            .word {
-                                height: @vw48-580;
-                            }
-                            
-                            .divider {
-                                height: @vw8-580;
-                                width: @vw8-580;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
