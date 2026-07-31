@@ -158,3 +158,32 @@
 	  	margin-right: -@small;
 	}
 }
+
+// =============================================
+// DECORATIVE "GREEN SUN"
+// =============================================
+
+/**
+ * A white grid revealed by a green radial glow centred on the top-right corner.
+ * Used by the page background (.bgSun) and by the mobile menu panel, which is
+ * opaque and so needs its own copy rather than letting the page one show through.
+ * Cell size comes from the --sun-cell custom property on :root (_general.less).
+ */
+@sunHeight: ~"min(120vh, 150vw)";
+
+.sunGlow() {
+	background: radial-gradient(
+		100vw @sunHeight at 100% 0%,
+		fade(@primary, 38%) 0%,
+		fade(@primary, 12%) 34%,
+		transparent 72%
+	);
+}
+
+.sunGridOverlay() {
+	background-image:
+		repeating-linear-gradient(to right, rgba(@white, 0.24) 0, rgba(@white, 0.24) 1px, transparent 1px, transparent var(--sun-cell)),
+		repeating-linear-gradient(to bottom, rgba(@white, 0.24) 0, rgba(@white, 0.24) 1px, transparent 1px, transparent var(--sun-cell));
+	-webkit-mask-image: radial-gradient(100vw @sunHeight at 100% 0%, @black 0%, transparent 66%);
+	mask-image: radial-gradient(100vw @sunHeight at 100% 0%, @black 0%, transparent 66%);
+}

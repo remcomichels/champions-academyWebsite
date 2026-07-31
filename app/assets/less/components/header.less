@@ -79,6 +79,12 @@ header {
         .hamburger {
             display: none;
         }
+
+        // Menu-only — .menuWrap is display: contents on desktop, so without this
+        // the 3D logo would drop straight into the header bar.
+        .menuLogo {
+            display: none;
+        }
     }
 
     // ── Scrolled state — frost fades in, logo + CTA ease inward ──────────────
@@ -131,27 +137,42 @@ header {
         .headerWrapper {
             .navCol {
                 &.left {
+                    // Above .menuWrap (z-index 1) so the logo stays visible in
+                    // place while the panel slides in behind it.
+                    position: relative;
+                    z-index: 2;
+
                     .logoLink {
                         .logoImage {
-                            width: @vw75-580;
+                            width: clamp(95px, @vw105-580, 130px);
                         }
                     }
                 }
             }
             .hamburger {
+                // Bar metrics as custom properties so the open-state translate can
+                // be derived from them — the X always closes exactly, whichever
+                // end of the clamp is in play.
+                --bar-h: max(2px, @vw2-580);
+                --bar-gap: clamp(6px, @vw9-580, 9px);
+
                 display: flex;
                 flex-direction: column;
-                gap: @vw9-1080;
+                gap: var(--bar-gap);
                 background: none;
                 border: none;
-                padding: 0;
                 cursor: pointer;
                 z-index: 2;
 
+                // Padding cancelled by an equal negative margin: expands the hit
+                // area to ~44px without changing the button's layout footprint.
+                padding: 17px;
+                margin: -17px;
+
                 span {
                     display: block;
-                    width: @vw30-1080;
-                    height: @vw1-1080;
+                    width: clamp(24px, @vw30-580, 32px);
+                    height: var(--bar-h);
                     background-color: @text;
                     .transition();
                     transition-property: transform;
@@ -159,11 +180,11 @@ header {
 
                 &.open {
                     span:nth-child(1) {
-                        transform: translateY(@vw5-1080) rotate(45deg);
+                        transform: translateY(calc((var(--bar-gap) + var(--bar-h)) / 2)) rotate(45deg);
                     }
 
                     span:nth-child(2) {
-                        transform: translateY(-@vw5-1080) rotate(-45deg);
+                        transform: translateY(calc((var(--bar-gap) + var(--bar-h)) / -2)) rotate(-45deg);
                     }
                 }
             }
@@ -187,6 +208,27 @@ header {
                     transform @durationMedium @ease,
                     visibility 0s @ease @durationMedium;
 
+                // Same "green sun" as the page background. The panel is opaque so
+                // it needs its own copy; z-index -1 keeps both layers above the
+                // panel's background-color but behind the nav content (::after
+                // would otherwise paint the grid over the links).
+                &::before,
+                &::after {
+                    content: "";
+                    position: absolute;
+                    inset: 0;
+                    z-index: -1;
+                    pointer-events: none;
+                }
+
+                &::before {
+                    .sunGlow();
+                }
+
+                &::after {
+                    .sunGridOverlay();
+                }
+
                 &.open {
                     transform: translateX(0);
                     visibility: visible;
@@ -196,6 +238,17 @@ header {
                 .navCol.center .menuContent ul {
                     flex-direction: column;
                     gap: @vw24-1080;
+                }
+
+                // 3D logo — full width, taking whatever vertical space is left
+                // under the CTA. align-self beats the panel's align-items:
+                // flex-start, which would otherwise shrink it to content width.
+                .menuLogo {
+                    display: block;
+                    position: relative;
+                    align-self: stretch;
+                    flex: 1;
+                    min-height: @vw200-580;
                 }
             }
         }
@@ -209,34 +262,8 @@ header {
         .headerWrapper {
             padding: @vw32-580 @vw32-580 @vw24-580;
 
-            .navCol {
-                &.left {
-                    .logoLink {
-                        .logoImage {
-                            width: @vw105-580;
-                        }
-                    }
-                }
-            }
-
-            .hamburger {
-                gap: @vw9-580;
-
-                span {
-                    width: @vw30-580;
-                    height: @vw1-580;
-                }
-
-                &.open {
-                    span:nth-child(1) {
-                        transform: translateY(@vw5-580) rotate(45deg);
-                    }
-
-                    span:nth-child(2) {
-                        transform: translateY(-@vw5-580) rotate(-45deg);
-                    }
-                }
-            }
+            // Logo and hamburger are sized by clamps in the 768 block above —
+            // they already cover this range, so no -580 overrides here.
 
             .menuWrap {
                 gap: @vw40-580;

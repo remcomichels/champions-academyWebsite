@@ -9,9 +9,9 @@
             .preText-container {
                 display: inline-block;
                 background-color: @secondary;
-                border-radius: 10px;
+                border-radius: @vw6;
                 padding: @vw12 @vw16;
-                
+
                 .preText {
                     text-transform: uppercase;
                     opacity: 0.75;
@@ -65,6 +65,123 @@
             display: flex;
             gap: @vw24;
             margin: @vw48 0 0 0;
+        }
+    }
+
+    @media (max-width: 1080px) {
+        padding: @vw164-1080 0 0 0 !important;
+
+        .hero-container {
+            .text-container {
+                .preText-container {
+                    border-radius: @vw6-1080;
+                    padding: @vw12-1080 @vw16-1080;
+
+                    .preText {
+                        &::before {
+                            width: @vw8-1080;
+                            height: @vw8-1080;
+                            margin-right: @vw8-1080;
+                            filter: blur(@vw2-1080);
+                        }
+                    }
+                }
+
+                .title-container {
+                    .title {
+                        font-size: @vw164-1080;
+                        margin: @vw24-1080 0 0 0;
+                    }
+
+                    .subTitle {
+                        font-size: @vw128-1080;
+                        margin: -@vw30-1080 0 0 0;
+                    }
+                }
+
+                .subText-container {
+                    .subText {
+                        font-size: @vw20-1080;
+                        margin: @vw48-1080 0 0 0;
+                    }
+                }
+            }
+            .button-container {
+                gap: @vw24-1080;
+                margin: @vw48-1080 0 0 0;
+            }
+        }
+    }
+
+    // The 3D logo is hidden from here down, so the text column takes the full width.
+    @media (max-width: 768px) {
+        .hero-container {
+            .text-container {
+                .subText-container {
+                    .subText {
+                        width: 100%;
+                        // Floored like the global `body` rule in _general.less — the
+                        // raw vw value bottoms out around 6px at a 320 viewport.
+                        font-size: clamp(15px, @vw20-1080, 18px);
+                    }
+                }
+            }
+        }
+    }
+
+    @media (max-width: 580px) {
+        // @vw88-580 continues the @vw164-1080 curve across the breakpoint instead of
+        // near-doubling the offset; the 80px floor keeps the eyebrow clear of the
+        // fixed header at 320.
+        padding: clamp(80px, @vw88-580, 164px) 0 0 0 !important;
+
+        .hero-container {
+            .text-container {
+                .preText-container {
+                    border-radius: @vw6-580;
+                    padding: @vw12-580 @vw16-580;
+
+                    .preText {
+                        // Own size below 580 — the global body clamp bottoms out at
+                        // 16px, which would make the eyebrow outweigh the subText.
+                        font-size: @vw24-580;
+
+                        &::before {
+                            width: @vw8-580;
+                            height: @vw8-580;
+                            margin-right: @vw8-580;
+                            filter: blur(@vw2-580);
+                        }
+                    }
+                }
+
+                .title-container {
+                    .title {
+                        // @vw88-580 ≈ the @vw164-1080 curve at 580, so there's no jump
+                        // across the breakpoint — and it keeps "CHAMPIONS" on one line
+                        // down to 320.
+                        font-size: @vw88-580;
+                        margin: @vw24-580 0 0 0;
+                    }
+
+                    .subTitle {
+                        font-size: @vw68-580;
+                        margin: -@vw16-580 0 0 0;
+                    }
+                }
+
+                .subText-container {
+                    .subText {
+                        // font-size comes from the floored rule in the 768 block above.
+                        margin: @vw32-580 0 0 0;
+                    }
+                }
+            }
+            .button-container {
+                flex-wrap: wrap;
+                gap: @vw24-580;
+                margin: @vw32-580 0 0 0;
+            }
         }
     }
 }

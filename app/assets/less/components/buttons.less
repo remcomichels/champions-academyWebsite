@@ -10,7 +10,7 @@
         border-top-left-radius: @vw4;
         border-bottom-left-radius: @vw4;
         text-transform: uppercase;
-        font-size: @vw14;
+        font-size: clamp(12px, @vw14, 14px);
         color: @black;
         .transition();
         transition-property: border-radius;
@@ -40,19 +40,24 @@
         }
     }
 
-    &:hover {
-        .button__primary {
-            border-top-right-radius: @vw4;
-            border-bottom-right-radius: @vw4;
-        }
+    // Gated on (hover: hover) rather than a width breakpoint: on touch the state
+    // latches after a tap and leaves the plus detached with no way to clear it.
+    // Pointer-capable devices keep the effect at every width.
+    @media (hover: hover) {
+        &:hover {
+            .button__primary {
+                border-top-right-radius: @vw4;
+                border-bottom-right-radius: @vw4;
+            }
 
-        .plus {
-            transform: translateX(@vw10);
-            border-top-left-radius: @vw4;
-            border-bottom-left-radius: @vw4;
+            .plus {
+                transform: translateX(@vw10);
+                border-top-left-radius: @vw4;
+                border-bottom-left-radius: @vw4;
 
-            &::before {
-                transform: rotate(90deg);
+                &::before {
+                    transform: rotate(90deg);
+                }
             }
         }
     }
@@ -62,15 +67,17 @@
         background-color: @buttonSecondary;
         padding: @vw8 @vw12;
         border-radius: @vw4;
-        font-size: @vw14;
+        font-size: clamp(12px, @vw14, 14px);
         text-transform: uppercase;
         color: @text;
         .transition();
         transition-property: color, border-color;
 
-        &:hover {
-            border-color: @primary;
-            color: @primary;
+        @media (hover: hover) {
+            &:hover {
+                border-color: @primary;
+                color: @primary;
+            }
         }
     }
 }
@@ -82,6 +89,7 @@
             padding: @vw6-1080 @vw10-1080;
             border-top-left-radius: @vw4-1080;
             border-bottom-left-radius: @vw4-1080;
+            font-size: clamp(12px, @vw14-1080, 14px);
         }
 
         .plus {
@@ -90,16 +98,18 @@
             border-bottom-right-radius: @vw4-1080;
         }
 
-        &:hover {
-            .button__primary {
-                border-top-right-radius: @vw4-1080;
-                border-bottom-right-radius: @vw4-1080;
-            }
+        @media (hover: hover) {
+            &:hover {
+                .button__primary {
+                    border-top-right-radius: @vw4-1080;
+                    border-bottom-right-radius: @vw4-1080;
+                }
 
-            .plus {
-                transform: translateX(@vw10-1080);
-                border-top-left-radius: @vw4-1080;
-                border-bottom-left-radius: @vw4-1080;
+                .plus {
+                    transform: translateX(@vw10-1080);
+                    border-top-left-radius: @vw4-1080;
+                    border-bottom-left-radius: @vw4-1080;
+                }
             }
         }
 
@@ -107,40 +117,50 @@
         &__secondary {
             padding: @vw6-1080 @vw10-1080;
             border-radius: @vw4-1080;
+            font-size: clamp(12px, @vw14-1080, 14px);
         }
     }
 }
 
 @media (max-width: 768px) {
     .button {
-        // Button primary with plus sign
-        gap: @vw10-580;
-
+        // Button primary with plus sign — the two segments stay attached here, so
+        // only the outer corners are rounded (no gap, no full radius on each half).
         &__primary {
-            padding: @vw6-580 @vw10-580;
-            border-radius: @vw4-580;
+            // Floored to track the floored font-size — the raw vw padding collapses
+            // to ~3px at 320 and leaves a 12px label in a 24px-tall button.
+            padding: clamp(8px, @vw10-580, 11px) clamp(14px, @vw16-580, 18px);
+            border-top-left-radius: @vw4-580;
+            border-bottom-left-radius: @vw4-580;
+            font-size: clamp(12px, @vw14-580, 14px);
         }
 
         .plus {
-            padding: 0 @vw10-580;
-            border-radius: @vw4-580;
+            padding: 0 clamp(12px, @vw14-580, 16px);
+            border-top-right-radius: @vw4-580;
+            border-bottom-right-radius: @vw4-580;
         }
 
-        &:hover {
-            .button__primary {
-                border-top-right-radius: @vw4-580;
-                border-bottom-right-radius: @vw4-580;
-            }
+        @media (hover: hover) {
+            &:hover {
+                .button__primary {
+                    border-top-right-radius: @vw4-580;
+                    border-bottom-right-radius: @vw4-580;
+                }
 
-            .plus {
-                transform: unset;
-                border-top-left-radius: @vw4-580;
-                border-bottom-left-radius: @vw4-580;
-
-                &::before {
-                    transform: unset;
+                .plus {
+                    transform: translateX(@vw10-580);
+                    border-top-left-radius: @vw4-580;
+                    border-bottom-left-radius: @vw4-580;
                 }
             }
+        }
+
+        // Button secondary
+        &__secondary {
+            padding: clamp(8px, @vw10-580, 11px) clamp(14px, @vw16-580, 18px);
+            border-radius: @vw4-580;
+            font-size: clamp(12px, @vw14-580, 14px);
         }
     }
 }
@@ -149,10 +169,12 @@
 .parent-line {
   position: relative;
 
-  &:hover {
-    .link-line {
-      transform: scaleX(1);
-      transform-origin: left;
+  @media (hover: hover) {
+    &:hover {
+      .link-line {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
     }
   }
 
@@ -181,14 +203,16 @@
     transition: transform 0.3s @ease;
   }
 
-  &:hover {
-    &::after {
-      transform: translateY(-50%) translateX(@vw4);
-    }
+  @media (hover: hover) {
+    &:hover {
+      &::after {
+        transform: translateY(-50%) translateX(@vw4);
+      }
 
-    .link-line {
-      transform: scaleX(1);
-      transform-origin: left;
+      .link-line {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
     }
   }
 

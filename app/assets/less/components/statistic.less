@@ -28,19 +28,21 @@
             }
 
             .statistic-subtitle {
-                font-size: @vw16-1080;
+                font-size: clamp(12px, @vw16-1080, 16px);
             }
         }
 
         @media (max-width: 580px) {
-            gap: @vw8-580;
+            gap: clamp(6px, @vw8-580, 8px);
 
+            // @vw34-580 meets the @vw64-1080 curve at 580 so the number doesn't jump
+            // across the breakpoint; the 26px floor keeps it legible down at 320.
             .statistic-count {
-                font-size: @vw48-580;
+                font-size: clamp(26px, @vw34-580, 34px);
             }
 
             .statistic-subtitle {
-                font-size: @vw16-580;
+                font-size: clamp(12px, @vw16-580, 16px);
             }
         }
     }
@@ -48,8 +50,31 @@
     .statistic-divider {
         display: inline-block;
         margin: 0 @vw48;
-        width: @vw1;
+        // Hairlines are a device-pixel concept, not a design-scale one — @vw1 alone
+        // renders at 0.75px and below on smaller viewports and drops out.
+        width: max(1px, @vw1);
         height: @vw48;
         background-color: @buttonSecondary;
+    }
+
+    @media (max-width: 1080px) {
+        .statistic-divider {
+            margin: 0 @vw48-1080;
+            height: @vw48-1080;
+        }
+    }
+
+    // Stacked from here down — the divider turns into a horizontal rule between
+    // rows and supplies the vertical rhythm (the list itself has no gap, and the
+    // last statistic's divider is hidden).
+    @media (max-width: 580px) {
+        flex-direction: column;
+        align-items: stretch;
+
+        .statistic-divider {
+            width: 100%;
+            height: 1px;
+            margin: clamp(12px, @vw20-580, 20px) 0;
+        }
     }
 }

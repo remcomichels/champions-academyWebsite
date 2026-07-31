@@ -3,13 +3,15 @@
 </template>
 
 <script setup lang="ts">
-import { initHeroLogo } from "~/assets/js/components/hero-logo";
+import { initHeroLogo, type HeroLogoOptions } from "~/assets/js/components/hero-logo";
+
+const props = defineProps<{ framing?: HeroLogoOptions["framing"] }>();
 
 const container = useTemplateRef<HTMLElement>("container");
 let destroy: (() => void) | null = null;
 
 onMounted(() => {
-	if (container.value) destroy = initHeroLogo(container.value);
+	if (container.value) destroy = initHeroLogo(container.value, { framing: props.framing });
 });
 
 onUnmounted(() => {

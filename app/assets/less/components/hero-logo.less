@@ -23,3 +23,14 @@
 .hero_block.inView .hero-logo {
     opacity: 1;
 }
+
+/* In the mobile menu the same component is a plain full-size block filling its
+   wrapper, so it has to opt out of three hero-only rules: the corner placement,
+   the 768px hide, and the opacity gate that waits for .hero_block.inView. */
+.menuLogo .hero-logo {
+    display: block;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+}

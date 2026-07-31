@@ -48,6 +48,12 @@
 						</div>
 					</nav>
 				</div>
+				<!-- Fills the empty space below the CTA in the mobile menu. Mounted
+				     only while the menu is open so the WebGL context and its render
+				     loop don't sit running behind a closed panel. -->
+				<div v-if="menuOpen" class="menuLogo">
+					<NuxtHeroLogo framing="sphere" />
+				</div>
 			</div>
 			<button
 				class="hamburger"

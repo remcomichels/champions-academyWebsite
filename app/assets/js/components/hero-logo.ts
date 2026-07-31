@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { RGBELoader } from "three/addons/loaders/RGBELoader.js";
+import { HDRLoader } from "three/addons/loaders/HDRLoader.js";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // hero-logo
@@ -70,7 +70,25 @@ function createMesh(corners: RoundedCorners, height = 4): THREE.Mesh {
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
-export function initHeroLogo(container: HTMLElement): () => void {
+export interface HeroLogoOptions {
+	/**
+	 * How the camera frames the logo.
+	 *
+	 * "box" fits the static silhouette — tightest crop, but only correct while
+	 * the logo faces the camera. During the flip the tilted near corner swings
+	 * toward the lens and perspective magnifies it (~1.8x at the extreme), so it
+	 * can push past the top of the frame in a short container.
+	 *
+	 * "sphere" fits the bounding sphere instead. A sphere centred on the pivot is
+	 * rotation-invariant, so no part of the logo can leave the frame at any angle.
+	 * Costs some apparent size; use it wherever the container may be short.
+	 */
+	framing?: "box" | "sphere";
+}
+
+export function initHeroLogo(container: HTMLElement, options: HeroLogoOptions = {}): () => void {
+	const { framing = "box" } = options;
+
 	const scene = new THREE.Scene();
 
 	const camera = new THREE.PerspectiveCamera(
@@ -93,7 +111,7 @@ export function initHeroLogo(container: HTMLElement): () => void {
 	const pmremGenerator = new THREE.PMREMGenerator(renderer);
 	pmremGenerator.compileEquirectangularShader();
 
-	new RGBELoader().load("/hdr/royal_esplanade_1k.hdr", (texture) => {
+	new HDRLoader().load("/hdr/royal_esplanade_1k.hdr", (texture) => {
 		const envMap = pmremGenerator.fromEquirectangular(texture).texture;
 		scene.environment = envMap;
 		texture.dispose();
@@ -155,9 +173,18 @@ export function initHeroLogo(container: HTMLElement): () => void {
 		const margin = 1.25;
 		const vFov = THREE.MathUtils.degToRad(camera.fov);
 		const hFov = 2 * Math.atan(Math.tan(vFov / 2) * camera.aspect);
-		const distV = (size.y * margin) / (2 * Math.tan(vFov / 2));
-		const distH = (size.x * margin) / (2 * Math.tan(hFov / 2));
-		camera.position.set(0, 0, Math.max(distV, distH) + size.z / 2);
+
+		if (framing === "sphere") {
+			// The logo is recentred on the pivot origin, so this radius is measured
+			// about the axis it spins on — pull back until that sphere clears the
+			// tighter of the two half-angles and nothing can clip at any rotation.
+			const radius = bounds.getBoundingSphere(new THREE.Sphere()).radius * margin;
+			camera.position.set(0, 0, radius / Math.sin(Math.min(vFov, hFov) / 2));
+		} else {
+			const distV = (size.y * margin) / (2 * Math.tan(vFov / 2));
+			const distH = (size.x * margin) / (2 * Math.tan(hFov / 2));
+			camera.position.set(0, 0, Math.max(distV, distH) + size.z / 2);
+		}
 		camera.lookAt(0, 0, 0);
 	}
 	frame();
