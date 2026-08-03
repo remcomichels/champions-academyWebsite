@@ -4,13 +4,12 @@
     // ── Text — pre_title / title / handwritten sub_title ────────────────────
     .text-container {
         .preTitle {
-            font-size: @vw18;
+            // Copy floors at the inherited paragraph size — the raw vw values
+            // fall under 9px on a phone. @vw18 clears it at 1440, so desktop is
+            // unchanged.
+            font-size: max(1em, @vw18);
             text-transform: uppercase;
             color: @primary;
-
-            @media (max-width: 600px) {
-                font-size: @vw14-580;
-            }
         }
 
         .title {
@@ -18,14 +17,6 @@
             font-size: @vw64;
             font-weight: @bold;
             text-transform: uppercase;
-
-            @media (max-width: 1080px) {
-                font-size: @vw56-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw64-580;
-            }
         }
 
         .subTitle {
@@ -33,24 +24,12 @@
             font-size: @vw72;
             color: @primary;
             margin: -@vw10 0 0 0;
-
-            @media (max-width: 1080px) {
-                font-size: @vw56-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw72-580;
-            }
         }
     }
 
     // ── Marquee — full-bleed, both tracks translated by useMarquee ──────────
     .testimonials-marquee-group {
         margin: @vw48 0 0 0;
-
-        @media (max-width: 600px) {
-            margin: @vw32-580 0 0 0;
-        }
     }
 
     .testimonials-marquee {
@@ -68,32 +47,12 @@
         // padding counts toward the measured track width, a flex gap between
         // tracks would not.
         padding-right: @vw32;
-
-        @media (max-width: 1080px) {
-            gap: @vw24-1080;
-            padding-right: @vw24-1080;
-        }
-
-        @media (max-width: 600px) {
-            gap: @vw16-580;
-            padding-right: @vw16-580;
-        }
     }
 
     // ── Testimonial card ─────────────────────────────────────────────────────
     .testimonial {
         flex: 0 0 @vw300;
         width: @vw300;
-
-        @media (max-width: 1080px) {
-            flex-basis: @vw280-1080;
-            width: @vw280-1080;
-        }
-
-        @media (max-width: 600px) {
-            flex-basis: @vw240-580;
-            width: @vw240-580;
-        }
     }
 
     // Portrait video on top
@@ -115,21 +74,13 @@
         justify-content: space-between;
         align-items: center;
         margin: @vw16 0 0 0;
-
-        @media (max-width: 600px) {
-            margin: @vw12-580 0 0 0;
-        }
     }
 
     .testimonial-name {
         font-family: @body;
-        font-size: @vw18;
+        font-size: max(1em, @vw18);
         font-weight: @bold;
         text-transform: uppercase;
-
-        @media (max-width: 600px) {
-            font-size: @vw16-580;
-        }
     }
 
     // Circle flags (HatScripts/circle-flags) — square 512×512 artwork that already
@@ -140,22 +91,16 @@
         height: @vw28;
         flex-shrink: 0;
         border-radius: 50%;
-
-        @media (max-width: 600px) {
-            width: @vw24-580;
-            height: @vw24-580;
-        }
     }
 
     .testimonial-text {
         font-family: @body;
+        // No floor at this tier: @vw14 is 14px at 1440, under body's 17.28px, so
+        // max(1em, …) here would push it past its design size. The mobile tiers
+        // floor it below the name, as on desktop (18px / 14px).
         font-size: @vw14;
         opacity: 0.75;
         margin: @vw12 0 0 0;
-
-        @media (max-width: 600px) {
-            font-size: @vw14-580;
-        }
     }
 
     // ── Entrance — fade-up once the section is in view ───────────────────────
@@ -177,6 +122,130 @@
         .testimonials-marquee-group {
             opacity: 1;
             transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .text-container {
+            .preTitle {
+                font-size: max(1em, @vw18-1080);
+            }
+
+            .title {
+                font-size: @vw56-1080;
+            }
+
+            .subTitle {
+                font-size: @vw56-1080;
+                margin: -@vw10-1080 0 0 0;
+            }
+        }
+
+        .testimonials-marquee-group {
+            margin: @vw48-1080 0 0 0;
+        }
+
+        .marquee-content {
+            gap: @vw24-1080;
+            padding-right: @vw24-1080;
+        }
+
+        .testimonial {
+            flex-basis: @vw280-1080;
+            width: @vw280-1080;
+        }
+
+        .testimonial-video .video-player {
+            border-radius: @vw10-1080;
+        }
+
+        .testimonial-meta {
+            margin: @vw16-1080 0 0 0;
+        }
+
+        .testimonial-name {
+            font-size: max(1em, @vw18-1080);
+        }
+
+        .testimonial-flag {
+            width: max(1.25em, @vw28-1080);
+            height: max(1.25em, @vw28-1080);
+        }
+
+        .testimonial-text {
+            font-size: max(0.75em, @vw14-1080);
+            margin: @vw12-1080 0 0 0;
+        }
+
+        .preTitle,
+        .subTitle,
+        .testimonials-marquee-group {
+            transform: translateY(@vw24-1080);
+        }
+    }
+
+    @media (max-width: 600px) {
+        .text-container {
+            .preTitle {
+                font-size: max(1em, @vw14-580);
+            }
+
+            .title {
+                font-size: @vw64-580;
+            }
+
+            .subTitle {
+                font-size: @vw72-580;
+                margin: -@vw10-580 0 0 0;
+            }
+        }
+
+        .testimonials-marquee-group {
+            margin: @vw32-580 0 0 0;
+        }
+
+        .marquee-content {
+            gap: @vw16-580;
+            padding-right: @vw16-580;
+        }
+
+        // ~1.9 cards per screen instead of 2.3, widening the quote's measure so
+        // it reads without the card eating the whole viewport. @vw290-580 is
+        // exactly half the viewport, so the ratio holds across the range.
+        .testimonial {
+            flex-basis: @vw290-580;
+            width: @vw290-580;
+        }
+
+        .testimonial-video .video-player {
+            border-radius: @vw16-580;
+        }
+
+        .testimonial-meta {
+            margin: @vw12-580 0 0 0;
+        }
+
+        .testimonial-name {
+            font-size: max(1em, @vw16-580);
+        }
+
+        // Tracks the floored name beside it — as raw vw the flag ended up
+        // smaller than the name on mobile, inverting the desktop relationship
+        // where it is the larger of the two.
+        .testimonial-flag {
+            width: max(1.25em, @vw24-580);
+            height: max(1.25em, @vw24-580);
+        }
+
+        .testimonial-text {
+            font-size: max(0.75em, @vw14-580);
+            margin: @vw12-580 0 0 0;
+        }
+
+        .preTitle,
+        .subTitle,
+        .testimonials-marquee-group {
+            transform: translateY(@vw24-580);
         }
     }
 }
