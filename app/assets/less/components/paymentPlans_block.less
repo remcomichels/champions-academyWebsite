@@ -6,10 +6,6 @@
             font-size: max(1em, @vw18);
             text-transform: uppercase;
             color: @primary;
-
-            @media (max-width: 600px) {
-                font-size: max(1em, @vw14-580);
-            }
         }
 
         .title {
@@ -17,14 +13,6 @@
             font-size: @vw64;
             font-weight: @bold;
             text-transform: uppercase;
-
-            @media (max-width: 1080px) {
-                font-size: @vw56-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw64-580;
-            }
         }
     }
 
@@ -33,19 +21,6 @@
         display: flex;
         gap: @vw32;
         margin: @vw48 0 0 0;
-
-        @media (max-width: 1080px) {
-            gap: @vw24-1080;
-        }
-
-        @media (max-width: 768px) {
-            flex-direction: column;
-        }
-
-        @media (max-width: 600px) {
-            gap: @vw16-580;
-            margin: @vw40-580 0 0 0;
-        }
     }
 
     .payment-card {
@@ -56,15 +31,6 @@
         padding: @vw48 @vw32;
         background-color: @secondary;
         border-radius: @vw10;
-
-        @media (max-width: 1080px) {
-            padding: @vw32-1080;
-        }
-
-        @media (max-width: 600px) {
-            padding: @vw24-580;
-            border-radius: @vw16-580;
-        }
     }
 
     // Light trail orbiting the featured (right) card: a ring-only overlay —
@@ -95,16 +61,10 @@
 
     .payment-card-title {
         font-family: @body;
-        font-size: @vw24;
+        // Card copy floors at the inherited paragraph size — the raw vw values
+        // fall under 10px on a phone. @vw24 clears it at 1440, so no change there.
+        font-size: max(1em, @vw24);
         text-transform: uppercase;
-
-        @media (max-width: 1080px) {
-            font-size: @vw20-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw18-580;
-        }
     }
 
     // ── Price + adjective on its right ───────────────────────────────────────
@@ -120,25 +80,13 @@
             font-weight: @bold;
             line-height: 1;
             color: @primary;
-
-            @media (max-width: 1080px) {
-                font-size: @vw48-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw40-580;
-            }
         }
 
         .price-adjective {
             font-family: @body;
-            font-size: @vw18;
+            font-size: max(1em, @vw18);
             margin-left: -@vw8;
             opacity: 0.75;
-
-            @media (max-width: 600px) {
-                font-size: @vw14-580;
-            }
         }
     }
 
@@ -163,15 +111,10 @@
 
         .text-item {
             font-family: @body;
+            // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px,
+            // so max(1em, …) here would push it past its design size on desktop.
+            // The mobile tiers below do floor it.
             font-size: @vw16;
-
-            @media (max-width: 1080px) {
-                font-size: @vw16-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw14-580;
-            }
         }
     }
 
@@ -184,23 +127,19 @@
             font-family: @body;
             font-size: @vw14;
             display: flex;
+            align-items: baseline;
             margin-left: @vw8;
 
+            // No font-size of its own — an em-based one would resolve against
+            // this element's computed size and compound (0.75em of an already
+            // floored 12px renders the label at 9px). Inheriting keeps the
+            // label and the text identical at every breakpoint.
             &::before {
                 content: 'BONUS:';
                 margin-right: @vw5;
                 display: block;
                 font-weight: @bold;
-                font-size: @vw14;
                 text-transform: uppercase;
-            }
-
-            @media (max-width: 1080px) {
-                font-size: @vw16-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw14-580;
             }
         }
     }
@@ -213,14 +152,12 @@
 
     .payment-card-subText {
         font-family: @body;
-        font-size: @vw14;
+        // A muted caption, kept subordinate to the card copy — three quarters of
+        // the paragraph size rather than a full 1em. @vw14 wins at 1440.
+        font-size: max(0.75em, @vw14);
         text-transform: uppercase;
         opacity: 0.6;
         margin: 0 0 @vw16 0;
-
-        @media (max-width: 600px) {
-            font-size: @vw12-580;
-        }
     }
 
     // ── Entrance — staggered fade-up once the section is in view ─────────────
@@ -240,6 +177,187 @@
         .payment-card {
             opacity: 1;
             transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw18-1080);
+            }
+
+            .title {
+                font-size: @vw56-1080;
+            }
+        }
+
+        .cards-container {
+            gap: @vw24-1080;
+            margin: @vw48-1080 0 0 0;
+        }
+
+        .payment-card {
+            padding: @vw32-1080;
+            border-radius: @vw10-1080;
+        }
+
+        .payment-card:last-child::before {
+            filter: drop-shadow(0 0 @vw6-1080 fade(@primary, 50%));
+        }
+
+        .payment-card-title {
+            font-size: max(1em, @vw20-1080);
+        }
+
+        .payment-card-price {
+            gap: @vw8-1080;
+            margin: @vw32-1080 0 0 0;
+
+            .price {
+                font-size: @vw48-1080;
+            }
+
+            .price-adjective {
+                font-size: max(1em, @vw18-1080);
+                margin-left: -@vw8-1080;
+            }
+        }
+
+        .payment-card-benefits {
+            margin: @vw32-1080 0 0 0;
+        }
+
+        .payment-card-benefit {
+            padding: @vw16-1080 0 @vw16-1080 @vw8-1080;
+
+            // List copy, so it floors below the full paragraph size — a 1em
+            // floor flattened benefits, bonus and card title to an identical
+            // 16px and lost the hierarchy desktop has (16px / 14px).
+            .text-item {
+                font-size: max(0.875em, @vw16-1080);
+            }
+        }
+
+        .payment-card-bonus-container {
+            margin: @vw32-1080 0 0 0;
+
+            .payment-card-bonus {
+                font-size: max(0.75em, @vw16-1080);
+                margin-left: @vw8-1080;
+
+                &::before {
+                    margin-right: @vw5-1080;
+                }
+            }
+        }
+
+        .payment-card-footer {
+            padding-top: @vw32-1080;
+        }
+
+        .payment-card-subText {
+            font-size: max(0.75em, @vw14-1080);
+            margin: 0 0 @vw16-1080 0;
+        }
+
+        .subTitle,
+        .payment-card {
+            transform: translateY(@vw24-1080);
+        }
+    }
+
+    // Layout switch — the two plans stack.
+    @media (max-width: 768px) {
+        .cards-container {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw14-580);
+            }
+
+            .title {
+                font-size: @vw64-580;
+            }
+        }
+
+        .cards-container {
+            gap: @vw16-580;
+            margin: @vw40-580 0 0 0;
+        }
+
+        .payment-card {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+
+        .payment-card:last-child::before {
+            filter: drop-shadow(0 0 @vw6-580 fade(@primary, 50%));
+        }
+
+        .payment-card-title {
+            font-size: max(1em, @vw18-580);
+        }
+
+        .payment-card-price {
+            gap: @vw8-580;
+            margin: @vw32-580 0 0 0;
+
+            // Lifted from @vw40-580 (22px at 320, barely above the body copy
+            // under it) but deliberately short of the desktop-matching
+            // @vw56-580: this field carries descriptive copy, not just a
+            // figure — "$1497 (as low as $99/month)" runs to three lines at
+            // that size and strands the adjective beside the first one.
+            .price {
+                font-size: @vw48-580;
+            }
+
+            .price-adjective {
+                font-size: max(1em, @vw14-580);
+                margin-left: -@vw8-580;
+            }
+        }
+
+        .payment-card-benefits {
+            margin: @vw32-580 0 0 0;
+        }
+
+        .payment-card-benefit {
+            padding: @vw16-580 0 @vw16-580 @vw8-580;
+
+            .text-item {
+                font-size: max(0.875em, @vw14-580);
+            }
+        }
+
+        .payment-card-bonus-container {
+            margin: @vw32-580 0 0 0;
+
+            .payment-card-bonus {
+                font-size: max(0.75em, @vw14-580);
+                margin-left: @vw8-580;
+
+                &::before {
+                    margin-right: @vw5-580;
+                }
+            }
+        }
+
+        .payment-card-footer {
+            padding-top: @vw32-580;
+        }
+
+        .payment-card-subText {
+            font-size: max(0.75em, @vw12-580);
+            margin: 0 0 @vw16-580 0;
+        }
+
+        .subTitle,
+        .payment-card {
+            transform: translateY(@vw24-580);
         }
     }
 }
