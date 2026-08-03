@@ -6,10 +6,6 @@
             font-size: max(1em, @vw18);
             text-transform: uppercase;
             color: @primary;
-
-            @media (max-width: 600px) {
-                font-size: max(1em, @vw14-580);
-            }
         }
 
         .title {
@@ -18,29 +14,16 @@
             font-weight: @bold;
             width: 40%;
             text-transform: uppercase;
-
-            @media (max-width: 1080px) {
-                font-size: @vw56-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw64-580;
-            }
         }
 
         .text {
             font-family: @body;
-            font-size: @vw18;
+            // Copy floors at the inherited paragraph size — the raw vw values
+            // fall under 9px on a phone. @vw18 clears it at 1440, so desktop is
+            // unchanged.
+            font-size: max(1em, @vw18);
             opacity: 0.75 !important;
             margin: @vw16 0 0 0;
-
-            @media (max-width: 1080px) {
-                font-size: @vw18-1080;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw16-580;
-            }
         }
     }
 
@@ -50,11 +33,6 @@
         flex-direction: column;
         gap: @vw12;
         margin: @vw48 0 0 0;
-
-        @media (max-width: 600px) {
-            gap: @vw8-580;
-            margin: @vw40-580 0 0 0;
-        }
     }
 
     // ── FAQ item ─────────────────────────────────────────────────────────────
@@ -70,34 +48,23 @@
         border-radius: @vw10;
         cursor: pointer;
         text-align: left;
-
-        @media (max-width: 600px) {
-            padding: @vw16-580 @vw20-580;
-            border-radius: @vw16-580;
-        }
     }
 
     .faq-item-title {
         font-family: @body;
-        font-size: @vw18;
+        font-size: max(1em, @vw18);
         font-weight: @medium;
         color: @title;
-
-        @media (max-width: 1080px) {
-            font-size: @vw18-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw16-580;
-        }
     }
 
     // ── The + → − icon: horizontal bar stays, vertical bar collapses to center
+    // Floored against the question's own text size so it stays a visible target
+    // — as raw vw the box came out at 4.4px with 0.4px bars on a phone.
     .faq-item-icon {
         position: relative;
         flex-shrink: 0;
-        width: @vw20;
-        height: @vw20;
+        width: max(1em, @vw20);
+        height: max(1em, @vw20);
 
         &::before,
         &::after {
@@ -113,13 +80,13 @@
         // Horizontal bar (the minus) — always visible
         &::before {
             width: 100%;
-            height: @vw2;
+            height: max(2px, @vw2);
             transform: translate(-50%, -50%);
         }
 
         // Vertical bar — shrinks from both ends to the middle when open
         &::after {
-            width: @vw2;
+            width: max(2px, @vw2);
             height: 100%;
             transform: translate(-50%, -50%) scaleY(1);
         }
@@ -153,18 +120,11 @@
 
     .faq-item-answer-text {
         font-family: @body;
+        // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px. The
+        // mobile tiers floor it below the question, as on desktop (18px / 16px).
         font-size: @vw16;
         opacity: 0.75;
         padding: @vw20 @vw24 @vw8 @vw24;
-
-        @media (max-width: 1080px) {
-            font-size: @vw16-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw14-580;
-            padding: @vw16-580 @vw20-580 @vw4 @vw20-580;
-        }
     }
 
     // ── Entrance — staggered fade-up once the section is in view ────────────
@@ -194,6 +154,147 @@
         .faq-item {
             opacity: 1;
             transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw18-1080);
+            }
+
+            .title {
+                font-size: @vw56-1080;
+            }
+
+            .text {
+                font-size: max(1em, @vw18-1080);
+                margin: @vw16-1080 0 0 0;
+            }
+        }
+
+        .faq-list {
+            gap: @vw12-1080;
+            margin: @vw48-1080 0 0 0;
+        }
+
+        .faq-item-question {
+            gap: @vw24-1080;
+            padding: @vw20-1080 @vw24-1080;
+            border-radius: @vw10-1080;
+        }
+
+        .faq-item-title {
+            font-size: max(1em, @vw18-1080);
+        }
+
+        .faq-item-icon {
+            width: max(1em, @vw20-1080);
+            height: max(1em, @vw20-1080);
+
+            &::before,
+            &::after {
+                border-radius: @vw2-1080;
+            }
+
+            &::before {
+                height: max(2px, @vw2-1080);
+            }
+
+            &::after {
+                width: max(2px, @vw2-1080);
+            }
+        }
+
+        .faq-item-answer-text {
+            font-size: max(0.875em, @vw16-1080);
+            padding: @vw20-1080 @vw24-1080 @vw8-1080 @vw24-1080;
+        }
+
+        .subTitle,
+        .text,
+        .faq-item {
+            transform: translateY(@vw24-1080);
+        }
+    }
+
+    // The heading column runs full width once there is no room beside it.
+    @media (max-width: 768px) {
+        .text-container .title {
+            width: 100%;
+        }
+
+        // The list carries .container-narrow, whose inset is calc(@vw300 +
+        // @vw58) — 358px at the 1440 reference, but the same 358 design px
+        // becomes 33vw per side here and 61.7vw at 600, i.e. wider than the
+        // viewport, which collapsed the list to zero width. Fall back to the
+        // normal container inset so the questions run full width.
+        .faq-list {
+            padding: 0 @vw128-1080;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw14-580);
+            }
+
+            .title {
+                font-size: @vw64-580;
+            }
+
+            .text {
+                font-size: max(1em, @vw16-580);
+                margin: @vw16-580 0 0 0;
+            }
+        }
+
+        .faq-list {
+            gap: @vw16-580;
+            margin: @vw40-580 0 0 0;
+            padding: 0 @vw32-580; // matches .container at this tier
+        }
+
+        .faq-item-question {
+            gap: @vw16-580;
+            padding: @vw16-580 @vw20-580;
+            border-radius: @vw16-580;
+        }
+
+        .faq-item-title {
+            font-size: max(1em, @vw16-580);
+        }
+
+        .faq-item-icon {
+            width: max(1em, @vw20-580);
+            height: max(1em, @vw20-580);
+
+            &::before,
+            &::after {
+                border-radius: @vw2-580;
+            }
+
+            &::before {
+                height: max(2px, @vw2-580);
+            }
+
+            &::after {
+                width: max(2px, @vw2-580);
+            }
+        }
+
+        .faq-item-answer-text {
+            font-size: max(0.875em, @vw14-580);
+            // The bottom value was @vw4 off the 1440 baseline — the odd one out
+            // in an otherwise -580 rule.
+            padding: @vw16-580 @vw20-580 @vw4-580 @vw20-580;
+        }
+
+        .subTitle,
+        .text,
+        .faq-item {
+            transform: translateY(@vw24-580);
         }
     }
 }
