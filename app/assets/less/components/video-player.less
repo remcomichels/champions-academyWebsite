@@ -326,6 +326,12 @@
 // ── Tablet ────────────────────────────────────────────────────────────────
 @media (max-width: 1080px) {
   .video-player {
+    // The only two design-scale values in this file — everything else here is
+    // UI chrome (tap targets, icon sizes, hairlines) that is deliberately fixed
+    // and must not scale with the viewport.
+    border-radius: @vw10-1080;
+    margin-top: @vw48-1080;
+
     // Volume becomes toggle-only — hide the slider track
     &__volume-track {
       display: none;
@@ -352,6 +358,13 @@
 }
 
 // ── Mobile ────────────────────────────────────────────────────────────────
+@media (max-width: 600px) {
+  .video-player {
+    border-radius: @vw10-580;
+    margin-top: @vw48-580;
+  }
+}
+
 @media (max-width: 768px) {
   .video-player {
     // Controls always visible on touch — no hover needed
