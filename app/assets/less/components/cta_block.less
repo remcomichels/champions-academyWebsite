@@ -38,13 +38,11 @@
     }
 
     .subText {
-        font-size: @vw18;
+        // Copy floors at the inherited paragraph size — the raw vw values fall
+        // under 8px on a phone. @vw18 clears it at 1440, so desktop is unchanged.
+        font-size: max(1em, @vw18);
         text-transform: uppercase;
         color: @primary;
-
-        @media (max-width: 600px) {
-            font-size: @vw14-580;
-        }
     }
 
     .title-container {
@@ -58,14 +56,6 @@
         font-weight: @bold;
         text-transform: uppercase;
         line-height: 1;
-
-        @media (max-width: 1080px) {
-            font-size: @vw72-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw80-580;
-        }
     }
 
     .subTitle {
@@ -73,40 +63,21 @@
         font-size: @vw72;
         color: @primary;
         margin: -@vw6 0 0 0;
-
-        @media (max-width: 1080px) {
-            font-size: @vw56-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw72-580;
-        }
     }
 
     .button-container {
         display: flex;
         gap: @vw24;
         margin: @vw40 0 0 0;
-
-        @media (max-width: 600px) {
-            gap: @vw12-580;
-            margin: @vw32-580 0 0 0;
-        }
     }
 
     .text {
         font-family: @body;
+        // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px. The
+        // mobile tiers floor it below the rest of the copy.
         font-size: @vw16;
         opacity: 0.6;
         margin: @vw24 0 0 0;
-
-        @media (max-width: 1080px) {
-            font-size: @vw16-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw14-580;
-        }
     }
 
     // ── Entrance — staggered fade-up once the section is in view ────────────
@@ -136,6 +107,101 @@
         .text {
             opacity: 0.6;
             transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .subText {
+            font-size: max(1em, @vw18-1080);
+        }
+
+        .title-container {
+            margin: @vw16-1080 0 0 0;
+        }
+
+        .title {
+            font-size: @vw72-1080;
+        }
+
+        .subTitle {
+            font-size: @vw56-1080;
+            margin: -@vw6-1080 0 0 0;
+        }
+
+        .button-container {
+            gap: @vw24-1080;
+            margin: @vw40-1080 0 0 0;
+        }
+
+        .text {
+            font-size: max(0.875em, @vw16-1080);
+            margin: @vw24-1080 0 0 0;
+        }
+
+        .subText,
+        .title-container,
+        .button-container,
+        .text {
+            transform: translateY(@vw24-1080);
+        }
+    }
+
+    // The heading runs the full column once there is no room to inset it.
+    @media (max-width: 768px) {
+        .title-container {
+            width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) {
+        // Lifted from the desktop +10%: stacked, the column runs much further
+        // down the section, and the figure's tail sat behind the closing text
+        // line. -10% clears it while still sitting behind the title.
+        .cta-figure-layer {
+            transform: translateY(-10%);
+        }
+
+        .subText {
+            font-size: max(1em, @vw14-580);
+        }
+
+        .title-container {
+            margin: @vw16-580 0 0 0;
+        }
+
+        // @vw80-580 rendered at 44px, which useLetterAnimation split onto three
+        // lines — 36px is the threshold for two at a 320 viewport, and this
+        // lands at 35.3px. The splitter freezes line breaks at mount, so the
+        // size has to be right in CSS; changing it later cannot reflow them.
+        .title {
+            font-size: @vw64-580;
+        }
+
+        .subTitle {
+            font-size: @vw72-580;
+            margin: -@vw6-580 0 0 0;
+        }
+
+        // Stacked — side by side the pair filled the container exactly at 320
+        // with nothing left for the gap. Centred rather than stretched, to sit
+        // with the rest of the centred column.
+        .button-container {
+            flex-direction: column;
+            align-items: center;
+            gap: @vw16-580;
+            margin: @vw32-580 0 0 0;
+        }
+
+        .text {
+            font-size: max(0.875em, @vw14-580);
+            margin: @vw24-580 0 0 0;
+        }
+
+        .subText,
+        .title-container,
+        .button-container,
+        .text {
+            transform: translateY(@vw24-580);
         }
     }
 }
