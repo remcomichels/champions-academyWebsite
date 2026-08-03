@@ -6,10 +6,6 @@
             font-size: max(1em, @vw18);
             text-transform: uppercase;
             color: @primary;
-
-            @media (max-width: 600px) {
-                font-size: max(1em, @vw14-580);
-            }
         }
 
         .title {
@@ -18,19 +14,6 @@
             font-weight: @bold;
             text-transform: uppercase;
             width: 40%;
-
-            @media (max-width: 1080px) {
-                font-size: @vw56-1080;
-                width: 60%;
-            }
-
-            @media (max-width: 768px) {
-                width: 100%;
-            }
-
-            @media (max-width: 600px) {
-                font-size: @vw64-580;
-            }
         }
     }
 
@@ -40,15 +23,6 @@
         align-items: stretch; // text card matches the team column's height
         gap: @vw24;
         margin: @vw48 0 0 0;
-
-        @media (max-width: 768px) {
-            flex-direction: column;
-        }
-
-        @media (max-width: 600px) {
-            gap: @vw16-580;
-            margin: @vw40-580 0 0 0;
-        }
     }
 
     .team-cards-column {
@@ -56,10 +30,6 @@
         display: flex;
         flex-direction: column;
         gap: @vw24;
-
-        @media (max-width: 600px) {
-            gap: @vw16-580;
-        }
     }
 
     // ── Team card ────────────────────────────────────────────────────────────
@@ -82,11 +52,6 @@
         &.is-left {
             flex-direction: row-reverse; // image left, text right
         }
-
-        @media (max-width: 600px) {
-            padding: @vw24-580;
-            border-radius: @vw16-580;
-        }
     }
 
     .team-card-content {
@@ -98,37 +63,47 @@
 
     .team-card-name {
         font-family: @body;
-        font-size: @vw18;
+        // Copy floors at the inherited paragraph size — the raw vw values fall
+        // under 10px on a phone. @vw18 clears it at 1440, so desktop is unchanged.
+        font-size: max(1em, @vw18);
         font-weight: @bold;
         line-height: 1.2;
-
-        @media (max-width: 600px) {
-            font-size: @vw18-580;
-        }
     }
 
     .team-card-subtext {
         font-family: @body;
+        // No floor at this tier: @vw14 is 14px at 1440, under body's 17.28px. The
+        // mobile tiers floor it below the name, as on desktop (18px / 14px).
         font-size: @vw14;
         opacity: 0.5;
         margin: @vw8 0 0 0;
-
-        @media (max-width: 600px) {
-            font-size: @vw12-580;
-        }
     }
 
-    // Image: no padding, flush to the bottom edge, sticks out @vw6 above the top.
+    // Image: flush to the card's bottom edge, sticking out @vw6 above the top.
+    // Anchored on both edges rather than given a fixed height — the card's
+    // height varies with its content and min-height, so a fixed height drifted
+    // against the bottom (14.5px outside the card at 600, 21px short at 1080).
+    // Both offsets cancel that tier's padding, so they are restated per tier.
+    // The offsets live on the container, not the img: an absolutely positioned
+    // replaced element with height:auto ignores `bottom` and falls back to its
+    // intrinsic height, so it could never be anchored to both edges. As a
+    // stretched flex item, negative margins do it properly — the box grows to
+    // the card's height plus the overhang, and the img just fills it.
     .team-card-image {
         flex: 0 0 40%;
         align-self: stretch;
         position: relative;
+        margin-top: -(@vw32 + @vw6); // cancel top padding + stick out @vw6
+        margin-bottom: -(@vw32); // cancel bottom padding — flush to the card edge
 
+        // Absolute so the photo's intrinsic height can't feed back into the flex
+        // line and inflate the card — it fills the box the margins define.
         img {
             position: absolute;
-            top: -(@vw32 + @vw6); // cancel top padding + stick out @vw6
+            top: 0;
+            left: 0;
             width: 100%;
-            height: @vw120;
+            height: 100%;
             object-fit: contain;
             object-position: bottom center;
         }
@@ -146,11 +121,6 @@
         padding: @vw32;
         background-color: @secondary;
         border-radius: @vw10;
-
-        @media (max-width: 600px) {
-            padding: @vw24-580;
-            border-radius: @vw16-580;
-        }
     }
 
     .text-card-title {
@@ -159,29 +129,12 @@
         font-weight: @bold;
         text-transform: uppercase;
         margin: 0 0 @vw24 0;
-
-        @media (max-width: 1080px) {
-            font-size: @vw28-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw24-580;
-            margin: 0 0 @vw16-580 0;
-        }
     }
 
     .text-card-body {
         font-family: @body;
         font-size: @vw16;
         font-weight: @regular;
-
-        @media (max-width: 1080px) {
-            font-size: @vw16-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw14-580;
-        }
 
         p + p {
             margin-top: @vw24;
@@ -216,6 +169,156 @@
         .text-card {
             opacity: 1;
             transform: translateY(0);
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw18-1080);
+            }
+
+            .title {
+                font-size: @vw56-1080;
+                width: 60%;
+            }
+        }
+
+        // Matches .team-cards-column so every gap in the stack is equal.
+        .cards-container {
+            gap: @vw32-1080;
+            margin: @vw48-1080 0 0 0;
+        }
+
+        .team-cards-column {
+            gap: @vw32-1080;
+        }
+
+        .team-card {
+            gap: @vw16-1080;
+            min-height: @vw130-1080;
+            padding: @vw32-1080;
+            border-radius: @vw10-1080;
+        }
+
+        .team-card-name {
+            font-size: max(1em, @vw18-1080);
+        }
+
+        .team-card-subtext {
+            font-size: max(0.75em, @vw14-1080);
+            margin: @vw8-1080 0 0 0;
+        }
+
+        .team-card-image {
+            margin-top: -(@vw32-1080 + @vw6-1080);
+            margin-bottom: -(@vw32-1080);
+        }
+
+        .text-card {
+            padding: @vw32-1080;
+            border-radius: @vw10-1080;
+        }
+
+        .text-card-title {
+            font-size: max(1.5em, @vw28-1080);
+            margin: 0 0 @vw24-1080 0;
+        }
+
+        .text-card-body {
+            font-size: max(0.875em, @vw16-1080);
+
+            p + p {
+                margin-top: @vw24-1080;
+            }
+        }
+
+        .subTitle,
+        .team-card,
+        .text-card {
+            transform: translateY(@vw24-1080);
+        }
+    }
+
+    // Layout switch — the team column and the text card stack.
+    @media (max-width: 768px) {
+        .text-container .title {
+            width: 100%;
+        }
+
+        .cards-container {
+            flex-direction: column;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .text-container {
+            .subTitle {
+                font-size: max(1em, @vw14-580);
+            }
+
+            .title {
+                font-size: @vw64-580;
+            }
+        }
+
+        .cards-container {
+            gap: @vw28-580;
+            margin: @vw40-580 0 0 0;
+        }
+
+        .team-cards-column {
+            gap: @vw28-580;
+        }
+
+        .team-card {
+            gap: @vw16-580;
+            min-height: @vw130-580;
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+
+        .team-card-name {
+            font-size: max(1em, @vw18-580);
+        }
+
+        .team-card-subtext {
+            font-size: max(0.75em, @vw12-580);
+            margin: @vw8-580 0 0 0;
+        }
+
+        // Offset tracks this tier's @vw24-580 padding, not the baseline's @vw32 —
+        // otherwise it under-cancels and the image sits inside the card instead
+        // of breaking above it.
+        .team-card-image {
+            margin-top: -(@vw24-580 + @vw6-580);
+            margin-bottom: -(@vw24-580);
+        }
+
+        .text-card {
+            padding: @vw24-580;
+            border-radius: @vw16-580;
+        }
+
+        // Same N as the desktop @vw32, with a floor — at @vw24-580 the title
+        // came out at 13px, smaller than the body copy beneath it.
+        .text-card-title {
+            font-size: max(1.5em, @vw32-580);
+            margin: 0 0 @vw16-580 0;
+        }
+
+        .text-card-body {
+            font-size: max(0.875em, @vw14-580);
+
+            p + p {
+                margin-top: @vw24-580;
+            }
+        }
+
+        .subTitle,
+        .team-card,
+        .text-card {
+            transform: translateY(@vw24-580);
         }
     }
 }
