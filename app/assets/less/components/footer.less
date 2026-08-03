@@ -4,10 +4,6 @@
     .footer-inner {
         padding-top: @vw80;
         padding-bottom: @vw24;
-
-        @media (max-width: 600px) {
-            padding-top: @vw48-580;
-        }
     }
 
     // ── Main row — brand left, link columns right; bordered top and bottom ──
@@ -23,26 +19,6 @@
         padding: @vw40 @vw128;
         border-top: 1px solid @border;
         border-bottom: 1px solid @border;
-
-        @media (max-width: 1080px) {
-            padding-left: @vw128-1080;
-            padding-right: @vw128-1080;
-        }
-
-        @media (max-width: 768px) {
-            flex-direction: column;
-            gap: @vw40-1080;
-        }
-
-        @media (max-width: 600px) {
-            padding-left: @vw32-580;
-            padding-right: @vw32-580;
-        }
-
-        @media (max-width: 600px) {
-            padding-top: @vw32-580;
-            padding-bottom: @vw32-580;
-        }
     }
 
     .footer-brand {
@@ -54,10 +30,6 @@
     .footer-logo {
         width: @vw120;
         height: auto;
-
-        @media (max-width: 600px) {
-            width: @vw100-580;
-        }
     }
 
     .footer-subtitle {
@@ -65,35 +37,23 @@
         font-size: @vw40;
         color: @primary;
         line-height: 1;
-
-        @media (max-width: 600px) {
-            font-size: @vw40-580;
-        }
     }
 
     // ── Link columns ────────────────────────────────────────────────────────
     .footer-columns {
         display: flex;
         gap: @vw128;
-
-        @media (max-width: 600px) {
-            gap: @vw64-580;
-            flex-wrap: wrap;
-        }
     }
 
     .footer-column-title {
         font-family: @body;
-        font-size: @vw14;
+        // A caption above each column — kept subordinate to the links under it,
+        // so it floors at three quarters of the paragraph size rather than 1em.
+        font-size: max(0.75em, @vw14);
         text-transform: uppercase;
         letter-spacing: 0.05em;
         opacity: 0.5;
         margin: 0 0 @vw20 0;
-
-        @media (max-width: 600px) {
-            font-size: @vw12-580;
-            margin: 0 0 @vw16-580 0;
-        }
     }
 
     .footer-column-links {
@@ -105,16 +65,11 @@
 
     .footer-link {
         font-family: @body;
+        // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px, so
+        // max(1em, …) here would push it past its design size. The mobile tiers
+        // floor it — these are tap targets, so they hold the full paragraph size.
         font-size: @vw16;
         color: @text;
-
-        @media (max-width: 1080px) {
-            font-size: @vw16-1080;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw16-580;
-        }
     }
 
     // ── Sub row — copyright · disclaimer · credit ───────────────────────────
@@ -125,17 +80,7 @@
         gap: @vw24;
         padding: @vw24 0 0 0;
         font-family: @body;
-        font-size: @vw14;
-
-        @media (max-width: 768px) {
-            flex-direction: column;
-            gap: @vw12;
-            text-align: center;
-        }
-
-        @media (max-width: 600px) {
-            font-size: @vw12-580;
-        }
+        font-size: max(0.75em, @vw14);
     }
 
     .footer-copyright, .footer-disclaimer {
@@ -155,6 +100,124 @@
     .footer-credit-link {
         &::after {
             display: none;
+        }
+    }
+
+    @media (max-width: 1080px) {
+        .footer-inner {
+            padding-top: @vw80-1080;
+            padding-bottom: @vw24-1080;
+        }
+
+        .footer-main {
+            gap: @vw48-1080;
+            padding-top: @vw40-1080;
+            padding-bottom: @vw40-1080;
+            padding-left: @vw128-1080;
+            padding-right: @vw128-1080;
+        }
+
+        .footer-brand {
+            gap: @vw16-1080;
+        }
+
+        .footer-logo {
+            width: @vw120-1080;
+        }
+
+        .footer-subtitle {
+            font-size: @vw40-1080;
+        }
+
+        .footer-columns {
+            gap: @vw128-1080;
+        }
+
+        .footer-column-title {
+            font-size: max(0.75em, @vw14-1080);
+            margin: 0 0 @vw20-1080 0;
+        }
+
+        .footer-column-links {
+            gap: @vw12-1080;
+        }
+
+        .footer-link {
+            font-size: max(1em, @vw16-1080);
+        }
+
+        .footer-sub {
+            gap: @vw24-1080;
+            padding: @vw24-1080 0 0 0;
+            font-size: max(0.75em, @vw14-1080);
+        }
+    }
+
+    // Layout switch — brand above the link columns, sub row centred in a stack.
+    @media (max-width: 768px) {
+        .footer-main {
+            flex-direction: column;
+            gap: @vw40-1080;
+        }
+
+        .footer-sub {
+            flex-direction: column;
+            gap: @vw12-1080;
+            text-align: center;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .footer-inner {
+            padding-top: @vw48-580;
+            padding-bottom: @vw24-580;
+        }
+
+        .footer-main {
+            gap: @vw40-580;
+            padding-top: @vw32-580;
+            padding-bottom: @vw32-580;
+            padding-left: @vw32-580;
+            padding-right: @vw32-580;
+        }
+
+        .footer-brand {
+            gap: @vw16-580;
+        }
+
+        // Lifted from @vw100-580 (55px) — the header wordmark sits at 95px on
+        // the same viewport, so the footer one read as an afterthought.
+        // @vw145-580 is exactly 25vw, i.e. 80px at 320.
+        .footer-logo {
+            width: @vw145-580;
+        }
+
+        .footer-subtitle {
+            font-size: @vw56-580;
+        }
+
+        .footer-columns {
+            gap: @vw64-580;
+            flex-wrap: wrap;
+        }
+
+        .footer-column-title {
+            font-size: max(0.75em, @vw12-580);
+            margin: 0 0 @vw16-580 0;
+        }
+
+        .footer-column-links {
+            gap: @vw12-580;
+        }
+
+        .footer-link {
+            font-size: max(1em, @vw16-580);
+        }
+
+        .footer-sub {
+            gap: @vw12-580;
+            padding: @vw24-580 0 0 0;
+            font-size: max(0.75em, @vw12-580);
         }
     }
 }
