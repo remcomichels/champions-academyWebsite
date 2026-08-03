@@ -102,14 +102,23 @@ export function useCardDeck(
       defaults: { ease: 'none', duration: 1 },
       scrollTrigger: {
         trigger: section,
-        // Centre the whole block in the viewport whenever it fits. Stacked on
-        // mobile the section is shorter than the screen, and pinning it at
-        // 'top top' pushes the heading up under the fixed header while leaving
-        // dead space below the deck. Anchoring on the section's midpoint keeps
-        // heading, indicator and deck framed together. Taller than the viewport
-        // (the side-by-side desktop layout, or a short window) there is nothing
-        // to centre, so fall back to pinning from the top.
-        start: () => (section.offsetHeight < window.innerHeight ? 'center center' : 'top top'),
+        // Centre the deck itself, not the section. Centring the whole block
+        // works while it fits the viewport, but stacked it can outgrow the
+        // screen (893px at 600x800) and the fallback pinned from the top, which
+        // pushed the deck — last in the stack — clean past the fold. Anchoring
+        // on the deck's midpoint keeps the cards framed at any section height.
+        //
+        // While the whole section fits, centring it frames heading, indicator
+        // and deck together with nothing lost, so that wins. Only once it
+        // outgrows the screen do the two compete — and there the deck is what
+        // has to stay framed, so the heading is allowed to scroll up.
+        start: () => {
+          const deck = cards[0]?.parentElement
+          if (!deck || section.offsetHeight < window.innerHeight) return 'center center'
+          const deckRect = deck.getBoundingClientRect()
+          const offset = deckRect.top - section.getBoundingClientRect().top + deckRect.height / 2
+          return `top+=${offset} center`
+        },
         end: () => `+=${last * window.innerHeight * distance}`,
         pin: true,
         anticipatePin: 1,

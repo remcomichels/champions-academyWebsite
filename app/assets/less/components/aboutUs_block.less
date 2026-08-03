@@ -210,8 +210,44 @@
     }
 
     @media (max-width: 1080px) {
+        // The deck pins for the whole of its scroll, so this section is all the
+        // viewport shows. The standard .section padding is ~250px a side here,
+        // which alone is most of a tablet screen.
+        padding: @vw80-1080 0;
+
+        // Stack from here down, not 768. Side by side, the text column and the
+        // deck each get half of an already narrow viewport — at 820px neither
+        // has room.
         .aboutUs-container {
-            gap: @vw80-1080;
+            flex-direction: column;
+            align-items: stretch;
+            gap: @vw48-1080;
+        }
+
+        // Full width, the card only needs ~190px for its content but a 4:3 box
+        // gave it 400-618px. That surplus is what space-between was spreading
+        // between the number, title and text.
+        // No ratio here — the deck sizes to its tallest card. The cards are
+        // stacked in a single grid cell rather than absolutely positioned, so
+        // they still overlap but now contribute their height, and the box
+        // tracks the content at any width. A fixed ratio couldn't: card text
+        // wraps to more lines as the box narrows, so the content height doesn't
+        // fall off with width the way a ratio does.
+        .cards-container {
+            aspect-ratio: auto;
+            display: grid;
+            flex: 0 0 auto;
+        }
+
+        .about-card {
+            position: relative;
+            grid-area: 1 / 1;
+            top: auto;
+            left: auto;
+            width: auto;
+            height: auto;
+            justify-content: flex-start;
+            gap: @vw16-1080;
         }
 
         .text-container {
@@ -284,18 +320,6 @@
     }
 
     // Layout switch — the two columns stack, so the deck goes wider and shorter.
-    @media (max-width: 768px) {
-        .aboutUs-container {
-            flex-direction: column;
-            align-items: stretch;
-            gap: @vw48-1080;
-        }
-
-        .cards-container {
-            aspect-ratio: 4 / 3;
-        }
-    }
-
     @media (max-width: 600px) {
         // The deck pins for the whole of its scroll, so this section is all the
         // viewport shows the entire time. The standard .section padding costs
@@ -349,6 +373,7 @@
         .about-card {
             padding: @vw24-580;
             border-radius: @vw16-580;
+            gap: @vw16-580;
         }
 
         .about-card-number {
