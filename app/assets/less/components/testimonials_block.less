@@ -68,7 +68,7 @@
         }
     }
 
-    // Name left, flag right
+    // Icon + name left, flag right
     .testimonial-meta {
         display: flex;
         justify-content: space-between;
@@ -76,11 +76,28 @@
         margin: @vw16 0 0 0;
     }
 
+    // Groups the icon with the name so space-between still pushes the flag to
+    // the far edge — as three loose children the icon, name and flag would
+    // spread evenly instead.
+    .testimonial-identity {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        min-width: 0;
+    }
+
+    // Sized off the name rather than the inherited body size, so the pair
+    // scales together at every tier. Same floor as the name for the same
+    // reason — the raw vw value falls under 9px on a phone.
+    .icon-candles {
+        font-size: max(1em, @vw18);
+        flex-shrink: 0;
+    }
+
     .testimonial-name {
         font-family: @body;
         font-size: max(1em, @vw18);
         font-weight: @bold;
-        text-transform: uppercase;
     }
 
     // Circle flags (HatScripts/circle-flags) — square 512×512 artwork that already
@@ -163,6 +180,14 @@
             margin: @vw16-1080 0 0 0;
         }
 
+        .testimonial-identity {
+            gap: @vw8-1080;
+        }
+
+        .icon-candles {
+            font-size: max(1em, @vw18-1080);
+        }
+
         .testimonial-name {
             font-size: max(1em, @vw18-1080);
         }
@@ -223,6 +248,14 @@
 
         .testimonial-meta {
             margin: @vw12-580 0 0 0;
+        }
+
+        .testimonial-identity {
+            gap: @vw8-580;
+        }
+
+        .icon-candles {
+            font-size: max(1em, @vw16-580);
         }
 
         .testimonial-name {

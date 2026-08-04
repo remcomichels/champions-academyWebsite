@@ -5,7 +5,10 @@
 		</div>
 
 		<div class="testimonial-meta">
-			<p class="testimonial-name">{{ blok.name }}</p>
+			<div class="testimonial-identity">
+				<span class="icon-candles" aria-hidden="true" />
+				<p class="testimonial-name">{{ blok.name }}</p>
+			</div>
 			<NuxtAppImage
 				v-if="flagSrc"
 				:src="flagSrc"
