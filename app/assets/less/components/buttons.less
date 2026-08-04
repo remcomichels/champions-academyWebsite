@@ -84,16 +84,18 @@
 
 @media (max-width: 1080px) {
     .button {
-        // Button primary with plus sign
+        // Button primary with plus sign. Floored like the mobile tier: the raw
+        // vw padding collapses to 4px/7px at the low end of this range, which
+        // left a 27px-tall button against 43px just below the breakpoint.
         &__primary {
-            padding: @vw6-1080 @vw10-1080;
+            padding: clamp(9px, @vw10-1080, 12px) clamp(15px, @vw16-1080, 20px);
             border-top-left-radius: @vw4-1080;
             border-bottom-left-radius: @vw4-1080;
             font-size: clamp(12px, @vw14-1080, 14px);
         }
 
         .plus {
-            padding: 0 @vw10-1080;
+            padding: 0 clamp(13px, @vw14-1080, 18px);
             border-top-right-radius: @vw4-1080;
             border-bottom-right-radius: @vw4-1080;
         }
@@ -115,7 +117,7 @@
 
         // Button secondary
         &__secondary {
-            padding: @vw6-1080 @vw10-1080;
+            padding: clamp(9px, @vw10-1080, 12px) clamp(15px, @vw16-1080, 20px);
             border-radius: @vw4-1080;
             font-size: clamp(12px, @vw14-1080, 14px);
         }

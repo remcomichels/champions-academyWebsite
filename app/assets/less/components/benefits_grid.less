@@ -164,9 +164,27 @@
     }
 }
 
-@media (max-width: 768px) {
+// Three columns only above 1080 — below that a third of the row is too narrow
+// for the title and story text to sit side by side.
+@media (max-width: 1080px) {
     .benefits-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+// One column from here. At two columns a 768px screen gives each card ~287px,
+// and the story text fills nearly the whole card. Full width gives it a much
+// wider measure, so it wraps to fewer lines and the image reads again.
+@media (max-width: 768px) {
+    .benefits-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .benefit-card {
+        // Full width, a 1:1 ratio turns the card into a 534px-tall block at 600
+        // and runs the six-card grid to ~3300px. 4:3 keeps the image readable
+        // without the dead height.
+        aspect-ratio: 4 / 3;
     }
 }
 
@@ -174,14 +192,9 @@
     .benefits-grid {
         gap: @vw12-580;
         margin: @vw40-580 0 0 0;
-        grid-template-columns: repeat(1, 1fr);
     }
 
     .benefit-card {
-        // One column makes the card as wide as the container, so a 1:1 ratio
-        // turns it into a 534px-tall block at 600 and the six-card grid runs to
-        // ~3300px. 4:3 keeps the image readable without the dead height.
-        aspect-ratio: 4 / 3;
         --spot: @vw280-580;
         padding: @vw32-580;
         border-radius: @vw16-580;

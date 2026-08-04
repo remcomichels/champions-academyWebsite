@@ -190,12 +190,17 @@
             margin: @vw48-1080 0 0 0;
         }
 
+        // Two across rather than four stacked. A full-width card left the name
+        // and photo marooned at opposite ends of the row; in a 2x2 grid every
+        // card fills its cell, so all four match in width and in height.
         .team-cards-column {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
             gap: @vw32-1080;
         }
 
         .team-card {
-            gap: @vw16-1080;
+            gap: @vw32-1080;
             min-height: @vw130-1080;
             padding: @vw32-1080;
             border-radius: @vw10-1080;
@@ -210,7 +215,11 @@
             margin: @vw8-1080 0 0 0;
         }
 
+        // Set width rather than 40% of the card: stacked the card is full
+        // width, so 40% gave the photo a 253px box to render 66px into and
+        // left 187px blank beside it.
         .team-card-image {
+            flex: 0 0 @vw100-1080;
             margin-top: -(@vw32-1080 + @vw6-1080);
             margin-bottom: -(@vw32-1080);
         }
@@ -240,8 +249,10 @@
         }
     }
 
-    // Layout switch — the team column and the text card stack.
-    @media (max-width: 768px) {
+    // Layout switch — the team column and the text card stack. At 1080: in a
+    // 1/3 column the cards are only 203-285px wide here, so the longer names
+    // wrap and the cards — and their photos — end up different heights.
+    @media (max-width: 1080px) {
         .text-container .title {
             width: 100%;
         }
@@ -267,7 +278,9 @@
             margin: @vw40-580 0 0 0;
         }
 
+        // Back to one per row — two across leaves each card too narrow here.
         .team-cards-column {
+            grid-template-columns: 1fr;
             gap: @vw28-580;
         }
 
@@ -291,6 +304,7 @@
         // otherwise it under-cancels and the image sits inside the card instead
         // of breaking above it.
         .team-card-image {
+            flex: 0 0 @vw100-580;
             margin-top: -(@vw24-580 + @vw6-580);
             margin-bottom: -(@vw24-580);
         }

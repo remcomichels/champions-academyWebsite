@@ -15,7 +15,8 @@
     .transition(opacity, @durationSlow, @easeOut);
     transition-delay: 0.4s;
 
-    @media (max-width: 768px) {
+    // Hidden from 1080 down, matching where the header switches to the menu.
+    @media (max-width: 1080px) {
         display: none;
     }
 }

@@ -131,8 +131,10 @@ header {
     }
 }
 
-/* Hamburger + slide-in menu panel (layout-only breakpoint) */
-@media (max-width: 768px) {
+/* Hamburger + slide-in menu panel. At 1080 so it lands on the same boundary
+   as the hero dropping its 3D logo — below that the desktop nav, CTA and logo
+   no longer fit the bar comfortably. */
+@media (max-width: 1080px) {
     header {
         .headerWrapper {
             .navCol {
@@ -238,6 +240,13 @@ header {
                 .navCol.center .menuContent ul {
                     flex-direction: column;
                     gap: @vw24-1080;
+
+                    // In a full-screen panel the links were still at the body
+                    // size (16px) — far too small for the only navigation on
+                    // the page at this width.
+                    .navLink {
+                        font-size: @vw40-1080;
+                    }
                 }
 
                 // 3D logo — full width, taking whatever vertical space is left
@@ -271,6 +280,10 @@ header {
 
                 .navCol.center .menuContent ul {
                     gap: @vw24-580;
+
+                    .navLink {
+                        font-size: @vw40-580;
+                    }
                 }
             }
         }

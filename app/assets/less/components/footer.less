@@ -15,7 +15,7 @@
         display: flex;
         justify-content: space-between;
         gap: @vw48;
-        .fullWidth(@vw128, @vw128-1080, @vw32-580);
+        .fullWidth(@vw128, @vw64-1080, @vw32-580);
         padding: @vw40 @vw128;
         border-top: 1px solid @border;
         border-bottom: 1px solid @border;
@@ -87,6 +87,10 @@
         opacity: 0.6;
     }
 
+    .footer-disclaimer {
+        text-align: center;
+    }
+
     // Fade the credit line via text colour, not opacity: opacity composites the
     // whole subtree so the link couldn't be made fully opaque again. A faded
     // colour only touches inherited text — the link sets its own @primary colour
@@ -113,8 +117,8 @@
             gap: @vw48-1080;
             padding-top: @vw40-1080;
             padding-bottom: @vw40-1080;
-            padding-left: @vw128-1080;
-            padding-right: @vw128-1080;
+            padding-left: @vw64-1080;
+            padding-right: @vw64-1080;
         }
 
         .footer-brand {
@@ -158,6 +162,12 @@
         .footer-main {
             flex-direction: column;
             gap: @vw40-1080;
+        }
+
+        // Stacked, the columns have the full row to themselves — left-packed
+        // they used 452px of 677 and trailed off. Spread them edge to edge.
+        .footer-columns {
+            justify-content: space-between;
         }
 
         .footer-sub {

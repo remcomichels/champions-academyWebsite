@@ -279,7 +279,8 @@
     }
 
     // Layout switch — text and video stack, so the copy takes the full width.
-    @media (max-width: 768px) {
+    // At 1080: side by side, each column gets half of an already narrow viewport.
+    @media (max-width: 1080px) {
         .amethyst-container {
             flex-direction: column;
         }

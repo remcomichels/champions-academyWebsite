@@ -111,6 +111,14 @@
     }
 
     @media (max-width: 1080px) {
+        // The desktop +10% left the figure's centre ~150px below the title's, so
+        // it sat behind the buttons rather than the headline. -7% puts the two
+        // centres within a few px. The offset is a share of the layer's own
+        // height, which tracks the section, so it holds at any viewport height.
+        .cta-figure-layer {
+            transform: translateY(-7%);
+        }
+
         .subText {
             font-size: max(1em, @vw18-1080);
         }
