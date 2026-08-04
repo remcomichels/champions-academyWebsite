@@ -48,6 +48,21 @@ interface UseCardDeckReturn {
 // Composable
 // ─────────────────────────────────────────────────────────────────────────────
 
+/**
+ * Distance from the top of the document, walking the offsetParent chain. Unlike
+ * getBoundingClientRect this is a pure layout value — CSS transforms on the
+ * element or its ancestors don't shift it.
+ */
+function documentTop(el: HTMLElement): number {
+  let y = 0
+  let node: HTMLElement | null = el
+  while (node) {
+    y += node.offsetTop
+    node = node.offsetParent as HTMLElement | null
+  }
+  return y
+}
+
 export function useCardDeck(
   root: Ref<HTMLElement | null>,
   options: CardDeckOptions = {},
@@ -102,21 +117,25 @@ export function useCardDeck(
       defaults: { ease: 'none', duration: 1 },
       scrollTrigger: {
         trigger: section,
-        // Centre the deck itself, not the section. Centring the whole block
-        // works while it fits the viewport, but stacked it can outgrow the
-        // screen (893px at 600x800) and the fallback pinned from the top, which
-        // pushed the deck — last in the stack — clean past the fold. Anchoring
-        // on the deck's midpoint keeps the cards framed at any section height.
+        // Two anchors, split on the same 1080 breakpoint the layout uses.
         //
-        // While the whole section fits, centring it frames heading, indicator
-        // and deck together with nothing lost, so that wins. Only once it
-        // outgrows the screen do the two compete — and there the deck is what
-        // has to stay framed, so the heading is allowed to scroll up.
+        // At 1080 and below the block is stacked, so its own centre already
+        // frames heading, indicator and deck together — centre the section.
+        //
+        // Above it the layout goes side-by-side and the block turns top-heavy:
+        // at 1440 the deck's midpoint sits 434px down a 618px section, so
+        // centring the section drops the cards ~125px below the fold's middle.
+        // There the deck's own midpoint is the anchor, and the heading above is
+        // allowed to sit high.
+        //
+        // Measured from offsetTop rather than getBoundingClientRect: the deck
+        // carries an entrance `translateY` until the section is in view, and a
+        // rect would fold that 24px into the anchor. offsetTop ignores
+        // transforms, so the anchor is the same before and after the reveal.
         start: () => {
           const deck = cards[0]?.parentElement
-          if (!deck || section.offsetHeight < window.innerHeight) return 'center center'
-          const deckRect = deck.getBoundingClientRect()
-          const offset = deckRect.top - section.getBoundingClientRect().top + deckRect.height / 2
+          if (!deck || window.innerWidth <= 1080) return 'center center'
+          const offset = documentTop(deck) - documentTop(section) + deck.offsetHeight / 2
           return `top+=${offset} center`
         },
         end: () => `+=${last * window.innerHeight * distance}`,
