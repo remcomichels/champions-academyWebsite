@@ -97,25 +97,126 @@
         padding: 0;
     }
 
+    // Rows past the fifth collapse individually, 1fr → 0fr, so the list grows
+    // and shrinks without JS measuring (same trick as the FAQ answers).
     .payment-card-benefit {
+        display: grid;
+        grid-template-rows: 1fr;
+        .transition(grid-template-rows, @durationMedium, @ease);
+
+        &.is-extra {
+            grid-template-rows: 0fr;
+        }
+    }
+
+    .payment-card-benefits.is-expanded .payment-card-benefit.is-extra {
+        grid-template-rows: 1fr;
+    }
+
+    .payment-card-benefit-inner {
+        overflow: hidden;
+        min-height: 0;
+    }
+
+    // Padding and divider live on the text, not the row. `overflow: hidden`
+    // clips an element's children but still paints its own padding and border,
+    // so on the row they'd survive the collapse and leave a ~33px stub per
+    // hidden benefit.
+    .payment-card-benefit .text-item {
+        font-family: @body;
+        // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px,
+        // so max(1em, …) here would push it past its design size on desktop.
+        // The mobile tiers below do floor it.
+        font-size: @vw16;
         padding: @vw16 0 @vw16 @vw8;
+    }
 
-        &:first-child {
-            padding-top: 0;
+    .payment-card-benefit:first-child .text-item {
+        padding-top: 0;
+    }
+
+    // Divider between rows only — none above the first or below the last. It
+    // sits on the top edge, so a collapsed row takes its divider with it.
+    .payment-card-benefit + .payment-card-benefit .text-item {
+        border-top: 1px solid @border;
+    }
+
+    // ── Show all / show less ─────────────────────────────────────────────────
+    // Only rendered when a card has more benefits than fit; plans run to a dozen
+    // entries, which pushed the price and CTA of the second card off the screen.
+    .payment-card-more {
+        align-self: flex-end;
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        // Every margin cancels the padding beside it: the right pair pulls the
+        // icon flush with the benefit dividers, and the top and bottom leave the
+        // label sitting tight under the list while the padding still buys a
+        // finger-sized tap target.
+        padding: @vw16 @vw8;
+        margin: -@vw16 -@vw8 -@vw16 0;
+        border: none;
+        background: none;
+        color: @text;
+        // A quiet secondary action — it recedes until you go for it.
+        opacity: 0.7;
+        cursor: pointer;
+        .transition(opacity);
+
+        &:hover {
+            opacity: 1;
+        }
+    }
+
+    .payment-card-more-label {
+        font-family: @body;
+        // A step below the benefit rows it summarises, so it doesn't read as
+        // another list entry.
+        font-size: @vw14;
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+    }
+
+    // The + → − icon, as in the FAQ: the horizontal bar stays, the vertical one
+    // collapses to the centre. Sized off the card's inherited body size rather
+    // than the label's — an em against a label that is itself floored would
+    // compound and shrink the icon out of proportion on a phone.
+    .payment-card-more-icon {
+        position: relative;
+        flex-shrink: 0;
+        width: max(0.75em, @vw12);
+        height: max(0.75em, @vw12);
+
+        &::before,
+        &::after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            background-color: @text;
+            border-radius: @vw2;
+            .transition(transform, @durationMedium, @ease);
         }
 
-        // Divider between rows only — none above the first or below the last
-        + .payment-card-benefit {
-            border-top: 1px solid @border;
+        // Horizontal bar (the minus) — always visible. Finer than the FAQ's 2px
+        // to stay in proportion on an icon this small.
+        &::before {
+            width: 100%;
+            height: max(1px, @vw2);
+            transform: translate(-50%, -50%);
         }
 
-        .text-item {
-            font-family: @body;
-            // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px,
-            // so max(1em, …) here would push it past its design size on desktop.
-            // The mobile tiers below do floor it.
-            font-size: @vw16;
+        // Vertical bar — shrinks from both ends to the middle when expanded
+        &::after {
+            width: max(1px, @vw2);
+            height: 100%;
+            transform: translate(-50%, -50%) scaleY(1);
         }
+    }
+
+    .payment-card-more[aria-expanded="true"] .payment-card-more-icon::after {
+        transform: translate(-50%, -50%) scaleY(0);
     }
 
     // ── Bonus — below the benefits, no divider ───────────────────────────────
@@ -227,15 +328,27 @@
             margin: @vw32-1080 0 0 0;
         }
 
-        .payment-card-benefit {
+        // List copy, so it floors below the full paragraph size — a 1em floor
+        // flattened benefits, bonus and card title to an identical 16px and lost
+        // the hierarchy desktop has (16px / 14px).
+        .payment-card-benefit .text-item {
+            font-size: max(0.875em, @vw16-1080);
             padding: @vw16-1080 0 @vw16-1080 @vw8-1080;
+        }
 
-            // List copy, so it floors below the full paragraph size — a 1em
-            // floor flattened benefits, bonus and card title to an identical
-            // 16px and lost the hierarchy desktop has (16px / 14px).
-            .text-item {
-                font-size: max(0.875em, @vw16-1080);
-            }
+        .payment-card-more {
+            gap: @vw8-1080;
+            padding: @vw16-1080 @vw8-1080;
+            margin: -@vw16-1080 -@vw8-1080 -@vw16-1080 0;
+        }
+
+        .payment-card-more-label {
+            font-size: max(0.75em, @vw14-1080);
+        }
+
+        .payment-card-more-icon {
+            width: max(0.75em, @vw12-1080);
+            height: max(0.75em, @vw12-1080);
         }
 
         .payment-card-bonus-container {
@@ -325,12 +438,26 @@
             margin: @vw32-580 0 0 0;
         }
 
-        .payment-card-benefit {
+        .payment-card-benefit .text-item {
+            font-size: max(0.875em, @vw14-580);
             padding: @vw16-580 0 @vw16-580 @vw8-580;
+        }
 
-            .text-item {
-                font-size: max(0.875em, @vw14-580);
-            }
+        // Taller than the other tiers so the row clears a finger — @vw24-580 is
+        // ~13px at 320, which puts the button just past 44px with its label.
+        .payment-card-more {
+            gap: @vw8-580;
+            padding: @vw24-580 @vw8-580;
+            margin: -@vw24-580 -@vw8-580 -@vw24-580 0;
+        }
+
+        .payment-card-more-label {
+            font-size: max(0.75em, @vw12-580);
+        }
+
+        .payment-card-more-icon {
+            width: max(0.75em, @vw12-580);
+            height: max(0.75em, @vw12-580);
         }
 
         .payment-card-bonus-container {
