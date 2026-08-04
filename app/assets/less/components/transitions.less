@@ -19,4 +19,28 @@
 .pageTransition {
   z-index: 9998;
   transform: translateY(100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Name of the page being navigated to, centred in the panel. Rides up with the
+// overlay; the composable owns its opacity so it only reads once the screen is
+// covered, rather than flying past during the slide.
+.pageTransition-label {
+  font-family: @body;
+  font-size: @vw40;
+  font-weight: @bold;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: @text;
+  opacity: 0;
+
+  @media (max-width: 1080px) {
+    font-size: @vw40-1080;
+  }
+
+  @media (max-width: 600px) {
+    font-size: @vw40-580;
+  }
 }
