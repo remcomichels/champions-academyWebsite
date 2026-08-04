@@ -71,15 +71,13 @@ export function useLiquidBlob(
   const target = { x: 0, y: 0 }
   const trail = Array.from({ length: trailLength }, () => ({ x: 0, y: 0 }))
 
+  // Mirrors the `(hover: none), (max-width: 1080px)` rule in benefits_grid.less
+  // that hides the blob. Width matters as well as hover: a phone in Safari's
+  // "Request Desktop Website" mode reports `(hover: hover)`, and on hover alone
+  // it drifted a desktop-only blob across a 390px screen.
   function isDesktop(): boolean {
     desktopHover ??= window.matchMedia('(hover: hover) and (min-width: 1081px)')
     return desktopHover.matches
-  }
-
-  // Any hover-capable pointer. Mirrors the `(hover: none)` rule in
-  // benefits_grid.less that hides the blob on touch.
-  function hasHover(): boolean {
-    return window.matchMedia('(hover: hover)').matches
   }
 
   // Move every trail node to a point at once — used when seeding so the blob
@@ -167,11 +165,11 @@ export function useLiquidBlob(
 
   function initBlob(): void {
     const el = grid.value
-    // No hover pointer means nothing can ever drive the trail, and CSS hides the
-    // blob there — so skip the observer and RAF entirely rather than animating
-    // an invisible element. An auto-wander grid would otherwise keep a loop
-    // running on every phone, writing custom properties to every card.
-    if (!el || reduced.value || !hasHover()) return
+    // Off the desktop tier nothing can drive the trail and CSS hides the blob —
+    // so skip the observer and RAF entirely rather than animating an invisible
+    // element. An auto-wander grid would otherwise keep a loop running on every
+    // phone, writing custom properties to every card.
+    if (!el || reduced.value || !isDesktop()) return
 
     io = new IntersectionObserver(
       (entries) => {

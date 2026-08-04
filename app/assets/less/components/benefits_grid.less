@@ -243,12 +243,17 @@
     }
 }
 
-// Touch: there is no pointer to drive the trail, so the blob is dead weight —
-// drop it and show the images in their own colour. The dim/grayscale base only
-// existed so the green trail would read over it; with no trail it just leaves
-// the cards flat. useLiquidBlob skips its observer and RAF loop here too.
-// Last in the file so it also beats the reduced-motion rule above.
-@media (hover: none) {
+// Touch or below the desktop tier: there is no pointer to drive the trail, so
+// the blob is dead weight — drop it and show the images in their own colour. The
+// dim/grayscale base only existed so the green trail would read over it; with no
+// trail it just leaves the cards flat. useLiquidBlob skips its observer and RAF
+// loop here too. Last in the file so it also beats the reduced-motion rule above.
+//
+// The width clause matters as much as the hover one, and matches the two rules
+// above: a phone in Safari's "Request Desktop Website" mode answers
+// `(hover: hover)`, so on hover alone it kept the blob and the dimmed images on
+// a 390px screen.
+@media (hover: none), (max-width: 1080px) {
     .benefit-blob {
         display: none;
     }
