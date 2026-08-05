@@ -17,6 +17,7 @@
 
 				<article class="text-card">
 					<h3 class="text-card-title">{{ blok.textCard_title }}</h3>
+					<!-- eslint-disable-next-line vue/no-v-html -- sanitised by renderSafeRichText -->
 					<div class="text-card-body" v-html="textCardHtml" />
 				</article>
 			</div>
@@ -32,9 +33,9 @@ const props = defineProps({
 	},
 });
 
-// renderRichText is HTML-safe (Storyblok escapes text nodes) and resolves
-// bold marks to <strong> and hard breaks to <br>.
-const textCardHtml = computed(() => renderRichText(props.blok.textCard_textArea));
+// renderSafeRichText resolves bold marks to <strong> and hard breaks to <br>,
+// and closes the injection vectors renderRichText leaves open.
+const textCardHtml = computed(() => renderSafeRichText(props.blok.textCard_textArea));
 
 const { initLetters, destroy } = useLetterAnimation();
 

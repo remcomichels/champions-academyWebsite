@@ -44,6 +44,7 @@
 		</div>
 
 		<div class="payment-card-footer">
+			<!-- eslint-disable-next-line vue/no-v-html -- sanitised by renderSafeRichText -->
 			<div v-if="subTextHtml" class="payment-card-subText" v-html="subTextHtml" />
 			<StoryblokComponent
 				v-for="buttonBlok in blok.button"
@@ -92,7 +93,7 @@ function isExtra(uid: string): boolean {
 // cards' lists never collide.
 const listId = computed(() => `benefits-${props.blok._uid}`);
 
-// renderRichText is HTML-safe (Storyblok escapes text nodes) and returns "" for
-// an empty document, so the v-if collapses the footer caption when unset.
-const subTextHtml = computed(() => renderRichText(props.blok.subText_button_rich));
+// renderSafeRichText escapes text nodes, strips javascript: hrefs, and returns
+// "" for an empty document, so the v-if collapses the footer caption when unset.
+const subTextHtml = computed(() => renderSafeRichText(props.blok.subText_button_rich));
 </script>
