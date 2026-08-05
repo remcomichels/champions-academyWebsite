@@ -159,7 +159,10 @@ export interface PaymentCardBlok {
   price_adjative?: string
   benefit?: TextBlok[]
   Bonus_benefit?: string
-  subText_button?: string
+  // Replaces the former plain-text `subText_button`. That field was deleted
+  // rather than converted: Storyblok validates stored content against the
+  // schema, and the old string value could never satisfy a rich-text field.
+  subText_button_rich?: unknown // Storyblok rich-text document
   button?: ButtonBlok[]
 }
 

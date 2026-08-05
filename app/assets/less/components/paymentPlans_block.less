@@ -256,9 +256,25 @@
         // A muted caption, kept subordinate to the card copy — three quarters of
         // the paragraph size rather than a full 1em. @vw14 wins at 1440.
         font-size: max(0.75em, @vw14);
-        text-transform: uppercase;
         opacity: 0.6;
         margin: 0 0 @vw16 0;
+
+        // Rich text, so the copy arrives wrapped in <p>. The reset zeroes their
+        // margins — only the gap between paragraphs needs restoring.
+        p + p {
+            margin-top: @vw8;
+        }
+
+        // The resolver emits <strong> for bold and <em> for italic. Both are
+        // declared explicitly — the reset leaves them to browser defaults,
+        // which is fine today but not something to rely on.
+        strong {
+            font-weight: @bold;
+        }
+
+        em {
+            font-style: italic;
+        }
     }
 
     // ── Entrance — staggered fade-up once the section is in view ─────────────
@@ -371,6 +387,10 @@
         .payment-card-subText {
             font-size: max(0.75em, @vw14-1080);
             margin: 0 0 @vw16-1080 0;
+
+            p + p {
+                margin-top: @vw8-1080;
+            }
         }
 
         .subTitle,
@@ -480,6 +500,10 @@
         .payment-card-subText {
             font-size: max(0.75em, @vw12-580);
             margin: 0 0 @vw16-580 0;
+
+            p + p {
+                margin-top: @vw8-580;
+            }
         }
 
         .subTitle,
