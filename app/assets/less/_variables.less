@@ -1,9 +1,12 @@
 // ─── Typography ────────────────────────────────────────────────────────
-@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+// No @import for Anton: @nuxt/fonts resolves it from the family name below and
+// self-hosts it. The import used to pull a .ttf straight from fonts.gstatic.com
+// on every visit — an extra origin to connect to, in a format roughly twice the
+// size of the woff2 the module downloads instead.
 
 // Fonts
 @heading:       'Anton', sans-serif;
-@body:          'Canva Sans', sans-serif;
+@body:          'Plus Jakarta Sans', sans-serif;
 @handWritten:   "Alex Brush", cursive;
 
 // Font weights

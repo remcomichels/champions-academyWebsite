@@ -1,4 +1,34 @@
 <script setup lang="ts">
+// The upright Plus Jakarta Sans face, preloaded. It is referenced from
+// fonts.css, so without this the browser only discovers it after that
+// stylesheet has downloaded and parsed — the font request starts a full
+// round-trip late, and body copy renders in the fallback until it lands.
+// The `?url` import resolves to the hashed build filename, so the hint keeps
+// pointing at the real file across deploys.
+//
+// crossorigin is required even though this is same-origin: fonts are always
+// fetched in CORS mode, and a preload without it is treated as a separate
+// request, downloading the file twice.
+//
+// Only the upright face is hinted. The italic is used by whatever rich text
+// happens to contain it, so preloading it site-wide would pull 36KB on pages
+// that never render an <em>.
+import fontUpright from "~/assets/fonts/PlusJakartaSans-Variable.woff2?url";
+
+// Not an SEO tag — useSeoMeta has no link support, and resource hints are
+// outside what the useHead ban in CLAUDE.md covers.
+useHead({
+	link: [
+		{
+			rel: "preload",
+			as: "font",
+			type: "font/woff2",
+			href: fontUpright,
+			crossorigin: "",
+		},
+	],
+});
+
 // Initialize before any child component mounts so reveal animations wait for the intro.
 // Persists as `true` across SPA navigations so subsequent pages animate immediately.
 useState('introComplete', () => false)

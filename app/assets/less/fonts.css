@@ -1,10 +1,27 @@
-/* @font-face {
-  font-family: "Satoshi Variable";
-  src: url("../fonts/Satoshi-Variable.woff2") format("woff2-variations");
-  font-weight: 100 900;
+/* Plus Jakarta Sans — the @body family. Replaces Canva Sans, which is licensed
+   for use inside Canva and not for self-hosting. SIL Open Font License 1.1;
+   the license text ships alongside the files in assets/fonts/OFL.txt.
+
+   Two variable files rather than one per weight: the wght axis spans 200-800,
+   which covers @regular/@medium/@bold in a single download each for upright and
+   italic. Subset to the Latin range. A true italic face is deliberate — without
+   one, browsers will not reliably synthesise an oblique, which is exactly how
+   the italic in the payment-card caption went missing before. */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('~/assets/fonts/PlusJakartaSans-Variable.woff2') format('woff2-variations');
+  font-weight: 200 800;
   font-style: normal;
   font-display: swap;
-} */
+}
+
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  src: url('~/assets/fonts/PlusJakartaSans-VariableItalic.woff2') format('woff2-variations');
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
 
 @font-face {
   font-family: 'icomoon';

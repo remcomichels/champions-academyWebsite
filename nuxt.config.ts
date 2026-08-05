@@ -68,6 +68,19 @@ export default defineNuxtConfig({
 	],
 
 	/* -----------------------------
+	 * Fonts
+	 * @nuxt/fonts downloads and self-hosts any family it can resolve, so Anton
+	 * and Alex Brush need no setup — referencing them in LESS is enough.
+	 * Plus Jakarta Sans is opted out: it is declared by hand in fonts.css as a
+	 * variable file covering 200-800 plus a true italic. Left to the module it
+	 * would fetch weight 400 only, and the 500/700 the design system uses would
+	 * be synthesised — while also duplicating what fonts.css already loads.
+	 * ----------------------------- */
+	fonts: {
+		families: [{ name: "Plus Jakarta Sans", provider: "none" }],
+	},
+
+	/* -----------------------------
 	 * Site metadata
 	 * ----------------------------- */
 	site: {
