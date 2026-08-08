@@ -5,7 +5,7 @@
 			<h1 class="dash-title">{{ summary?.affiliate.displayName ?? "Dashboard" }}</h1>
 		</header>
 
-		<nav class="dashTabs" aria-label="Dashboard sections">
+		<nav v-if="hasAffiliate" class="dashTabs" aria-label="Dashboard sections">
 			<button
 				v-for="tab in tabs"
 				:key="tab.id"
@@ -19,7 +19,23 @@
 			</button>
 		</nav>
 
-		<NuxtAlertBanner v-if="error" variant="error">
+		<!-- An admin-only login has no affiliate profile, so there are no figures
+		     to show. Saying that plainly beats a generic failure, which is what
+		     the owner would otherwise hit every time they open their own site. -->
+		<div v-if="!hasAffiliate" class="dashSection">
+			<section class="dashPanel">
+				<h2 class="dashPanel-title">No affiliate profile on this account</h2>
+				<p class="dashPanel-note">
+					This login isn't attached to an affiliate, so there are no referral
+					figures to show. That's expected for an admin account.
+				</p>
+				<NuxtLink v-if="isAdmin" to="/dashboard/admin" class="dashPanel-cta">
+					Go to the admin panel
+				</NuxtLink>
+			</section>
+		</div>
+
+		<NuxtAlertBanner v-else-if="error" variant="error">
 			Could not load your dashboard. Refresh to try again.
 		</NuxtAlertBanner>
 
@@ -78,5 +94,15 @@ type TabId = typeof tabs[number]["id"];
 // navigation away and back.
 const activeTab = useState<TabId>("dash-tab", () => "overview");
 
-const { data: summary, error, refresh } = await useAffiliateSummary();
+const { affiliate, isAdmin, fetchMe } = useAuth();
+
+// The layout awaits this too, but a page must not depend on layout setup order.
+// It is cached in useState, so the second call costs nothing.
+await fetchMe();
+
+const hasAffiliate = computed(() => Boolean(affiliate.value));
+
+const { data: summary, error, refresh } = await useAffiliateSummary({
+	immediate: hasAffiliate.value,
+});
 </script>

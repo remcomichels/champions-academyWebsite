@@ -37,7 +37,7 @@ export interface AffiliateSummary {
  * is available to the sections that change something (saving a link, copying
  * the referral URL) and need the onboarding strip to catch up.
  */
-export function useAffiliateSummary() {
+export function useAffiliateSummary(options: { immediate?: boolean } = {}) {
 	return useAsyncData<AffiliateSummary>("affiliate-summary", () =>
 		$fetch<AffiliateSummary>("/api/affiliate/summary", {
 			// The session cookie is httpOnly so it has to be forwarded explicitly
@@ -47,5 +47,9 @@ export function useAffiliateSummary() {
 			headers: import.meta.server
 				? useRequestHeaders(["cookie", "host", "x-forwarded-host", "x-forwarded-proto"])
 				: undefined,
-		}));
+		}), {
+		// Skipped for accounts with no affiliate profile — an admin-only login
+		// would otherwise fire a request that can only ever 403.
+		immediate: options.immediate ?? true,
+	});
 }
