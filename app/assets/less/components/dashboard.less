@@ -604,6 +604,80 @@
     }
 }
 
+// ── Analytics ─────────────────────────────────────────────────────────
+.rangeTabs {
+    display: flex;
+    gap: @vw4;
+
+    &-tab {
+        background: none;
+        border: max(1px, @vw1) solid @border;
+        border-radius: @vw4;
+        padding: @vw4 @vw10;
+        font-family: @body;
+        font-size: max(0.7em, @vw12);
+        color: fade(@white, 55%);
+        cursor: pointer;
+        .transition();
+        transition-property: color, border-color;
+
+        @media (hover: hover) {
+            &:hover { color: @text; }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid @primary;
+            outline-offset: @vw2;
+        }
+
+        &.is-active {
+            color: @primary;
+            border-color: @primary;
+        }
+    }
+}
+
+.geoList {
+    display: flex;
+    flex-direction: column;
+    gap: @vw10;
+    list-style: none;
+
+    &-row {
+        display: grid;
+        grid-template-columns: minmax(@vw100, 30%) 1fr auto;
+        align-items: center;
+        gap: @vw12;
+        font-size: max(0.85em, @vw15);
+    }
+
+    &-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-bar {
+        height: max(6px, @vw8);
+        background-color: @buttonSecondary;
+        border-radius: @vw4;
+        overflow: hidden;
+    }
+
+    &-fill {
+        display: block;
+        height: 100%;
+        background-color: @primary;
+        transform-origin: left center;
+        .transition(transform, @durationMedium, @easeOut);
+    }
+
+    &-count {
+        color: fade(@white, 70%);
+        font-variant-numeric: tabular-nums;
+    }
+}
+
 // ── Responsive ────────────────────────────────────────────────────────
 @media (max-width: 1080px) {
     .dashLayout-main { padding: @vw40-1080 @vw32-1080 @vw80-1080; }

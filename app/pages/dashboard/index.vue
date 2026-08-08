@@ -44,11 +44,7 @@
 		<template v-else>
 			<NuxtDashboardOverview v-if="activeTab === 'overview'" :summary="summary" @refresh="refresh" />
 			<NuxtDashboardLinks v-else-if="activeTab === 'links'" :summary="summary" @refresh="refresh" />
-			<NuxtDashboardComingSoon
-				v-else-if="activeTab === 'analytics'"
-				title="Analytics"
-				note="Visitor numbers, sessions and where in the world your traffic comes from. Not switched on yet."
-			/>
+			<NuxtDashboardAnalytics v-else-if="activeTab === 'analytics'" />
 			<NuxtDashboardSales v-else-if="activeTab === 'sales'" />
 			<NuxtDashboardComingSoon
 				v-else-if="activeTab === 'settings'"

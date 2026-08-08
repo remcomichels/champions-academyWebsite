@@ -174,7 +174,21 @@ export default defineNuxtConfig({
 		// it. Leave unset in production to use https://api.whop.com/api/v1.
 		whopBaseUrl: process.env.WHOP_BASE_URL || "",
 
+		// PostHog. The personal key can read every visitor event in the project,
+		// so it never leaves the server and is only used by a route that injects
+		// the affiliate filter itself.
+		posthogPersonalApiKey: process.env.POSTHOG_PERSONAL_API_KEY || "",
+		posthogProjectId: process.env.POSTHOG_PROJECT_ID || "",
+		// Queries go to the app host, not the ingestion host: us.i.posthog.com
+		// ingests events, us.posthog.com answers queries. Derived from
+		// POSTHOG_HOST when not set explicitly.
+		posthogApiHost: process.env.POSTHOG_API_HOST || "",
+
 		public: {
+			// Write-only project key — safe in the browser, which is the whole
+			// point of it being a separate key from the personal one above.
+			posthogKey: process.env.POSTHOG_PROJECT_API_KEY || "",
+			posthogHost: process.env.POSTHOG_HOST || "",
 			storyblokApiKey: process.env.STORYBLOK_DELIVERY_API_TOKEN || "",
 			bunnyStreamHostname: process.env.BUNNY_STREAM_HOSTNAME || "",
 			googleAnalyticsId: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || "",
