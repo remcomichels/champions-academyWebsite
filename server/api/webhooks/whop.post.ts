@@ -60,6 +60,23 @@ export default defineEventHandler(async (event) => {
 		console.info("[whop][debug] full payload:\n" + JSON.stringify(webhookData, null, 2));
 	}
 
+	if (webhookData.type === "payment.succeeded") {
+		// `data` is the Payment object; the same shape the REST API returns.
+		const outcome = await ingestPayment(webhookData.data as WhopPaymentLike);
+
+		if (outcome.ok) {
+			console.info(
+				`[whop] ${outcome.paymentId} -> affiliate ${outcome.affiliateId}`
+				+ (outcome.alreadySeen ? " (already recorded)" : " (new conversion)"),
+			);
+		}
+		else {
+			// Not an error: most sales are not affiliate sales. Logged so an
+			// attribution that *should* have worked is visible rather than silent.
+			console.info(`[whop] not attributed — ${outcome.reason}`);
+		}
+	}
+
 	// Always acknowledge a properly signed webhook, including event types we do
 	// not handle. A non-2xx makes Whop retry the same payload indefinitely.
 	setResponseStatus(event, 200);

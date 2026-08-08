@@ -49,11 +49,7 @@
 				title="Analytics"
 				note="Visitor numbers, sessions and where in the world your traffic comes from. Not switched on yet."
 			/>
-			<NuxtDashboardComingSoon
-				v-else-if="activeTab === 'sales'"
-				title="Sales"
-				note="Who bought through your link, and how visits turn into sales. Not switched on yet."
-			/>
+			<NuxtDashboardSales v-else-if="activeTab === 'sales'" />
 			<NuxtDashboardComingSoon
 				v-else-if="activeTab === 'settings'"
 				title="Settings"
