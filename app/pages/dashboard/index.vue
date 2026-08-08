@@ -51,11 +51,11 @@
 				title="Settings"
 				note="Your profile, password, two-factor login and privacy controls. Not switched on yet."
 			/>
-			<NuxtDashboardComingSoon
-				v-else
-				title="Support"
-				note="Message us directly, plus answers to the usual questions. Not switched on yet."
-			/>
+			<NuxtDashboardSupport v-else />
+			<!-- Support is the v-else rather than a named branch: every tab id is
+			     accounted for above, so the fallback should render something real
+			     instead of an unreachable placeholder. -->
+
 		</template>
 	</div>
 </template>

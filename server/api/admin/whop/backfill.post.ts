@@ -23,34 +23,21 @@ export default defineEventHandler(async (event) => {
 	}));
 
 	const days = body.days ?? 30;
-	const config = useRuntimeConfig();
-
-	const baseUrl = (config.whopBaseUrl as string) || "https://api.whop.com/api/v1";
-	const apiKey = config.whopApiKey as string;
-	const companyId = config.whopCompanyId as string;
-
-	if (!apiKey || !companyId) {
-		throw createError({ statusCode: 500, statusMessage: "Whop is not configured" });
-	}
-
 	const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 
+	// Through whopAdmin rather than a hand-rolled fetch, so this inherits the
+	// pinned Api-Version-Date. An unversioned request gets an older API whose
+	// parameter names differ, and it fails in ways that look like bad config.
 	let payments: unknown[];
 	try {
-		const response = await $fetch<{ data?: unknown[] }>(`${baseUrl}/payments`, {
-			query: {
-				company_id: companyId,
-				first: 100,
-				created_after: since,
-				include_free: true,
-			},
-			headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
-			timeout: 15000,
-		});
-		payments = response.data ?? [];
+		payments = await listCompanyPayments(since);
 	}
-	catch {
-		throw createError({ statusCode: 502, statusMessage: "Could not reach Whop" });
+	catch (error) {
+		const detail = error as { data?: { error?: { message?: string } }; message?: string };
+		throw createError({
+			statusCode: 502,
+			statusMessage: `Could not reach Whop: ${detail?.data?.error?.message ?? detail?.message ?? "unknown error"}`,
+		});
 	}
 
 	const results: { paymentId: string; credited: boolean; reason?: string }[] = [];
