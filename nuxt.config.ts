@@ -170,6 +170,9 @@ export default defineNuxtConfig({
 		whopCompanyId: process.env.WHOP_BIZ_KEY || "",
 		whopWebhookSecret: process.env.WHOP_WEBHOOK_SECRET || "",
 		whopVipPlanId: process.env.WHOP_PLAN_ID || "",
+		// Whop's sandbox is a separate host and sandbox keys only work against
+		// it. Leave unset in production to use https://api.whop.com/api/v1.
+		whopBaseUrl: process.env.WHOP_BASE_URL || "",
 
 		public: {
 			storyblokApiKey: process.env.STORYBLOK_DELIVERY_API_TOKEN || "",

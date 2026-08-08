@@ -56,7 +56,12 @@ if (affiliate.whop_checkout_configuration_id && !force) {
 	process.exit(0);
 }
 
-const whop = new Whop({ apiKey: WHOP_API_KEY });
+// Sandbox is a separate host and sandbox keys only work against it. Unset
+// WHOP_BASE_URL in production to fall back to https://api.whop.com/api/v1.
+const baseURL = process.env.WHOP_BASE_URL;
+const whop = new Whop({ apiKey: WHOP_API_KEY, ...(baseURL ? { baseURL } : {}) });
+
+console.log(`API host: ${baseURL ?? "https://api.whop.com/api/v1 (production)"}`);
 
 console.log(`Creating checkout configuration for ${affiliate.display_name} (${affiliate.slug})…`);
 
@@ -77,22 +82,26 @@ if (!purchaseUrl) {
 	process.exit(1);
 }
 
-// The same host allow-list the app enforces. If Whop ever returns a link on
-// another domain, fail here rather than write a row the site will refuse to
-// render anyway.
+// The same host allow-list the site enforces. Sandbox hands back a
+// sandbox.whop.com link, which the DB CHECK constraint and the render-time
+// guard would both reject — correctly, since it must never end up behind a
+// button on the live site.
+//
+// Rather than widen the allow-list for everyone, a non-production host is
+// simply not stored: the configuration id is saved so the webhook can be
+// tested, and the URL is printed for manual use. The production guard stays
+// exactly as strict as it was.
 const host = new URL(purchaseUrl).hostname.toLowerCase();
-if (!["whop.com", "www.whop.com"].includes(host)) {
-	console.error(`\npurchase_url is on ${host}, not whop.com — not stored.`);
-	console.error("The DB CHECK constraint and the render-time guard would both reject it.");
-	process.exit(1);
-}
+const isProductionHost = ["whop.com", "www.whop.com"].includes(host);
+
+const update = {
+	whop_checkout_configuration_id: config.id,
+	...(isProductionHost ? { vip_checkout_url: purchaseUrl } : {}),
+};
 
 const { error: saveError } = await db
 	.from("affiliates")
-	.update({
-		whop_checkout_configuration_id: config.id,
-		vip_checkout_url: purchaseUrl,
-	})
+	.update(update)
 	.eq("id", affiliate.id);
 
 if (saveError) {
@@ -102,5 +111,12 @@ if (saveError) {
 
 console.log(`\n✓ Stored for ${affiliate.slug}`);
 console.log(`  configuration: ${config.id}`);
-console.log(`  purchase_url:  ${purchaseUrl}`);
 console.log(`  metadata:      affiliate_user_id=${affiliate.id}`);
+console.log(`  purchase_url:  ${purchaseUrl}`);
+
+if (!isProductionHost) {
+	console.log(`\n  NOTE: ${host} is not a production Whop host, so the URL was NOT`);
+	console.log("  stored on the affiliate. Buy through the link above to fire a");
+	console.log("  webhook; the site keeps showing the default VIP link, which is");
+	console.log("  what we want while testing against sandbox.");
+}
