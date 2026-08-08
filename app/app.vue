@@ -29,9 +29,17 @@ useHead({
 	],
 });
 
+// The intro overlay and the page-transition cover are marketing-site furniture.
+// /login and /dashboard are app surfaces: the intro is driven by the marketing
+// hero, so on a route without one it would black the screen out and never
+// resolve. Marked complete up front there so gated reveal animations still run.
+const route = useRoute()
+const isAppRoute = computed(() => /^\/(?:[a-z]{2}\/)?(?:login|dashboard)\b/.test(route.path))
+
 // Initialize before any child component mounts so reveal animations wait for the intro.
 // Persists as `true` across SPA navigations so subsequent pages animate immediately.
-useState('introComplete', () => false)
+const introComplete = useState('introComplete', () => false)
+if (isAppRoute.value) introComplete.value = true
 
 // Intro plays once on first load (sets introComplete); page transitions run on
 // every route change (toggles pageTransitioning). Both read their overlay from
@@ -54,10 +62,10 @@ onMounted(() => initInview())
 	<a class="skip-link" href="#main">Skip to content</a>
 	<NuxtRouteAnnouncer />
 	<!-- First-load intro overlay — server-rendered so it covers from first paint -->
-	<div class="intro" />
+	<div v-if="!isAppRoute" class="intro" />
 	<!-- Route-change transition overlay — parked offscreen until a navigation runs.
 	     aria-hidden: NuxtRouteAnnouncer already announces the destination. -->
-	<div class="pageTransition" aria-hidden="true">
+	<div v-if="!isAppRoute" class="pageTransition" aria-hidden="true">
 		<span class="pageTransition-label">{{ pageTransitionLabel }}</span>
 	</div>
 	<NuxtLayout />

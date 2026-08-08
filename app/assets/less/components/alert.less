@@ -1,0 +1,39 @@
+// Inline status messages. Uses the @error / @success / @warning tokens that
+// have been declared and unused in _variables.less since the boilerplate.
+
+.alert {
+    padding: @vw12 @vw16;
+    border-radius: @vw6;
+    border-left: max(2px, @vw2) solid currentColor;
+    background-color: fade(@white, 4%);
+
+    &-text {
+        font-size: max(0.85em, @vw15);
+        line-height: 1.4;
+        // Body copy inherits `white-space: pre-line` from _general.less, which
+        // would turn wrapped message strings into stray line breaks.
+        white-space: normal;
+        color: @text;
+    }
+
+    // The border and icon colour carry the meaning; the text stays readable
+    // rather than being tinted to the point of low contrast.
+    &--error   { color: @error; }
+    &--success { color: @success; }
+    &--warning { color: @warning; }
+    &--info    { color: @primary; }
+}
+
+@media (max-width: 1080px) {
+    .alert {
+        padding: @vw12-1080 @vw16-1080;
+        border-radius: @vw6-1080;
+    }
+}
+
+@media (max-width: 600px) {
+    .alert {
+        padding: @vw12-580 @vw16-580;
+        border-radius: @vw6-580;
+    }
+}

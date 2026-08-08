@@ -75,6 +75,18 @@ export async function enforceRateLimit(
 		const retryAfter = Number(row.retry_after) || rule.lockSeconds;
 		// h3 types Retry-After as a number, not a string.
 		setResponseHeader(event, "retry-after", retryAfter);
+
+		// Logged here rather than in each handler, because a throttled request
+		// throws before it reaches them. Without this, a sustained brute force
+		// would show only its first few attempts in the audit trail and then go
+		// quiet exactly as it got interesting. The bucket is already hashed, so
+		// this records no email or IP beyond the request's own.
+		await audit(event, {
+			actorKind: "system",
+			action: "ratelimit.locked",
+			meta: { bucket, retryAfter },
+		});
+
 		throw createError({
 			statusCode: 429,
 			statusMessage: "Too many attempts. Try again later.",

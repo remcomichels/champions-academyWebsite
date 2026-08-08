@@ -1,0 +1,162 @@
+// Sign-in / invite-redemption page.
+
+.authLayout {
+    min-height: 100vh;
+
+    &-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        padding: @vw64 @vw32;
+        min-height: 100vh;
+    }
+}
+
+.auth {
+    width: 100%;
+    max-width: calc(@vw300 + @vw180);
+
+    &-card {
+        display: flex;
+        flex-direction: column;
+        gap: @vw24;
+        padding: @vw48 @vw40;
+        background-color: @secondary;
+        border-radius: @vw10;
+        border: max(1px, @vw1) solid @border;
+    }
+
+    &-head {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+    }
+
+    &-preTitle {
+        font-size: max(0.8em, @vw14);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: @primary;
+    }
+
+    &-title {
+        // Every block in this project overrides the global Anton heading back
+        // to the body face; matching that keeps the dashboard in the same
+        // visual system as the marketing pages.
+        font-family: @body;
+        font-size: @vw32;
+        font-weight: @bold;
+        text-transform: uppercase;
+        line-height: 1.1;
+    }
+
+    &-subTitle {
+        font-size: max(0.9em, @vw16);
+        line-height: 1.4;
+        white-space: normal;
+        color: fade(@white, 60%);
+    }
+
+    &-form {
+        display: flex;
+        flex-direction: column;
+        gap: @vw20;
+    }
+
+    &-submit {
+        margin-top: @vw8;
+        width: 100%;
+        // .button__secondary is a text-sized pill by default; a form's primary
+        // action needs to read as a full-width commit.
+        padding: @vw16 @vw24;
+        font-size: max(0.85em, @vw15);
+        font-weight: @bold;
+        cursor: pointer;
+        border: max(1px, @vw1) solid transparent;
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) {
+                border-color: @primary;
+                color: @primary;
+            }
+        }
+
+        &:focus-visible {
+            border-color: @primary;
+            box-shadow: 0 0 0 max(2px, @vw2) fade(@primary, 25%);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+    }
+
+    &-foot {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+        padding-top: @vw20;
+        border-top: max(1px, @vw1) solid @border;
+    }
+
+    &-switch {
+        align-self: flex-start;
+        background: none;
+        border: none;
+        padding: 0;
+        font-size: max(0.85em, @vw15);
+        color: @primary;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 0.25em;
+        .transition();
+        transition-property: opacity;
+
+        @media (hover: hover) {
+            &:hover { opacity: 0.7; }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid @primary;
+            outline-offset: @vw4;
+            border-radius: @vw2;
+        }
+    }
+
+    &-help {
+        font-size: max(0.75em, @vw14);
+        line-height: 1.4;
+        white-space: normal;
+        color: fade(@white, 45%);
+    }
+}
+
+@media (max-width: 1080px) {
+    .authLayout-main { padding: @vw64-1080 @vw32-1080; }
+
+    .auth {
+        max-width: calc(@vw300-1080 + @vw180-1080);
+
+        &-card { gap: @vw24-1080; padding: @vw48-1080 @vw40-1080; }
+        &-title { font-size: @vw32-1080; }
+        &-form { gap: @vw20-1080; }
+        &-submit { padding: @vw16-1080 @vw24-1080; }
+        &-foot { padding-top: @vw20-1080; }
+    }
+}
+
+@media (max-width: 600px) {
+    .authLayout-main { padding: @vw48-580 @vw24-580; }
+
+    .auth {
+        max-width: 100%;
+
+        &-card { gap: @vw24-580; padding: @vw40-580 @vw24-580; }
+        &-title { font-size: @vw32-580; }
+        &-form { gap: @vw20-580; }
+        &-submit { padding: @vw16-580 @vw24-580; }
+        &-foot { padding-top: @vw20-580; }
+    }
+}
