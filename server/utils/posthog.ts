@@ -99,7 +99,10 @@ export async function affiliateAnalytics(slug: string, days: number): Promise<Af
 		throw createError({ statusCode: 500, statusMessage: "Refusing to query with a malformed slug" });
 	}
 
-	const window = Math.min(Math.max(Math.trunc(days), 1), 365);
+	// Ten years is the ceiling rather than one, because paid PostHog plans
+	// retain events for seven. Anything beyond retention simply returns
+	// nothing — it is not an error, just an empty window.
+	const window = Math.min(Math.max(Math.trunc(days), 1), 3650);
 
 	// Every query is filtered by affiliate_slug. There is no code path that
 	// omits this clause.

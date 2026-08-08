@@ -1,4 +1,4 @@
-import { int, object, optional } from "../../utils/validate";
+import { int, object, oneOf, optional } from "../../utils/validate";
 
 /**
  * Visitor analytics for the signed-in affiliate.
@@ -15,9 +15,21 @@ export default defineEventHandler(async (event) => {
 
 	const query = await getValidatedQuery(event, object({
 		days: optional(int({ min: 1, max: 90 })),
+		range: optional(oneOf("all")),
 	}));
 
-	const days = query.days ?? 30;
+	// "All time" is bounded by when this affiliate was created — there is no
+	// traffic of theirs before that, and it keeps the window from growing
+	// without limit as the account ages. PostHog itself only retains events for
+	// a year on the free plan and moves older data to cold storage, so a truly
+	// unbounded query would be slow and return nothing extra.
+	const daysSinceJoined = Math.ceil(
+		(Date.now() - new Date(affiliate.created_at).getTime()) / (24 * 60 * 60 * 1000),
+	);
+
+	const days = query.range === "all"
+		? Math.min(Math.max(daysSinceJoined, 1), 3650)
+		: (query.days ?? 30);
 
 	if (!posthogConfig()) {
 		// Not an error — analytics simply isn't wired up in this environment.

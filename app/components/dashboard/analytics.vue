@@ -10,13 +10,13 @@
 				<div class="rangeTabs">
 					<button
 						v-for="option in ranges"
-						:key="option"
+						:key="option.id"
 						type="button"
 						class="rangeTabs-tab"
-						:class="{ 'is-active': days === option }"
-						@click="setDays(option)"
+						:class="{ 'is-active': range === option.id }"
+						@click="setRange(option.id)"
 					>
-						{{ option }}d
+						{{ option.label }}
 					</button>
 				</div>
 			</div>
@@ -43,6 +43,10 @@
 				Everyone who reached the site through your link. Counted by PostHog, so
 				these can differ slightly from the visit numbers on Overview — those come
 				from our own server and ignore anyone blocking analytics.
+				<template v-if="range === 'all'">
+					“All” goes back to the day you joined; anything older than PostHog keeps
+					won’t appear here, though your Overview totals are never trimmed.
+				</template>
 			</p>
 		</section>
 
@@ -75,20 +79,30 @@ interface AnalyticsResponse {
 	countries: { country: string; visitors: number }[];
 }
 
-const ranges = [7, 30, 90] as const;
-const days = useState<number>("analytics-days", () => 30);
+const ranges = [
+	{ id: "7", label: "7d" },
+	{ id: "30", label: "30d" },
+	{ id: "90", label: "90d" },
+	{ id: "all", label: "All" },
+] as const;
+
+type RangeId = typeof ranges[number]["id"];
+
+const range = useState<RangeId>("analytics-range", () => "30");
 
 const { data, pending, error, refresh } = await useAsyncData<AnalyticsResponse>(
 	"affiliate-analytics",
 	() => $fetch<AnalyticsResponse>("/api/affiliate/analytics", {
-		query: { days: days.value },
+		// "all" is resolved server-side from the affiliate's join date, so the
+		// client never decides how far back to look.
+		query: range.value === "all" ? { range: "all" } : { days: Number(range.value) },
 		headers: import.meta.server ? useRequestHeaders(["cookie"]) : undefined,
 	}),
-	{ watch: [days] },
+	{ watch: [range] },
 );
 
-const setDays = (value: number) => {
-	days.value = value;
+const setRange = (value: RangeId) => {
+	range.value = value;
 	refresh();
 };
 
