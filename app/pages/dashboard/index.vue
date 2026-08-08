@@ -46,11 +46,7 @@
 			<NuxtDashboardLinks v-else-if="activeTab === 'links'" :summary="summary" @refresh="refresh" />
 			<NuxtDashboardAnalytics v-else-if="activeTab === 'analytics'" />
 			<NuxtDashboardSales v-else-if="activeTab === 'sales'" />
-			<NuxtDashboardComingSoon
-				v-else-if="activeTab === 'settings'"
-				title="Settings"
-				note="Your profile, password, two-factor login and privacy controls. Not switched on yet."
-			/>
+			<NuxtDashboardSettings v-else-if="activeTab === 'settings'" />
 			<NuxtDashboardSupport v-else />
 			<!-- Support is the v-else rather than a named branch: every tab id is
 			     accounted for above, so the fallback should render something real

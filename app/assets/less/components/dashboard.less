@@ -678,6 +678,120 @@
     }
 }
 
+// ── Settings ──────────────────────────────────────────────────────────
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: @vw12;
+    font-size: max(0.85em, @vw15);
+    cursor: pointer;
+
+    input[type="checkbox"] {
+        // _reset.less strips appearance from every input, so the box has to be
+        // drawn back by hand or there is nothing to see.
+        appearance: none;
+        flex: none;
+        width: @vw20;
+        height: @vw20;
+        border: max(1px, @vw1) solid @border;
+        border-radius: @vw4;
+        background-color: @background;
+        cursor: pointer;
+        .transition();
+        transition-property: background-color, border-color;
+
+        &:checked {
+            background-color: @primary;
+            border-color: @primary;
+        }
+
+        &:checked::after {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 100%;
+            // Tick drawn as a mask so it takes the contrast colour rather than
+            // needing a second element.
+            background-color: @black;
+            clip-path: polygon(14% 44%, 0 60%, 40% 100%, 100% 22%, 84% 6%, 38% 68%);
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid @primary;
+            outline-offset: @vw2;
+        }
+    }
+}
+
+.sessionList {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+
+    &-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: @vw16;
+        padding: @vw12 0;
+        font-size: max(0.85em, @vw15);
+
+        & + & { border-top: max(1px, @vw1) solid @border; }
+    }
+
+    &-current {
+        margin-left: @vw8;
+        padding: 0 @vw6;
+        border-radius: @vw4;
+        background-color: fade(@primary, 12%);
+        color: @primary;
+        font-size: max(0.65em, @vw11);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    &-meta {
+        color: fade(@white, 45%);
+        font-size: max(0.75em, @vw13);
+        white-space: nowrap;
+    }
+}
+
+.linkButton {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: @body;
+    font-size: max(0.85em, @vw15);
+    color: @primary;
+    text-decoration: underline;
+    text-underline-offset: 0.25em;
+    cursor: pointer;
+    .transition();
+    transition-property: opacity;
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) { opacity: 0.7; }
+    }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid @primary;
+        outline-offset: @vw4;
+        border-radius: @vw2;
+    }
+
+    &:disabled { opacity: 0.5; cursor: wait; }
+
+    &.is-danger { color: @error; }
+}
+
+.dangerRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: @vw24;
+}
+
 // ── Support ───────────────────────────────────────────────────────────
 .supportCta {
     align-self: flex-start;

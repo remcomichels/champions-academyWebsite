@@ -37,6 +37,7 @@ export interface AffiliateRow {
 	locale: string;
 	slug_changed_at: string | null;
 	onboarding: Record<string, unknown>;
+	notification_prefs: Record<string, unknown>;
 	created_at: string;
 }
 
@@ -44,7 +45,8 @@ const AFFILIATE_COLUMNS = `
 	id, slug, display_name, status,
 	whop_affiliate_id, whop_username, whop_checkout_configuration_id,
 	vip_checkout_url, lite_telegram_url, calendly_url,
-	user_id, avatar_path, timezone, locale, slug_changed_at, onboarding, created_at
+	user_id, avatar_path, timezone, locale, slug_changed_at,
+	onboarding, notification_prefs, created_at
 `;
 
 const unauthorized = () =>
