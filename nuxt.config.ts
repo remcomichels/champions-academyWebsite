@@ -146,10 +146,32 @@ export default defineNuxtConfig({
 		bunnyStreamApiKey: process.env.BUNNY_STREAM_API_KEY,
     	bunnyStreamLibraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
 
+		// Supabase is server-only. Nothing in the browser talks to it — the
+		// affiliate dashboard reads through /api/* and gets realtime over SSE —
+		// so no Supabase value belongs in `public`. Anything placed there is
+		// serialised into window.__NUXT__ in the SSR'd HTML of every page.
+		supabaseUrl: process.env.SUPABASE_URL || "",
+		// Publishable key (sb_publishable_…): RLS applies. Used server-side only,
+		// by the throwaway client that verifies passwords.
+		supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || "",
+		// Secret key (sb_secret_…): bypasses RLS. Never leaves the server.
+		supabaseSecretKey: process.env.SUPABASE_SECRET_KEY || "",
+
+		// Peppers for one-way hashes. Kept in env, not the DB, so a database
+		// leak on its own doesn't make the hashes reversible.
+		otpPepper: process.env.OTP_PEPPER || "",
+		visitPepper: process.env.VISIT_PEPPER || "",
+
+		// Whop — server-side only. The API key can read every payment the
+		// company has ever taken, so it never leaves the server and is only
+		// used through server/utils/whop.ts (affiliate-scoped) and
+		// server/utils/whopAdmin.ts (admin routes only).
+		whopApiKey: process.env.WHOP_API_KEY || "",
+		whopCompanyId: process.env.WHOP_BIZ_KEY || "",
+		whopWebhookSecret: process.env.WHOP_WEBHOOK_SECRET || "",
+		whopVipPlanId: process.env.WHOP_PLAN_ID || "",
+
 		public: {
-			supabaseUrl: process.env.SUPABASE_URL || "",
-			supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
-			supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
 			storyblokApiKey: process.env.STORYBLOK_DELIVERY_API_TOKEN || "",
 			bunnyStreamHostname: process.env.BUNNY_STREAM_HOSTNAME || "",
 			googleAnalyticsId: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || "",
@@ -277,6 +299,37 @@ export default defineNuxtConfig({
 				'cache-control': 'no-store'
 			}
 			},
+			// Authenticated surfaces. Without these they inherit the '/**' rule
+			// above and a CDN would cache one affiliate's dashboard and serve it
+			// to the next visitor. More specific paths win and merge over '/**',
+			// so the security headers there still apply.
+			'/api/**': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
+			'/login': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
+			// Both spellings on purpose: whether '/dashboard/**' also matches the
+			// bare '/dashboard' is a radix3 detail, and this is a security
+			// control — not somewhere to rely on wildcard semantics.
+			'/dashboard': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
+			'/dashboard/**': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
 		}
 	},
 
@@ -299,8 +352,8 @@ export default defineNuxtConfig({
 			{
 				userAgent: ['*'],
 				disallow: process.env.NUXT_PUBLIC_SITE_URL === 'https://localhost:3000/'
-					? ['/api/', '/login']
-					: ['/', '/login'],
+					? ['/api/', '/login', '/dashboard']
+					: ['/', '/login', '/dashboard'],
 			},
 		],
 	},

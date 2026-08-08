@@ -4,11 +4,11 @@ description: >
   Enforces the file organization, naming, and import conventions for this Nuxt 4 boilerplate.
   Use this skill whenever you are: creating any new file (component, composable, plugin, utility,
   type, page, or server route); deciding where something should live; adding or consuming a global
-  ($gsap, $lenis, $supabase, $ScrollTrigger); refactoring file locations; scaffolding a new
+  ($gsap, $lenis, $ScrollTrigger); refactoring file locations; scaffolding a new
   feature; or any time code is being organized. If the user asks "where should I put X",
   "how do I add X", or "create a new X", this skill must fire. Also use it when writing code
   that touches animations, scroll effects, or Supabase — those have specific import rules that
-  differ from standard Nuxt practice.
+  differ from standard Nuxt practice (Supabase is server-only here: there is no $supabase).
 ---
 
 # Code Structure Conventions
@@ -34,11 +34,11 @@ app/
 ├── pages/
 │   └── [...slug].vue        # THE ONLY PAGE — handles every URL via Storyblok
 ├── plugins/
-│   ├── *.client.ts          # Client-only (lenis, gsap, main)
-│   └── *.ts                 # Both sides (supabase)
+│   └── *.client.ts          # Client-only (lenis, gsap, main, routeFocus)
+├── middleware/
+│   └── *.ts                 # Route middleware (auth, admin, guest)
 ├── types/
-│   ├── storyblok.ts         # Shared Storyblok types
-│   └── supabase.d.ts        # Supabase type augmentation for NuxtApp / Vue
+│   └── storyblok.ts         # Shared Storyblok types
 ├── utils/
 │   └── *.ts                 # Pure functions — auto-imported, no Vue reactivity
 └── assets/
@@ -49,9 +49,14 @@ app/
     └── less/                # Styling (separate skill)
 
 public/                      # Static assets — NOT inside app/
+shared/                      # Auto-imported into BOTH app and server (Nuxt 4)
+└── utils/, types/           # Validators and types used on both sides
 server/
-└── plugins/
-    └── sitemap.ts           # Nitro server plugins
+├── api/                     # Server routes (/api/auth, /api/affiliate, /api/admin)
+├── middleware/              # Nitro middleware (runs on every request)
+├── plugins/
+│   └── sitemap.ts           # Nitro server plugins
+└── utils/                   # Server-only helpers — the Supabase client lives here
 ```
 
 ---
@@ -80,14 +85,18 @@ libraries directly.
 
 ```ts
 // ✅ Correct — in .vue files and layouts
-const { $gsap, $ScrollTrigger, $lenis, $supabase } = useNuxtApp()
+const { $gsap, $ScrollTrigger, $lenis } = useNuxtApp()
 
 // ❌ Wrong in .vue files — unsafe: .client.ts plugins don't run during SSR,
 // so $gsap/$ScrollTrigger are undefined when useNuxtApp() is called in setup
 import { gsap } from 'gsap'
 import Lenis from 'lenis'
-import { createClient } from '@supabase/supabase-js'
 ```
+
+**Supabase is not a global and there is no `$supabase`.** It is server-only: import the
+client from `server/utils/` inside a server route. Never import `@supabase/supabase-js`
+in a `.vue` file, a composable, or anything under `app/` — the browser holds no Supabase
+key and must not. Client code reaches data through `/api/*` routes.
 
 **Exception — composables and plain TS modules import GSAP directly:**
 
@@ -105,7 +114,7 @@ Why: `useNuxtApp()` is not reliably available in composable setup contexts durin
 import uses ESM's singleton cache, so you get the same GSAP instance every time. This is the
 safe path for composables and `assets/js/components/*.ts` helpers.
 
-This does **not** apply to `$lenis` or `$supabase` — those must always come from `useNuxtApp()`.
+This does **not** apply to `$lenis` — that must always come from `useNuxtApp()`.
 See the `animation-patterns` skill for the full GSAP import rule and why it works.
 
 ### 4. One-component JS: `app/assets/js/components/<name>.ts`
@@ -143,10 +152,12 @@ The key question is **scope of reuse**:
 
 ### 6. Plugin file naming
 
-- `.client.ts` suffix → runs on client only (lenis, gsap, main interactions)
-- `.ts` (no suffix) → runs on both server and client (supabase)
+- `.client.ts` suffix → runs on client only (lenis, gsap, main interactions, routeFocus)
+- `.ts` (no suffix) → runs on both server and client
 
-The supabase plugin is deliberately NOT `.client.ts` so the client is available during SSR.
+Every plugin in this project is currently `.client.ts`. Only drop the suffix when the plugin
+genuinely must run during SSR, and never to reach a backend service — that belongs in a
+server route.
 
 ### 7. Shared reactive state across components
 
@@ -163,7 +174,7 @@ Composables read these to know when it is safe to run animations. Do not pass th
 ### 8. TypeScript types
 
 - Storyblok content types → `app/types/storyblok.ts`
-- Supabase augmentation → `app/types/supabase.d.ts`
+- Types needed by both app and server → `shared/types/` (Nuxt 4 auto-imports both sides)
 - Component-local types → top of the file they are used in
 - Shared non-Storyblok types → `app/types/` with a descriptive filename
 
