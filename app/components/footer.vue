@@ -19,9 +19,9 @@
 						<ul class="footer-column-links">
 							<li v-for="link in column.links" :key="link._uid">
 								<NuxtLink
-									v-if="linkPath(link.link)"
-									:to="linkPath(link.link)!"
-									v-bind="storyblokLinkAttrs(link.link)"
+									v-if="linkHref(link)"
+									:to="linkHref(link)!"
+									v-bind="linkAttrs(link)"
 									class="footer-link parent-line"
 								>
 									{{ link.label }}
@@ -59,9 +59,10 @@ import { useFooter } from "~/assets/js/components/footer";
 
 const { footer } = useFooter();
 
-// Resolves a Storyblok multilink to a localized href, keeping any section
-// anchor set in the CMS (e.g. /about#pricing).
-const linkPath = useStoryblokLink();
+// Resolves each column link, applying link_role for the centrally managed ones
+// (Academy VIP / Academy LITE) and normal localised multilink resolution for
+// the rest.
+const { href: linkHref, attrs: linkAttrs } = useMenuLink();
 
 const year = new Date().getFullYear();
 

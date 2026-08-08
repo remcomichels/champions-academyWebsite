@@ -1,20 +1,16 @@
 import { ref, onMounted, onBeforeUnmount, computed, watch } from "vue";
-import { useStoryblokApi, useRoute, useNuxtApp } from "#imports";
+import { useConfig, useRoute, useNuxtApp } from "#imports";
 import type Lenis from "lenis";
-import type {
-	HeaderMenuItem,
-	CtaMenuItem,
-} from "~/types/storyblok";
 
 // Distance (px) the page must be scrolled before the header switches to its
 // compact, frosted state.
 const SCROLL_THRESHOLD = 24;
 
 export function useHeader() {
-	const storyblokApi = useStoryblokApi();
-
-	const headerMenu = ref<HeaderMenuItem[]>([]);
-	const ctaMenu = ref<CtaMenuItem[]>([]);
+	// Shared with the footer and every managed CTA — one SSR-safe fetch per
+	// request instead of the two client-only ones this used to do, which left
+	// the nav absent from the server-rendered HTML.
+	const { headerMenu, ctaMenu } = useConfig();
 
 	const { locales, locale } = useI18n();
 	const switchLocalePath = useSwitchLocalePath();
@@ -74,21 +70,6 @@ export function useHeader() {
 	// Close the mobile menu on navigation — fullPath, not path, so jumping to an
 	// anchor on the page you're already on still closes it.
 	watch(() => route.fullPath, () => setMenuOpen(false));
-
-	onMounted(async () => {
-		try {
-			const { data } = await storyblokApi.get("cdn/stories/config", {
-				version: "draft",
-				resolve_links: "url",
-			});
-
-			headerMenu.value = data.story.content.header_menu ?? [];
-			ctaMenu.value = data.story.content.cta_menu ?? [];
-		}
-		catch (error) {
-			console.error("Error fetching header menu:", error);
-		}
-	});
 
 	return {
 		headerMenu,

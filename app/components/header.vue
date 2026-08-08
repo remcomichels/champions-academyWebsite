@@ -35,9 +35,9 @@
 					<nav v-if="ctaMenu" class="ctaNav">
 						<div v-for="blok in ctaMenu" :key="blok._uid" class="navItem">
 							<NuxtLink
-								v-if="linkTo(blok.link)"
-								:to="linkTo(blok.link)!"
-								v-bind="storyblokLinkAttrs(blok.link)"
+								v-if="ctaHref(blok)"
+								:to="ctaHref(blok)!"
+								v-bind="ctaAttrs(blok)"
 								class="navLink button"
 							>
 								<span class="textWrap button__primary">
@@ -78,4 +78,8 @@ const { headerMenu, ctaMenu, localePath, menuOpen, toggleMenu, scrolled } = useH
 // Resolves a Storyblok multilink to a localized href, keeping any section
 // anchor set in the CMS (e.g. /about#pricing).
 const linkTo = useStoryblokLink();
+
+// The CTA carries a link_role, so its href comes from the referring affiliate
+// or the config default rather than from its own link field.
+const { href: ctaHref, attrs: ctaAttrs } = useMenuLink();
 </script>
