@@ -7,6 +7,9 @@
 				<NuxtLink to="/" class="dashBar-brand">Champions Academy</NuxtLink>
 
 				<div class="dashBar-right">
+					<!-- Only mounted for accounts that actually have an affiliate:
+					     the stream and inbox routes both require one. -->
+					<NuxtDashboardInbox v-if="affiliate" />
 					<NuxtLink v-if="isAdmin" to="/dashboard/admin" class="dashBar-link">Admin</NuxtLink>
 					<span v-if="affiliate" class="dashBar-who">{{ affiliate.displayName }}</span>
 					<button type="button" class="dashBar-logout" @click="logout">Log out</button>

@@ -62,7 +62,8 @@ export default defineEventHandler(async (event) => {
 
 	if (webhookData.type === "payment.succeeded") {
 		// `data` is the Payment object; the same shape the REST API returns.
-		const outcome = await ingestPayment(webhookData.data as WhopPaymentLike);
+		const payment = webhookData.data as WhopPaymentLike;
+		const outcome = await ingestPayment(payment);
 
 		if (outcome.ok) {
 			console.info(
@@ -71,10 +72,34 @@ export default defineEventHandler(async (event) => {
 			);
 		}
 		else {
-			// Not an error: most sales are not affiliate sales. Logged so an
+			// Not an error: most sales are not affiliate sales. Recorded so an
 			// attribution that *should* have worked is visible rather than silent.
 			console.info(`[whop] not attributed — ${outcome.reason}`);
 		}
+
+		// Written to the audit log as well as the console so delivery can be
+		// confirmed from the database. Reading a server log is not something
+		// anyone should have to do to answer "did the webhook arrive?", and on
+		// a serverless host the logs are somewhere else entirely.
+		await audit(event, {
+			actorKind: "system",
+			action: outcome.ok ? "webhook.attributed" : "webhook.not_attributed",
+			subjectAffiliateId: outcome.ok ? outcome.affiliateId : null,
+			meta: {
+				paymentId: payment.id ?? null,
+				status: payment.status ?? null,
+				...(outcome.ok
+					? { alreadySeen: outcome.alreadySeen }
+					: { reason: outcome.reason }),
+			},
+		});
+	}
+	else {
+		await audit(event, {
+			actorKind: "system",
+			action: "webhook.ignored",
+			meta: { type: webhookData.type },
+		});
 	}
 
 	// Always acknowledge a properly signed webhook, including event types we do

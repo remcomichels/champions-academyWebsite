@@ -446,6 +446,105 @@
     }
 }
 
+// ── Activity inbox + toasts ───────────────────────────────────────────
+.inbox {
+    position: relative;
+
+    &-trigger {
+        position: relative;
+        display: grid;
+        place-items: center;
+        background: none;
+        border: none;
+        padding: @vw4;
+        font-size: max(0.9em, @vw16);
+        line-height: 1;
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid @primary;
+            outline-offset: @vw2;
+            border-radius: @vw4;
+        }
+    }
+
+    &-badge {
+        position: absolute;
+        top: -@vw2;
+        right: -@vw4;
+        min-width: @vw16;
+        padding: 0 @vw4;
+        background-color: @primary;
+        color: @black;
+        border-radius: @vw10;
+        font-size: max(0.6em, @vw11);
+        font-weight: @bold;
+        line-height: 1.5;
+        text-align: center;
+    }
+
+    &-panel {
+        position: absolute;
+        top: calc(100% + @vw12);
+        right: 0;
+        z-index: 20;
+        width: calc(@vw300 + @vw40);
+        max-width: 90vw;
+        padding: @vw16;
+        background-color: @secondary;
+        border: max(1px, @vw1) solid @border;
+        border-radius: @vw8;
+    }
+
+    &-title {
+        font-size: max(0.75em, @vw13);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: fade(@white, 55%);
+        margin-bottom: @vw12;
+    }
+
+    &-list { list-style: none; }
+
+    &-item {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        padding: @vw10 0;
+        font-size: max(0.8em, @vw14);
+
+        & + & { border-top: max(1px, @vw1) solid @border; }
+
+        &.is-unread .inbox-text { color: @primary; }
+    }
+
+    &-text { white-space: normal; }
+    &-when { font-size: max(0.7em, @vw12); color: fade(@white, 45%); }
+    &-empty { font-size: max(0.8em, @vw14); white-space: normal; color: fade(@white, 55%); }
+}
+
+.toasts {
+    position: fixed;
+    right: @vw24;
+    bottom: @vw24;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+    pointer-events: none;
+}
+
+.toast {
+    padding: @vw12 @vw16;
+    background-color: @secondary;
+    border: max(1px, @vw1) solid @primary;
+    border-radius: @vw8;
+    font-size: max(0.8em, @vw14);
+    color: @text;
+    white-space: normal;
+    max-width: calc(@vw300 + @vw40);
+}
+
 // ── Funnel + table ────────────────────────────────────────────────────
 .funnel {
     display: flex;
