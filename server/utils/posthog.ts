@@ -78,16 +78,23 @@ async function runQuery(config: PosthogConfig, query: string): Promise<HogQLResp
 }
 
 export interface AffiliateAnalytics {
-	visitors: number;
 	sessions: number;
-	countries: { country: string; visitors: number }[];
+	countries: { country: string; sessions: number }[];
 	days: number;
 }
 
 /**
- * The three v1 metrics for one affiliate: unique visitors, sessions, and where
- * they are. Deliberately narrow — traffic sources, devices, scroll depth,
- * heatmaps, session recordings and funnels are all deferred.
+ * Sessions and geography for one affiliate.
+ *
+ * Deliberately measured in ONE unit. A visitor count used to live here too,
+ * which meant the dashboard showed two different "visitors" numbers — this one
+ * and the server-counted link visits on Overview — that could never agree,
+ * because anything counted in the browser is lost to ad blockers while the
+ * server-side count is not. Link visits are the affiliate's number; this tab
+ * describes behaviour, not headcount.
+ *
+ * Narrow on purpose: traffic sources, devices, scroll depth, heatmaps, session
+ * recordings and funnels are all deferred.
  */
 export async function affiliateAnalytics(slug: string, days: number): Promise<AffiliateAnalytics | null> {
 	const config = posthogConfig();
@@ -110,18 +117,17 @@ export async function affiliateAnalytics(slug: string, days: number): Promise<Af
 
 	const [totals, geo] = await Promise.all([
 		runQuery(config, `
-			SELECT count(DISTINCT person_id) AS visitors,
-			       count(DISTINCT properties.$session_id) AS sessions
+			SELECT count(DISTINCT properties.$session_id) AS sessions
 			FROM events
 			WHERE ${scope}
 		`),
 		runQuery(config, `
 			SELECT coalesce(properties.$geoip_country_name, 'Unknown') AS country,
-			       count(DISTINCT person_id) AS visitors
+			       count(DISTINCT properties.$session_id) AS sessions
 			FROM events
 			WHERE ${scope}
 			GROUP BY country
-			ORDER BY visitors DESC
+			ORDER BY sessions DESC
 			LIMIT 10
 		`),
 	]);
@@ -129,11 +135,10 @@ export async function affiliateAnalytics(slug: string, days: number): Promise<Af
 	const row = totals.results?.[0] ?? [];
 
 	return {
-		visitors: Number(row[0] ?? 0),
-		sessions: Number(row[1] ?? 0),
+		sessions: Number(row[0] ?? 0),
 		countries: (geo.results ?? []).map(r => ({
 			country: String(r[0] ?? "Unknown"),
-			visitors: Number(r[1] ?? 0),
+			sessions: Number(r[1] ?? 0),
 		})),
 		days: window,
 	};

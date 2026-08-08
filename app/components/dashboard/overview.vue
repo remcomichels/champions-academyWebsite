@@ -41,14 +41,17 @@
 		</section>
 
 		<section class="dashPanel">
-			<h2 class="dashPanel-title">Traffic</h2>
+			<h2 class="dashPanel-title">Link visits</h2>
 			<div class="statGrid">
-				<NuxtDashboardStatCard label="Visitors today" :value="summary.visits.today" />
+				<NuxtDashboardStatCard label="Today" :value="summary.visits.today" />
 				<NuxtDashboardStatCard label="Last 30 days" :value="summary.visits.last30d" />
 				<NuxtDashboardStatCard label="All time" :value="summary.visits.total" />
 			</div>
 			<p class="dashPanel-note">
-				Counted once per visitor per day, so refreshing your own link won't inflate it.
+				Everyone who opened your link, counted once per person per day — so
+				refreshing it yourself won't inflate the number. Counted on our own
+				server, which means ad blockers can't hide anyone, and these totals are
+				never trimmed. This is your number.
 			</p>
 		</section>
 
@@ -57,7 +60,7 @@
 			<ul v-if="recentDays.length" class="activity">
 				<li v-for="row in recentDays" :key="row.day" class="activity-row">
 					<span class="activity-day">{{ formatDay(row.day) }}</span>
-					<span class="activity-count">{{ row.count }} {{ row.count === 1 ? "visitor" : "visitors" }}</span>
+					<span class="activity-count">{{ row.count }} {{ row.count === 1 ? "visit" : "visits" }}</span>
 				</li>
 			</ul>
 			<p v-else class="dashPanel-empty">
@@ -77,7 +80,7 @@ const steps = computed(() => [
 	{ key: "lite", label: "Add your Telegram link", done: props.summary.onboarding.steps.liteTelegramAdded },
 	{ key: "calendly", label: "Add your Calendly link", done: props.summary.onboarding.steps.calendlyAdded },
 	{ key: "shared", label: "Copy your referral link", done: props.summary.onboarding.steps.linkShared },
-	{ key: "visit", label: "Get your first visitor", done: props.summary.onboarding.steps.firstVisitReceived },
+	{ key: "visit", label: "Get your first link visit", done: props.summary.onboarding.steps.firstVisitReceived },
 ]);
 
 const onboardingComplete = computed(() =>

@@ -18,7 +18,7 @@
 				<NuxtDashboardStatCard
 					label="Conversion"
 					:value="data.funnel.conversionRate === null ? '—' : `${data.funnel.conversionRate}%`"
-					:hint="data.funnel.conversionRate === null ? 'No visits yet' : 'Visitors who bought'"
+					:hint="data.funnel.conversionRate === null ? 'No visits yet' : 'Link visits that bought'"
 				/>
 			</div>
 
@@ -33,7 +33,7 @@
 			<h2 class="dashPanel-title">Last 30 days</h2>
 			<ul class="funnel">
 				<li class="funnel-step">
-					<span class="funnel-label">Visitors</span>
+					<span class="funnel-label">Link visits</span>
 					<span class="funnel-value">{{ data.funnel.visits30d.toLocaleString("en-GB") }}</span>
 				</li>
 				<li class="funnel-step">
@@ -42,8 +42,9 @@
 				</li>
 			</ul>
 			<p class="dashPanel-note">
-				Only the VIP link can produce a sale. Your Telegram and Calendly links send
-				people somewhere useful, but nothing is sold through them.
+				Both counted on our own server, so the conversion rate compares like with
+				like. Only the VIP link can produce a sale — your Telegram and Calendly
+				links send people somewhere useful, but nothing is sold through them.
 			</p>
 		</section>
 

@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
 		// Not an error — analytics simply isn't wired up in this environment.
 		// The UI says so plainly instead of showing zeroes, which would read as
 		// "nobody visited".
-		return { configured: false, days, visitors: 0, sessions: 0, countries: [] };
+		return { configured: false, days, sessions: 0, countries: [] };
 	}
 
 	try {

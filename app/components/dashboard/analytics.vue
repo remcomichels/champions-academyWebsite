@@ -6,7 +6,7 @@
 
 		<section class="dashPanel">
 			<div class="dashPanel-head">
-				<h2 class="dashPanel-title">Your traffic</h2>
+				<h2 class="dashPanel-title">Sessions</h2>
 				<div class="rangeTabs">
 					<button
 						v-for="option in ranges"
@@ -28,25 +28,17 @@
 
 			<div v-else-if="data" class="statGrid">
 				<NuxtDashboardStatCard
-					label="Unique visitors"
-					:value="data.visitors"
-					hint="People, not pageviews"
-				/>
-				<NuxtDashboardStatCard
 					label="Sessions"
 					:value="data.sessions"
-					hint="Separate visits"
+					hint="Separate visits to the site"
 				/>
 			</div>
 
 			<p class="dashPanel-note">
-				Everyone who reached the site through your link. Counted by PostHog, so
-				these can differ slightly from the visit numbers on Overview — those come
-				from our own server and ignore anyone blocking analytics.
-				<template v-if="range === 'all'">
-					“All” goes back to the day you joined; anything older than PostHog keeps
-					won’t appear here, though your Overview totals are never trimmed.
-				</template>
+				A session is one continuous visit. For how many people arrived through your
+				link, use <strong>Link visits</strong> on Overview — that's counted on our
+				own server, so nothing can block it. Sessions are measured in the browser
+				and will always be the lower number.
 			</p>
 		</section>
 
@@ -57,9 +49,9 @@
 				<li v-for="row in data.countries" :key="row.country" class="geoList-row">
 					<span class="geoList-name">{{ row.country }}</span>
 					<span class="geoList-bar" aria-hidden="true">
-						<span class="geoList-fill" :style="{ transform: `scaleX(${share(row.visitors)})` }" />
+						<span class="geoList-fill" :style="{ transform: `scaleX(${share(row.sessions)})` }" />
 					</span>
-					<span class="geoList-count">{{ row.visitors }}</span>
+					<span class="geoList-count">{{ row.sessions }}</span>
 				</li>
 			</ul>
 
@@ -74,9 +66,8 @@
 interface AnalyticsResponse {
 	configured: boolean;
 	days: number;
-	visitors: number;
 	sessions: number;
-	countries: { country: string; visitors: number }[];
+	countries: { country: string; sessions: number }[];
 }
 
 const ranges = [
@@ -106,9 +97,9 @@ const setRange = (value: RangeId) => {
 	refresh();
 };
 
-/** Bar width relative to the busiest country, floored so 1 visitor is visible. */
-const share = (visitors: number) => {
-	const top = data.value?.countries[0]?.visitors ?? 0;
-	return top > 0 ? Math.max(visitors / top, 0.04) : 0;
+/** Bar width relative to the busiest country, floored so one session is visible. */
+const share = (sessions: number) => {
+	const top = data.value?.countries[0]?.sessions ?? 0;
+	return top > 0 ? Math.max(sessions / top, 0.04) : 0;
 };
 </script>
