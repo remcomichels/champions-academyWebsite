@@ -85,8 +85,8 @@ export default defineNuxtConfig({
 	 * ----------------------------- */
 	site: {
 		url: process.env.NUXT_PUBLIC_SITE_URL || "https://localhost:3000/",
-		name: "Nuxt Template",
-		description: "Nuxt Template for building applications with Storyblok.",
+		name: "Champions Academy",
+		description: "A trading community built on real education, live mentorship, and proven SMC strategy — as one connected system.",
 	},
 
 	ogImage: {
@@ -266,21 +266,22 @@ export default defineNuxtConfig({
 	schemaOrg: {
 		identity: {
 			type: "Organization",
-			name: "Website Name",
-			logo: "/images/logo.png", //Routes to public/images
-			description: "Website description here",
-			telephone: "+310612345678",
-			email: "email@example.com",
-			address: {
-				streetAddress: "street 1",
-				postalCode: "1234 AB",
-				addressLocality: "City",
-				addressCountry: "NL",
-			},
+			// Champions Lifestyle is the organisation; Champions Academy is this
+			// site's product. Structured data describes the organisation.
+			name: "Champions Lifestyle",
+			// Google's Organization guidance lists JPG/PNG/WebP and not SVG, so
+			// this may simply be ignored for the search logo. Harmless either way,
+			// and it beats the previous /images/logo.png which no longer exists.
+			// Swap in a PNG if a logo ever needs to appear in a knowledge panel.
+			logo: "/images/logo.svg",
+			description: "A trading community built on real education, live mentorship, and proven SMC strategy — as one connected system.",
+			email: "thechampionslifestyle@gmail.com",
+			// No telephone or postal address, by choice.
+			// Telegram is deliberately excluded: it points at a personal account
+			// rather than a brand profile, which is not what sameAs is for.
 			sameAs: [
-				"https://www.linkedin.com/company/templatelink/",
-				"https://www.instagram.com/templatelink/",
-				"https://www.facebook.com/templatelink",
+				"https://youtube.com/@championslifestyleofficial",
+				"https://www.instagram.com/thechampionslifestyle/",
 			],
 		},
 	},
