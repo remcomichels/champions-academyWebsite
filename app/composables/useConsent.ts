@@ -61,11 +61,29 @@ export function useConsent() {
 		state.value = "denied";
 	};
 
+	/**
+	 * Reopens the choice.
+	 *
+	 * Withdrawing consent has to be as easy as giving it — telling people to go
+	 * and clear cookies in their browser is not an equivalent path, and it is
+	 * the usual thing regulators pick up on. Reachable from the footer on every
+	 * page and from the privacy policy.
+	 *
+	 * Reopens for everyone, not only visitors who were asked: someone outside
+	 * the EEA who wants to opt out should be able to, even though they were
+	 * never prompted.
+	 */
+	const reopen = () => {
+		cookie.value = null;
+		state.value = "required";
+	};
+
 	return {
 		state,
 		resolve,
 		accept,
 		decline,
+		reopen,
 		/** True only once the visitor has actually allowed it. */
 		granted: computed(() => state.value === "granted"),
 		/** Drives the banner. */

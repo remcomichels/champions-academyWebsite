@@ -124,10 +124,6 @@ export default defineNuxtConfig({
 			],
 			meta: [
 				{
-					name: "Nuxt Site Name",
-					content: "Nuxt Site Name",
-				},
-				{
 					name: "color-scheme",
 					content: "light",
 				},
@@ -191,7 +187,6 @@ export default defineNuxtConfig({
 			posthogHost: process.env.POSTHOG_HOST || "",
 			storyblokApiKey: process.env.STORYBLOK_DELIVERY_API_TOKEN || "",
 			bunnyStreamHostname: process.env.BUNNY_STREAM_HOSTNAME || "",
-			googleAnalyticsId: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || "",
 		},
 	},
 
@@ -349,17 +344,6 @@ export default defineNuxtConfig({
 			}
 			},
 		}
-	},
-
-    /* -----------------------------
-	 * Scripts
-	 * ----------------------------- */
-	scripts: {
-		registry: {
-			googleAnalytics: {
-      			id: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID,
-			},
-		},
 	},
 
 	/* -----------------------------

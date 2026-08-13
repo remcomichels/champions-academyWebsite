@@ -36,6 +36,14 @@
 
 			<div class="footer-sub">
 				<p class="footer-copyright">&copy; {{ year }} Champions Academy</p>
+				<!-- Withdrawing consent has to be as easy as giving it, so this sits
+				     on every page rather than only in the policy. Its own component
+				     inside ClientOnly: the composable reads a cookie, and calling it
+				     from this file's setup would put consent state in the SSR payload
+				     and make the page vary by cookie. -->
+				<ClientOnly>
+					<NuxtCookieSettingsButton />
+				</ClientOnly>
 				<p class="footer-disclaimer">{{ footer.subFooter_text }}</p>
 				<p class="footer-credit">
 					Crafted with care by
