@@ -1,5 +1,5 @@
 <template>
-	<div id="pageContainer" class="authLayout">
+	<div class="authLayout">
 		<!-- NuxtPage, not <slot />: app.vue renders a bare <NuxtLayout />, so the
 		     page is mounted by the layout rather than passed in as a slot. Using
 		     a slot here renders an empty <main> with no error. -->

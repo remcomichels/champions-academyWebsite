@@ -35,8 +35,17 @@
 
 // ── Shell ────────────────────────────────────────────────────────────────────
 .dashLayout {
+    // Both of these used to come from `#pageContainer`, which the marketing
+    // layout still carries. That rule also sets `flex-direction: column` and
+    // `width: 100vw` — the first stacked the sidebar on top of the page rather
+    // than beside it, and being an ID it outranked every class here. The id is
+    // gone from this layout, so the properties worth keeping are restated.
+    position: relative;
     display: flex;
+    flex-direction: row;
     align-items: flex-start;
+    // Not 100vw: that includes the scrollbar gutter and overflows by its width.
+    width: 100%;
     min-height: 100vh;
     background-color: var(--background);
 
@@ -90,6 +99,66 @@
     }
 }
 
+// ── Peel-to-open ─────────────────────────────────────────────────────────────
+// Only applied once the browser has been confirmed to support the HTML-in-Canvas
+// capture NuxtPeel needs (see the dashboard layout). Without `is-peel` every
+// rule below is inert and the rail behaves normally, which is the case in every
+// browser that does not have the flag enabled.
+.dashLayout.is-peel {
+    // The nav stops taking part in the flex flow and sits *under* the page, at
+    // its full width, so there is something for the peel to uncover. Fixed
+    // rather than sticky: a sticky element still reserves its column.
+    .dashNav {
+        position: fixed;
+        left: 0;
+        top: 0;
+        z-index: 1;
+    }
+
+    // The sheet. Opaque, or the nav shows through instead of being revealed.
+    .dashLayout-body {
+        position: relative;
+        z-index: 2;
+        background-color: var(--background);
+        .transition(margin-left, @durationMedium, @ease);
+    }
+
+    // Collapsed is the peel state: the sheet starts at the viewport edge and
+    // covers the nav completely. Overrides the rail width — a 72px nav would
+    // leave the peel revealing mostly empty panel.
+    &.is-collapsed .dashNav {
+        width: @vw240;
+    }
+
+    &.is-collapsed .dashNav-label,
+    &.is-collapsed .dashNav-brandText {
+        width: auto;
+        opacity: 1;
+        transform: none;
+    }
+
+    &.is-collapsed .dashNav-item {
+        justify-content: flex-start;
+        gap: @vw12;
+        padding: @vw10 @vw12;
+    }
+
+    &.is-collapsed .dashNav-head { justify-content: space-between; }
+    &.is-collapsed .dashNav-collapse { transform: rotate(180deg); }
+
+    // Pinned open: the sheet moves aside and the nav is simply visible, so
+    // there is nothing left to peel.
+    &:not(.is-collapsed) .dashLayout-body {
+        margin-left: @vw240;
+    }
+}
+
+// NuxtPeel's own wrapper. It needs to fill the column so the captured sheet is
+// the whole page rather than a short strip.
+.dashLayout-sheet {
+    width: 100%;
+}
+
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 .dashNav {
     position: sticky;
@@ -103,7 +172,7 @@
     padding: @vw16 @vw12;
     background-color: var(--surface);
     border-right: max(1px, @vw1) solid var(--border);
-    .transition();
+    .transition(width, @durationMedium, @ease);
     transition-property: width;
 
     &.is-collapsed {
@@ -146,8 +215,9 @@
         letter-spacing: 0.01em;
         white-space: nowrap;
         overflow: hidden;
-        .transition();
-        transition-property: width, opacity;
+        transform: translateX(0);
+        .transition(transform, @durationMedium, @ease);
+        transition-property: width, opacity, transform;
     }
 
     &-collapse {
@@ -245,8 +315,9 @@
     &-label {
         overflow: hidden;
         text-overflow: ellipsis;
-        .transition();
-        transition-property: width, opacity;
+        transform: translateX(0);
+        .transition(transform, @durationMedium, @ease);
+        transition-property: width, opacity, transform;
     }
 
     // Collapsed rail: icons only, centred, labels gone. `width: 0` rather than
@@ -256,6 +327,9 @@
     &.is-collapsed &-brandText {
         width: 0;
         opacity: 0;
+        // Slides out under the icon as it collapses rather than simply
+        // vanishing on the spot.
+        transform: translateX(-@vw12);
     }
 
     &.is-collapsed &-item {
@@ -1651,6 +1725,19 @@
 // navigation is worth. `is-collapsed` is deliberately ignored here: the desktop
 // rail state must not leak into the drawer and render a 72px-wide panel.
 @media (max-width: 768px) {
+    // Peel is a pointer interaction, so it is off wherever the nav is a drawer.
+    // Without this the nav would sit under an opaque sheet with no way to
+    // reach it on a touch screen.
+    .dashLayout.is-peel {
+        .dashLayout-body,
+        &:not(.is-collapsed) .dashLayout-body {
+            margin-left: 0;
+            background-color: transparent;
+        }
+
+        .dashNav { z-index: 50; }
+    }
+
     .dashNav {
         position: fixed;
         top: 0;
@@ -1672,6 +1759,9 @@
         &.is-collapsed .dashNav-brandText {
             width: auto;
             opacity: 1;
+            // The desktop rail slides its labels out of view; in the drawer
+            // they must sit where they belong.
+            transform: none;
         }
 
         &.is-collapsed .dashNav-item {
