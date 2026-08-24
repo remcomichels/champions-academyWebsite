@@ -46,13 +46,25 @@
 						<NuxtDashboardIcon name="menu" />
 					</button>
 
-					<h1 class="dashBar-title">{{ pageTitle }}</h1>
+					<!-- The title is hidden rather than deleted. It was the only h1 on
+					     every tab, and a page with no h1 loses its place in the
+					     heading outline that screen readers navigate by. Visually
+					     the tab is already named by the active item in the sidebar. -->
+					<h1 class="sr-only">{{ pageTitle }}</h1>
 
 					<div class="dashBar-right">
 						<!-- Only mounted for accounts that actually have an affiliate:
 						     the stream and inbox routes both require one. -->
 						<NuxtDashboardInbox v-if="affiliate" />
-						<span v-if="affiliate" class="dashBar-who">{{ affiliate.displayName }}</span>
+
+						<NuxtLink
+							v-if="affiliate"
+							to="/dashboard/settings"
+							class="dashBar-avatar"
+							:aria-label="`Signed in as ${affiliate.displayName} — profile settings`"
+						>
+							<span aria-hidden="true">{{ initials }}</span>
+						</NuxtLink>
 					</div>
 				</header>
 
@@ -212,6 +224,26 @@ const pageTitle = computed(() => {
 		.find(item => route.path === item.to || route.path.startsWith(`${item.to}/`));
 
 	return match?.label ?? "Dashboard";
+});
+
+/**
+ * Initials for the profile circle.
+ *
+ * Not a photo yet: `/api/auth/me` returns `avatarPath`, a Supabase Storage
+ * path rather than a URL, and the bucket's base URL is server-side only — so
+ * the browser cannot resolve it. When avatar upload ships, the endpoint should
+ * return a resolved URL and this becomes the fallback for accounts without one.
+ */
+const initials = computed(() => {
+	const name = affiliate.value?.displayName?.trim();
+	if (!name) return "?";
+
+	const parts = name.split(/\s+/).filter(Boolean);
+	const first = parts[0]?.[0] ?? "";
+	// Last word rather than second, so a middle name doesn't win over a surname.
+	const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
+
+	return (first + last).toUpperCase();
 });
 
 const showNoAffiliate = computed(() =>

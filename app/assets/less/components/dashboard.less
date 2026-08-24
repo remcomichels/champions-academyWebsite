@@ -132,11 +132,11 @@
         .transition(margin-left, @durationMedium, @ease);
     }
 
-    // The opaque surface belongs to the element that actually peels, plus the
-    // top bar, which sits outside the sheet and would otherwise let the nav
-    // show through above it.
-    .dashLayout-main { background-color: var(--background); }
-    .dashBar { background-color: var(--background); }
+    // The opaque surface belongs on the column inside the sheet. It used to be
+    // split between main and the top bar, from when the body was an ancestor of
+    // the peel canvas rather than part of its content — now that the whole
+    // column peels, one background covers it, and the bar can stay transparent
+    // without the nav showing through behind it.
 
     // Collapsed is the peel state: the sheet starts at the viewport edge and
     // covers the nav completely. Overrides the rail width — a 72px nav would
@@ -175,8 +175,6 @@
     height: 100vh;
     overflow: hidden;
 
-    .dashBar { position: static; }
-
     // The sheet is the whole column, top bar included.
     .dashLayout-sheet {
         height: 100vh;
@@ -186,6 +184,7 @@
         display: flex;
         flex-direction: column;
         height: 100%;
+        background-color: var(--background);
         // Without this the flex item refuses to shrink below its content and
         // the sheet is pushed past the bottom of the viewport.
         min-height: 0;
@@ -397,16 +396,18 @@
 }
 
 // ── Top bar ──────────────────────────────────────────────────────────────────
+// No bar, really — just the row the controls sit in. No background, no rule
+// under it, and not sticky: transparent and pinned, page content would scroll
+// underneath the circles and collide with them.
 .dashBar {
-    position: sticky;
-    top: 0;
-    z-index: 30;
+    position: relative;
+    z-index: 3;
     display: flex;
     align-items: center;
-    gap: @vw16;
-    padding: @vw16 @vw40;
-    background-color: var(--background);
-    border-bottom: max(1px, @vw1) solid var(--border);
+    gap: @vw12;
+    padding: @vw20 @vw40 @vw4;
+    background: none;
+    border-bottom: none;
 
     &-menu {
         // Desktop navigates from the sidebar; this is the drawer trigger and
@@ -418,7 +419,7 @@
         padding: 0;
         background: none;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw8;
+        border-radius: 50%;
         font-size: max(1em, @vw20);
         color: var(--text);
         cursor: pointer;
@@ -429,30 +430,39 @@
         }
     }
 
-    &-title {
-        flex: 1;
-        min-width: 0;
-        font-family: @body;
-        font-size: max(1em, @vw18);
-        font-weight: @bold;
-        letter-spacing: 0.01em;
-        line-height: 1.2;
-        color: var(--text);
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
+    // The title is screen-reader-only now, so nothing holds the row open —
+    // the controls push themselves to the end instead.
     &-right {
+        margin-left: auto;
         display: flex;
         align-items: center;
-        gap: @vw16;
+        gap: @vw10;
     }
 
-    &-who {
-        font-size: max(0.8em, @vw14);
-        color: var(--text-secondary);
-        white-space: nowrap;
+    // Initials until avatar upload ships; see the note in the layout.
+    &-avatar {
+        display: grid;
+        place-items: center;
+        width: @vw36;
+        height: @vw36;
+        border-radius: 50%;
+        background-color: var(--accent-subtle);
+        border: max(1px, @vw1) solid var(--border);
+        font-size: max(0.7em, @vw13);
+        font-weight: @bold;
+        letter-spacing: 0.02em;
+        color: var(--accent);
+        .transition();
+        transition-property: border-color, background-color;
+
+        @media (hover: hover) {
+            &:hover { border-color: var(--accent); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
     }
 }
 
@@ -1165,7 +1175,7 @@
         height: @vw36;
         background: none;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw8;
+        border-radius: 50%;
         padding: 0;
         font-size: max(0.9em, @vw18);
         color: var(--text-secondary);
@@ -1740,7 +1750,11 @@
         &-mark { width: @vw32-1080; height: @vw32-1080; }
     }
 
-    .dashBar { padding: @vw14-1080 @vw32-1080; }
+    .dashBar {
+        padding: @vw16-1080 @vw32-1080 @vw4-1080;
+
+        &-avatar { width: @vw36-1080; height: @vw36-1080; }
+    }
 
     .dash { gap: @vw20-1080; }
     .dashSection { gap: @vw16-1080; }
@@ -1857,15 +1871,12 @@
     }
 
     .dashBar {
-        gap: @vw12-580;
-        padding: @vw12-580 @vw20-580;
+        gap: @vw10-580;
+        padding: @vw16-580 @vw20-580 @vw4-580;
 
         &-menu { width: @vw36-580; height: @vw36-580; }
-        &-title { font-size: max(0.9em, @vw16-580); }
-        &-right { gap: @vw12-580; }
-        // The name is the first thing to go: the bell and the page title both
-        // carry more, and three items do not fit at 320.
-        &-who { display: none; }
+        &-right { gap: @vw8-580; }
+        &-avatar { width: @vw36-580; height: @vw36-580; }
     }
 
     .dash { gap: @vw16-580; }
