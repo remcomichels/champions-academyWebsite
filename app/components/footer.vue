@@ -22,6 +22,7 @@
 									v-if="linkHref(link)"
 									:to="linkHref(link)!"
 									v-bind="linkAttrs(link)"
+									@click="onLinkClick(link)"
 									class="footer-link parent-line"
 								>
 									{{ link.label }}
@@ -70,7 +71,7 @@ const { footer } = useFooter();
 // Resolves each column link, applying link_role for the centrally managed ones
 // (Academy VIP / Academy LITE) and normal localised multilink resolution for
 // the rest.
-const { href: linkHref, attrs: linkAttrs } = useMenuLink();
+const { href: linkHref, attrs: linkAttrs, onClick: onLinkClick } = useMenuLink();
 
 const year = new Date().getFullYear();
 

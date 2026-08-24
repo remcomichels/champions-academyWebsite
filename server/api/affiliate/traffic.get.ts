@@ -3,9 +3,10 @@ import { int, object, oneOf, optional } from "../../utils/validate";
 interface TrafficBreakdowns {
 	total: number;
 	country_count: number;
+	click_total: number;
 	sources: { host: string | null; visits: number }[];
 	countries: { country: string; visits: number }[];
-	paths: { path: string; visits: number }[];
+	clicks: { role: string; clicks: number }[];
 	heatmap: { dow: number; hour: number; visits: number }[];
 }
 
@@ -83,14 +84,16 @@ export default defineEventHandler(async (event) => {
 		timezone,
 		total: breakdowns.total ?? 0,
 		countryCount: breakdowns.country_count ?? 0,
+		clickTotal: breakdowns.click_total ?? 0,
 		sources: breakdowns.sources ?? [],
 		countries: breakdowns.countries ?? [],
-		paths: breakdowns.paths ?? [],
+		clicks: breakdowns.clicks ?? [],
 		heatmap: breakdowns.heatmap ?? [],
 
 		previous: {
 			total: previous.total ?? 0,
 			countryCount: previous.country_count ?? 0,
+			clickTotal: previous.click_total ?? 0,
 		},
 	};
 });

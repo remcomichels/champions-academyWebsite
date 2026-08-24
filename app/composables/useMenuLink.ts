@@ -10,6 +10,7 @@ import type { MenuLinkItem } from "~/types/storyblok";
 export function useMenuLink() {
 	const roleHref = useRoleHref();
 	const linkPath = useStoryblokLink();
+	const recordClick = useLinkClick();
 
 	const href = (item: MenuLinkItem): string | null =>
 		// Managed links are absolute external URLs, so they must not be run
@@ -22,5 +23,8 @@ export function useMenuLink() {
 			? { target: "_blank", rel: "noopener noreferrer" }
 			: storyblokLinkAttrs(item.link);
 
-	return { href, attrs };
+	/** Only managed links are counted; an ordinary CMS link is nobody's metric. */
+	const onClick = (item: MenuLinkItem) => recordClick(item.link_role);
+
+	return { href, attrs, onClick };
 }

@@ -92,14 +92,17 @@
 
 		<div class="dashGrid">
 			<section class="dashPanel dashGrid-main">
-				<h2 class="dashPanel-title">Which page they landed on</h2>
+				<div class="dashPanel-head">
+					<h2 class="dashPanel-title">What they clicked</h2>
+					<span v-if="clickRate !== null" class="dashPanel-count">{{ clickRate }}% of visits</span>
+				</div>
 				<NuxtDashboardBreakdown
-					:items="paths"
-					empty="No landing pages yet."
+					:items="clicks"
+					empty="No clicks yet. Once someone opens your link and taps through to a plan, it shows up here."
 				/>
 				<p class="dashPanel-note">
-					Where your link pointed people. If you're sharing a link to a specific
-					page, this is how you check it's actually the one they're getting.
+					Which of your links the traffic actually goes to. Counted once per
+					person per day, like visits, so the rate above compares like with like.
 				</p>
 			</section>
 
@@ -121,10 +124,11 @@ interface TrafficResponse {
 	timezone: string;
 	total: number;
 	countryCount: number;
-	previous: { total: number; countryCount: number };
+	clickTotal: number;
+	previous: { total: number; countryCount: number; clickTotal: number };
 	sources: { host: string | null; visits: number }[];
 	countries: { country: string; visits: number }[];
-	paths: { path: string; visits: number }[];
+	clicks: { role: string; clicks: number }[];
 	heatmap: { dow: number; hour: number; visits: number }[];
 }
 
@@ -218,9 +222,26 @@ const countries = computed(() =>
 		return { label, visits: row.visits };
 	}));
 
-const paths = computed(() =>
-	(traffic.value?.paths ?? []).map(row => ({
-		label: row.path,
-		visits: row.visits,
+const ROLE_LABELS: Record<string, string> = {
+	vip: "VIP checkout",
+	lite: "Telegram (Lite)",
+	calendly: "Book a call",
+};
+
+const clicks = computed(() =>
+	(traffic.value?.clicks ?? []).map(row => ({
+		label: ROLE_LABELS[row.role] ?? row.role,
+		visits: row.clicks,
 	})));
+
+/**
+ * Clicks as a share of visits. Both sides count once per person per day, so
+ * this is a real rate rather than two differently-shaped numbers divided.
+ * Can exceed 100% legitimately — one visitor may click two different links.
+ */
+const clickRate = computed(() => {
+	const t = traffic.value;
+	if (!t || !t.total) return null;
+	return Math.round((t.clickTotal / t.total) * 100);
+});
 </script>

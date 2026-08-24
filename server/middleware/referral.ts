@@ -73,7 +73,10 @@ function logVisit(event: H3Event, affiliateId: string, path: string): void {
 	// A serverless function is frozen the moment the response is written, so a
 	// bare floating promise is silently dropped. waitUntil is the only way this
 	// reliably lands. Analytics must never delay or break a pageview either way.
-	if (typeof event.waitUntil === "function") event.waitUntil(write);
+	//
+	// Promise.resolve because the Supabase builder's `.then()` yields a
+	// PromiseLike, and waitUntil takes a real Promise.
+	if (typeof event.waitUntil === "function") event.waitUntil(Promise.resolve(write));
 }
 
 export default defineEventHandler(async (event) => {

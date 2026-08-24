@@ -617,7 +617,20 @@
         color: var(--accent);
     }
 
-    &-note,
+    // A footnote explaining the panel above it, not body copy — it should be
+    // readable when looked for and quiet when not.
+    &-note {
+        font-size: max(0.7em, @vw12);
+        line-height: 1.5;
+        white-space: normal;
+        color: var(--text-tertiary);
+        // Pins the note to the bottom of the card, so two panels sharing a row
+        // line their notes up instead of leaving one floating mid-card.
+        margin-top: auto;
+
+        strong { color: var(--text-secondary); font-weight: @semiBold; }
+    }
+
     &-empty {
         font-size: max(0.8em, @vw14);
         line-height: 1.5;
@@ -667,7 +680,10 @@
     display: grid;
     grid-template-columns: 1.6fr 1fr;
     gap: @vw20;
-    align-items: start;
+    // Stretch, not start: two panels sharing a row match heights. Their notes
+    // are pinned to the bottom by `margin-top: auto`, so the taller panel sets
+    // the height and the shorter one fills rather than floating short.
+    align-items: stretch;
 
     &-main { min-width: 0; }
     &-side { min-width: 0; }
@@ -1460,6 +1476,7 @@
 .heatmap {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: @vw12;
 
     // Cells are a fixed size rather than stretching to fill the panel. Left to
