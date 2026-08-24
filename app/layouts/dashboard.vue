@@ -58,7 +58,20 @@
 
 				<!-- NuxtPage, not <slot />: app.vue renders a bare <NuxtLayout />, so
 				     the layout mounts the page itself. A slot renders an empty main. -->
-				<main id="main" tabindex="-1" class="dashLayout-main">
+				<!-- data-lenis-prevent: Lenis is a marketing-site plugin that runs
+				     app-wide and hijacks the wheel to smooth-scroll the window. In
+				     peel mode the window cannot scroll — the shell is a fixed
+				     height with `overflow: hidden` — so Lenis swallowed every
+				     wheel event and the dashboard would not scroll at all, while
+				     keyboard and programmatic scrolling still worked. This opts
+				     the real scroll container out of Lenis, which is the escape
+				     hatch _general.less already styles for. -->
+				<main
+					id="main"
+					tabindex="-1"
+					class="dashLayout-main"
+					:data-lenis-prevent="peelReady ? '' : undefined"
+				>
 					<!-- An admin-only login has no affiliate profile, so there are no
 					     figures to show. Saying that plainly beats a generic failure,
 					     which is what the owner would otherwise hit on every tab. It
