@@ -1,6 +1,8 @@
 <template>
 	<div class="dashLayout" :class="{ 'is-collapsed': collapsed, 'is-peel': peelReady }">
-		<NuxtDashboardSidebar />
+		<!-- Outside the peel whenever the peel is not driving it: as the ordinary
+		     flex-sibling rail, and as the mobile drawer. -->
+		<NuxtDashboardSidebar v-if="!peelActive" />
 
 		<!-- Mobile only: closes the drawer on a tap outside it. Not focusable —
 		     Escape and the drawer's own close button are the keyboard routes. -->
@@ -11,58 +13,80 @@
 			@click="drawerOpen = false"
 		/>
 
-		<div class="dashLayout-body">
-			<header class="dashBar">
-				<button
-					type="button"
-					class="dashBar-menu"
-					aria-label="Open navigation"
-					@click="drawerOpen = true"
-				>
-					<NuxtDashboardIcon name="menu" />
-				</button>
+		<!-- Peel leaves nothing on screen to say a nav is there, so this marks the
+		     edge. Decorative and never a hit target: the gesture itself is the
+		     control, and the rail returns the moment the peel is not driving. -->
+		<div
+			v-if="peelActive"
+			class="peelHint"
+			:class="{ 'is-hidden': hintHidden }"
+			aria-hidden="true"
+		>
+			<span class="peelHint-tab">
+				<NuxtDashboardIcon name="chevronLeft" />
+			</span>
+		</div>
 
-				<h1 class="dashBar-title">{{ pageTitle }}</h1>
+		<!-- The peel sheet. Where the browser supports it, the page lifts away
+		     from its left edge as the pointer nears, revealing the nav underneath.
+		     Where it does not, NuxtPeel renders its slot as a plain div and the
+		     rail plus its toggle carry on as normal — which is why they stay.
 
-				<div class="dashBar-right">
-					<!-- Only mounted for accounts that actually have an affiliate:
-					     the stream and inbox routes both require one. -->
-					<NuxtDashboardInbox v-if="affiliate" />
-					<span v-if="affiliate" class="dashBar-who">{{ affiliate.displayName }}</span>
-				</div>
-			</header>
+		     The whole column is inside the sheet, top bar included. That is safe
+		     here because the shell is a fixed height with `main` scrolling inside,
+		     so the bar holds its place without `position: sticky`, which the peel
+		     wrapper's `overflow: hidden` would otherwise break. -->
+		<NuxtPeel
+			class="dashLayout-sheet"
+			side="left"
+			mode="hover"
+			:reveal="peelReveal"
+			:zone="peelZone"
+			:curl="220"
+			:bow="40"
+			:shade="0.3"
+			:smoothing="0.22"
+		>
+			<!-- The nav belongs inside the peel, not beside it. NuxtPeel tracks the
+			     pointer on its own wrapper and retracts on pointerleave, so a nav
+			     rendered as a sibling rolled the sheet shut the moment the pointer
+			     moved onto it — which is why its links could not be clicked. In the
+			     `under` slot the pointer never leaves the wrapper, the sheet stays
+			     open, and the component's own pointer-events handling passes the
+			     clicks through. -->
+			<template #under>
+				<NuxtDashboardSidebar v-if="peelActive" />
+			</template>
 
-			<!-- The peel sheet. When the browser supports it, the page lifts away
-			     from its left edge as the pointer nears it, revealing the nav
-			     underneath — so the sidebar opens by peeling rather than by
-			     clicking. Where it is unsupported NuxtPeel renders its slot as a
-			     plain div, which is why the rail and its toggle stay: they are
-			     the only way in for everyone else.
+			<div class="dashLayout-body">
+				<header class="dashBar">
+					<button
+						type="button"
+						class="dashBar-menu"
+						aria-label="Open navigation"
+						@click="drawerOpen = true"
+					>
+						<NuxtDashboardIcon name="menu" />
+					</button>
 
-			     The top bar deliberately sits outside the sheet. NuxtPeel wraps
-			     its content in `overflow: hidden`, which would break the bar's
-			     `position: sticky`. -->
-			<NuxtPeel
-				class="dashLayout-sheet"
-				side="left"
-				mode="hover"
-				:reveal="peelReveal"
-				:zone="peelZone"
-				:curl="220"
-				:bow="40"
-				:shade="0.3"
-				:smoothing="0.22"
-			>
-				<!-- NuxtPage, not <slot />: app.vue renders a bare <NuxtLayout />,
-				     so the layout mounts the page itself. A slot here renders an
-				     empty main. -->
+					<h1 class="dashBar-title">{{ pageTitle }}</h1>
+
+					<div class="dashBar-right">
+						<!-- Only mounted for accounts that actually have an affiliate:
+						     the stream and inbox routes both require one. -->
+						<NuxtDashboardInbox v-if="affiliate" />
+						<span v-if="affiliate" class="dashBar-who">{{ affiliate.displayName }}</span>
+					</div>
+				</header>
+
+				<!-- NuxtPage, not <slot />: app.vue renders a bare <NuxtLayout />, so
+				     the layout mounts the page itself. A slot renders an empty main. -->
 				<main id="main" tabindex="-1" class="dashLayout-main">
-					<!-- An admin-only login has no affiliate profile, so there are
-					     no figures to show. Saying that plainly beats a generic
-					     failure, which is what the owner would otherwise hit on
-					     every tab. It lives in the layout rather than in six
-					     pages, and Admin is exempt because that is the one route
-					     such a login is for. -->
+					<!-- An admin-only login has no affiliate profile, so there are no
+					     figures to show. Saying that plainly beats a generic failure,
+					     which is what the owner would otherwise hit on every tab. It
+					     lives here rather than in six pages, and Admin is exempt
+					     because that is the one route such a login is for. -->
 					<div v-if="showNoAffiliate" class="dashSection">
 						<section class="dashPanel dashPanel--empty">
 							<h2 class="dashPanel-title">No affiliate profile on this account</h2>
@@ -78,8 +102,8 @@
 
 					<NuxtPage v-else />
 				</main>
-			</NuxtPeel>
-		</div>
+			</div>
+		</NuxtPeel>
 	</div>
 </template>
 
@@ -111,7 +135,46 @@ const { theme } = useTheme();
  */
 const peelReady = ref(false);
 
-onMounted(() => { peelReady.value = supportsHtmlInCanvas(); });
+/**
+ * Peel is a pointer gesture, so it needs a real pointer as well as the API.
+ * Width is the wrong test — an iPad Pro in landscape is 1024px wide and has no
+ * cursor at all, which would leave the nav hidden under an opaque sheet with no
+ * way to reach it. `(hover: hover) and (pointer: fine)` asks the question that
+ * actually matters, and is watched rather than read once so a tablet that gains
+ * a trackpad picks it up.
+ */
+const FINE_POINTER = "(hover: hover) and (pointer: fine)";
+
+let pointerQuery: MediaQueryList | null = null;
+
+const syncPeelReady = () => {
+	peelReady.value = supportsHtmlInCanvas() && Boolean(pointerQuery?.matches);
+};
+
+onMounted(() => {
+	pointerQuery = window.matchMedia(FINE_POINTER);
+	pointerQuery.addEventListener("change", syncPeelReady);
+	syncPeelReady();
+});
+
+onUnmounted(() => {
+	pointerQuery?.removeEventListener("change", syncPeelReady);
+});
+
+/**
+ * Fades the edge hint out as the peel starts, so the affordance does not sit on
+ * top of the effect it was advertising. NuxtPeel exposes no progress, so this
+ * tracks the same thing its own zone test does: how near the pointer is to the
+ * edge.
+ */
+const hintHidden = ref(false);
+
+const onPointerMove = (event: PointerEvent) => {
+	hintHidden.value = event.clientX < PEEL_ZONE * 2;
+};
+
+onMounted(() => window.addEventListener("pointermove", onPointerMove, { passive: true }));
+onUnmounted(() => window.removeEventListener("pointermove", onPointerMove));
 
 // Peel only has something to reveal while the nav is tucked underneath the
 // sheet. Once it is pinned open the sheet starts to its right, so the effect is
