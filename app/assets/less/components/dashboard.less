@@ -175,19 +175,10 @@
     height: 100vh;
     overflow: hidden;
 
-    .dashLayout-body {
-        height: 100vh;
-        // Without this the flex item refuses to shrink below its content and
-        // the sheet is pushed past the bottom of the viewport.
-        min-height: 0;
-    }
-
     .dashBar { position: static; }
 
-    // The sheet is now the whole column rather than a strip inside it.
+    // The sheet is the whole column, top bar included.
     .dashLayout-sheet {
-        flex: 1;
-        min-width: 0;
         height: 100vh;
     }
 
@@ -195,6 +186,9 @@
         display: flex;
         flex-direction: column;
         height: 100%;
+        // Without this the flex item refuses to shrink below its content and
+        // the sheet is pushed past the bottom of the viewport.
+        min-height: 0;
     }
 
     .dashLayout-main {
@@ -204,62 +198,14 @@
     }
 }
 
-// ── Peel edge hint ───────────────────────────────────────────────────────────
-// The only thing on screen saying a nav exists while the sheet covers it.
-.peelHint {
-    position: fixed;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    z-index: 20;
-    width: @vw10;
-    display: flex;
-    align-items: center;
-    // Never a hit target: it sits over the sheet, and catching the pointer here
-    // would block the very gesture it is advertising.
-    pointer-events: none;
-    background: linear-gradient(to right, var(--accent-subtle), transparent);
-    border-left: max(2px, @vw2) solid var(--accent);
-    .transition(opacity, @durationMedium, @ease);
-    transition-property: opacity, transform;
-
-    // Fades away as the pointer approaches, so the affordance is not sitting on
-    // top of the effect once it starts.
-    &.is-hidden {
-        opacity: 0;
-        transform: translateX(-@vw6);
-    }
-
-    &-tab {
-        display: grid;
-        place-items: center;
-        width: @vw20;
-        height: @vw44;
-        margin-left: -@vw2;
-        border-radius: 0 @vw8 @vw8 0;
-        background-color: var(--accent);
-        color: var(--on-accent);
-        // The glyph points left by default; the nav is to the right of it.
-        font-size: max(0.8em, @vw15);
-        transform: rotate(180deg);
-    }
-}
-
-// NuxtPeel's own wrapper.
-//
-// It needs a *definite* height, not just a width. Once the native path engages
-// the component absolutely positions all three of its children — the under
-// layer, the source canvas holding the content, and the output canvas — so
-// nothing is left in normal flow and the wrapper collapses to zero height.
-// A zero-height sheet has nothing to capture and nothing to peel, which is
-// exactly what happens the moment the browser flag is switched on: it works
-// until it is supported, then stops.
-//
-// The component's own demos are fixed-size cards, so they never meet this. A
-// dashboard column is auto-height, so the height has to be supplied here.
+// The sheet column, whether it is a NuxtPeel wrapper or the plain div it falls
+// back to. A flex item beside the rail rather than a full-width block: at
+// `width: 100%` it measures against the whole row and overflows by the rail.
 .dashLayout-sheet {
-    width: 100%;
+    flex: 1;
+    min-width: 0;
 }
+
 
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 .dashNav {

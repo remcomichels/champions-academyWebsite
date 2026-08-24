@@ -13,19 +13,6 @@
 			@click="drawerOpen = false"
 		/>
 
-		<!-- Peel leaves nothing on screen to say a nav is there, so this marks the
-		     edge. Decorative and never a hit target: the gesture itself is the
-		     control, and the rail returns the moment the peel is not driving. -->
-		<div
-			v-if="peelActive"
-			class="peelHint"
-			:class="{ 'is-hidden': hintHidden }"
-			aria-hidden="true"
-		>
-			<span class="peelHint-tab">
-				<NuxtDashboardIcon name="chevronLeft" />
-			</span>
-		</div>
 
 		<!-- The peel sheet. Where the browser supports it, the page lifts away
 		     from its left edge as the pointer nears, revealing the nav underneath.
@@ -36,17 +23,7 @@
 		     here because the shell is a fixed height with `main` scrolling inside,
 		     so the bar holds its place without `position: sticky`, which the peel
 		     wrapper's `overflow: hidden` would otherwise break. -->
-		<NuxtPeel
-			class="dashLayout-sheet"
-			side="left"
-			mode="hover"
-			:reveal="peelReveal"
-			:zone="peelZone"
-			:curl="220"
-			:bow="40"
-			:shade="0.3"
-			:smoothing="0.22"
-		>
+		<component :is="sheetTag" class="dashLayout-sheet" v-bind="sheetProps">
 			<!-- The nav belongs inside the peel, not beside it. NuxtPeel tracks the
 			     pointer on its own wrapper and retracts on pointerleave, so a nav
 			     rendered as a sibling rolled the sheet shut the moment the pointer
@@ -103,13 +80,13 @@
 					<NuxtPage v-else />
 				</main>
 			</div>
-		</NuxtPeel>
+		</component>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { dashboardNav } from "~/composables/useDashboardNav";
-import { supportsHtmlInCanvas } from "~/components/peel.vue";
+import PeelSheet, { supportsHtmlInCanvas } from "~/components/peel.vue";
 
 // Matches the expanded sidebar width in dashboard.less. In CSS pixels,
 // because NuxtPeel measures in them — this is one of the few places the vw
@@ -161,20 +138,6 @@ onUnmounted(() => {
 	pointerQuery?.removeEventListener("change", syncPeelReady);
 });
 
-/**
- * Fades the edge hint out as the peel starts, so the affordance does not sit on
- * top of the effect it was advertising. NuxtPeel exposes no progress, so this
- * tracks the same thing its own zone test does: how near the pointer is to the
- * edge.
- */
-const hintHidden = ref(false);
-
-const onPointerMove = (event: PointerEvent) => {
-	hintHidden.value = event.clientX < PEEL_ZONE * 2;
-};
-
-onMounted(() => window.addEventListener("pointermove", onPointerMove, { passive: true }));
-onUnmounted(() => window.removeEventListener("pointermove", onPointerMove));
 
 // Peel only has something to reveal while the nav is tucked underneath the
 // sheet. Once it is pinned open the sheet starts to its right, so the effect is
@@ -183,6 +146,32 @@ onUnmounted(() => window.removeEventListener("pointermove", onPointerMove));
 const peelActive = computed(() => peelReady.value && collapsed.value);
 const peelReveal = computed(() => (peelActive.value ? PEEL_REVEAL : 0));
 const peelZone = computed(() => (peelActive.value ? PEEL_ZONE : 0));
+
+/**
+ * The sheet is only a NuxtPeel when peel is wanted; otherwise it is a plain div.
+ *
+ * Gating the class and the props is not enough. NuxtPeel runs its own
+ * `supportsHtmlInCanvas()` check on mount and switches to the native path
+ * whichever way this layout is configured — and that path absolutely positions
+ * all three of its children, leaving the wrapper at zero height. On a touch
+ * device that happens to have the flag, the dashboard then collapses and
+ * nothing is reachable, including the menu button. Not mounting it is the only
+ * reliable way to opt out.
+ */
+const sheetTag = computed(() => (peelReady.value ? PeelSheet : "div"));
+
+const sheetProps = computed(() => (peelReady.value
+	? {
+			side: "left" as const,
+			mode: "hover" as const,
+			reveal: peelReveal.value,
+			zone: peelZone.value,
+			curl: 220,
+			bow: 40,
+			shade: 0.3,
+			smoothing: 0.22,
+		}
+	: {}));
 
 // The auth middleware has already populated this, but a direct load of a
 // nested route should not depend on that ordering.
