@@ -10,16 +10,34 @@ import type { LinkRole } from "#shared/types/affiliate";
 export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 
-	const today = new Date().toISOString().slice(0, 10);
-	const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-		.toISOString().slice(0, 10);
+	const dayOffset = (days: number) =>
+		new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
-	const [todayVisits, recentVisits, totalVisits, firstVisit, byDay] = await Promise.all([
+	const today = dayOffset(0);
+	const yesterday = dayOffset(1);
+	const thirtyDaysAgo = dayOffset(30);
+	const sixtyDaysAgo = dayOffset(60);
+
+	const [
+		todayVisits, yesterdayVisits,
+		recentVisits, priorVisits,
+		totalVisits, firstVisit, byDay,
+	] = await Promise.all([
 		db().from("referral_visits").select("*", { count: "exact", head: true })
 			.eq("affiliate_id", affiliate.id).eq("day", today),
 
+		// The comparison windows behind the trend under each figure. Counts, not
+		// rows, so they are unaffected by the row cap that limits `byDay`.
+		db().from("referral_visits").select("*", { count: "exact", head: true })
+			.eq("affiliate_id", affiliate.id).eq("day", yesterday),
+
 		db().from("referral_visits").select("*", { count: "exact", head: true })
 			.eq("affiliate_id", affiliate.id).gte("day", thirtyDaysAgo),
+
+		// The 30 days before that, so "vs last month" compares like with like.
+		db().from("referral_visits").select("*", { count: "exact", head: true })
+			.eq("affiliate_id", affiliate.id)
+			.gte("day", sixtyDaysAgo).lt("day", thirtyDaysAgo),
 
 		db().from("referral_visits").select("*", { count: "exact", head: true })
 			.eq("affiliate_id", affiliate.id),
@@ -81,7 +99,9 @@ export default defineEventHandler(async (event) => {
 
 		visits: {
 			today: todayVisits.count ?? 0,
+			yesterday: yesterdayVisits.count ?? 0,
 			last30d: recentVisits.count ?? 0,
+			previous30d: priorVisits.count ?? 0,
 			total: totalVisits.count ?? 0,
 			byDay: [...dailyCounts.entries()]
 				.map(([day, count]) => ({ day, count }))

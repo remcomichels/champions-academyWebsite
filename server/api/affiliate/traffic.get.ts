@@ -2,6 +2,7 @@ import { int, object, oneOf, optional } from "../../utils/validate";
 
 interface TrafficBreakdowns {
 	total: number;
+	country_count: number;
 	sources: { host: string | null; visits: number }[];
 	countries: { country: string; visits: number }[];
 	paths: { path: string; visits: number }[];
@@ -39,13 +40,31 @@ export default defineEventHandler(async (event) => {
 		? Math.min(Math.max(daysSinceJoined, 1), 3650)
 		: (query.days ?? 30);
 
-	const since = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+	const timezone = safeTimezone(affiliate.timezone);
+	const windowMs = days * 24 * 60 * 60 * 1000;
 
-	const { data, error } = await db().rpc("affiliate_traffic", {
-		p_affiliate_id: affiliate.id,
-		p_since: since,
-		p_timezone: safeTimezone(affiliate.timezone),
-	});
+	const since = new Date(Date.now() - windowMs).toISOString();
+	const until = new Date().toISOString();
+	// The equally long window immediately before, which is what the trend under
+	// each figure compares against.
+	const priorSince = new Date(Date.now() - windowMs * 2).toISOString();
+
+	const [current, prior] = await Promise.all([
+		db().rpc("affiliate_traffic", {
+			p_affiliate_id: affiliate.id,
+			p_since: since,
+			p_until: until,
+			p_timezone: timezone,
+		}),
+		db().rpc("affiliate_traffic", {
+			p_affiliate_id: affiliate.id,
+			p_since: priorSince,
+			p_until: since,
+			p_timezone: timezone,
+		}),
+	]);
+
+	const { data, error } = current;
 
 	if (error) {
 		throw createError({
@@ -55,15 +74,24 @@ export default defineEventHandler(async (event) => {
 	}
 
 	const breakdowns = (data ?? {}) as Partial<TrafficBreakdowns>;
+	// A failed comparison query is not worth failing the page over — the tiles
+	// simply show no trend.
+	const previous = (prior.error ? {} : (prior.data ?? {})) as Partial<TrafficBreakdowns>;
 
 	return {
 		days,
-		timezone: safeTimezone(affiliate.timezone),
+		timezone,
 		total: breakdowns.total ?? 0,
+		countryCount: breakdowns.country_count ?? 0,
 		sources: breakdowns.sources ?? [],
 		countries: breakdowns.countries ?? [],
 		paths: breakdowns.paths ?? [],
 		heatmap: breakdowns.heatmap ?? [],
+
+		previous: {
+			total: previous.total ?? 0,
+			countryCount: previous.country_count ?? 0,
+		},
 	};
 });
 

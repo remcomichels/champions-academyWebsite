@@ -59,6 +59,9 @@ const icons: Record<string, string[]> = {
 	external: ["M14 4h6v6", "M20 4l-8.5 8.5", "M18 14.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4.5"],
 	logout: ["M9.5 20.5H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1h4.5", "M16 16.5l4.5-4.5L16 7.5", "M20.5 12h-11"],
 	check: ["M4.5 12.5l5 5 10-11"],
+	trendUp: ["M4 16.5 9.5 11l4 4 6.5-6.5", "M15 8.5h5v5"],
+	trendDown: ["M4 8.5 9.5 14l4-4 6.5 6.5", "M15 15.5h5v-5"],
+	trendFlat: ["M4.5 12h15"],
 };
 
 const paths = computed(() => icons[props.name] ?? []);

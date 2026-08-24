@@ -28,18 +28,21 @@
 					:value="traffic?.total ?? 0"
 					icon="home"
 					accent
+					:trend="visitsTrend"
 					hint="Counted on our own server"
 				/>
 				<NuxtDashboardStatCard
 					label="Sessions"
 					:value="analytics?.configured ? analytics.sessions : '—'"
 					icon="chart"
+					:trend="sessionsTrend"
 					:hint="analytics?.configured ? 'Measured in the browser' : 'Analytics not switched on here'"
 				/>
 				<NuxtDashboardStatCard
 					label="Countries"
-					:value="traffic?.countries.length ?? 0"
+					:value="traffic?.countryCount ?? 0"
 					icon="tag"
+					:trend="countriesTrend"
 				/>
 			</div>
 
@@ -51,26 +54,9 @@
 			</p>
 		</section>
 
-		<!-- ── When ────────────────────────────────────────────────────────── -->
-		<section class="dashPanel">
-			<div class="dashPanel-head">
-				<h2 class="dashPanel-title">When your link gets opened</h2>
-				<span v-if="traffic" class="dashPanel-count">{{ traffic.timezone }}</span>
-			</div>
-
-			<NuxtDashboardHeatmap
-				v-if="traffic"
-				:cells="traffic.heatmap"
-				:timezone="traffic.timezone"
-			/>
-
-			<p class="dashPanel-note">
-				Shown in your timezone, which you can change in Settings. Post when your
-				audience is already awake and looking.
-			</p>
-		</section>
-
-		<!-- ── Where from / where to ───────────────────────────────────────── -->
+		<!-- Two rows of two. The heatmap sits in the narrower column because its
+		     grid is a fixed width — given a wide column it would just carry dead
+		     space to its right. -->
 		<div class="dashGrid">
 			<section class="dashPanel dashGrid-main">
 				<h2 class="dashPanel-title">Where they came from</h2>
@@ -86,6 +72,38 @@
 			</section>
 
 			<section class="dashPanel dashGrid-side">
+				<div class="dashPanel-head">
+					<h2 class="dashPanel-title">When it gets opened</h2>
+					<span v-if="traffic" class="dashPanel-count">{{ traffic.timezone }}</span>
+				</div>
+
+				<NuxtDashboardHeatmap
+					v-if="traffic"
+					:cells="traffic.heatmap"
+					:timezone="traffic.timezone"
+				/>
+
+				<p class="dashPanel-note">
+					Your timezone, set in Settings. Post when your audience is already
+					awake and looking.
+				</p>
+			</section>
+		</div>
+
+		<div class="dashGrid">
+			<section class="dashPanel dashGrid-main">
+				<h2 class="dashPanel-title">Which page they landed on</h2>
+				<NuxtDashboardBreakdown
+					:items="paths"
+					empty="No landing pages yet."
+				/>
+				<p class="dashPanel-note">
+					Where your link pointed people. If you're sharing a link to a specific
+					page, this is how you check it's actually the one they're getting.
+				</p>
+			</section>
+
+			<section class="dashPanel dashGrid-side">
 				<h2 class="dashPanel-title">Where they are</h2>
 				<NuxtDashboardBreakdown
 					:items="countries"
@@ -94,17 +112,6 @@
 			</section>
 		</div>
 
-		<section class="dashPanel">
-			<h2 class="dashPanel-title">Which page they landed on</h2>
-			<NuxtDashboardBreakdown
-				:items="paths"
-				empty="No landing pages yet."
-			/>
-			<p class="dashPanel-note">
-				Where your link pointed people. If you're sharing a link to a specific page,
-				this is how you check it's actually the one they're getting.
-			</p>
-		</section>
 	</div>
 </template>
 
@@ -113,6 +120,8 @@ interface TrafficResponse {
 	days: number;
 	timezone: string;
 	total: number;
+	countryCount: number;
+	previous: { total: number; countryCount: number };
 	sources: { host: string | null; visits: number }[];
 	countries: { country: string; visits: number }[];
 	paths: { path: string; visits: number }[];
@@ -123,7 +132,7 @@ interface AnalyticsResponse {
 	configured: boolean;
 	days: number;
 	sessions: number;
-	countries: { country: string; sessions: number }[];
+	previousSessions: number;
 }
 
 const ranges = [
@@ -154,10 +163,10 @@ const { data: traffic, pending: trafficPending, error: trafficError } =
 		{ watch: [range] },
 	);
 
-// PostHog, for the session count only. Its country list is deliberately unused:
-// we have the same breakdown from our own server, where an ad blocker cannot
-// thin it out, and two different "where they are" lists on one page is the
-// confusion we already removed once.
+// PostHog, for the session count only. Its country breakdown was dropped from
+// the query entirely: we have the same figures from our own server where an ad
+// blocker cannot thin them out, and two different "where they are" lists on one
+// page is the confusion we already removed once.
 const { data: analytics } = await useAsyncData<AnalyticsResponse>(
 	"affiliate-analytics",
 	() => $fetch<AnalyticsResponse>("/api/affiliate/analytics", {
@@ -166,6 +175,27 @@ const { data: analytics } = await useAsyncData<AnalyticsResponse>(
 	}),
 	{ watch: [range] },
 );
+
+// Each tile compares against the equally long window immediately before the
+// selected one, so the label follows the range rather than saying "last month"
+// when the range is 7 days.
+const priorLabel = computed(() => {
+	if (range.value === "all") return "vs before";
+	return `vs previous ${range.value} days`;
+});
+
+const visitsTrend = computed(() =>
+	(traffic.value ? trend(traffic.value.total, traffic.value.previous.total, priorLabel.value) : null));
+
+const countriesTrend = computed(() =>
+	(traffic.value
+		? trend(traffic.value.countryCount, traffic.value.previous.countryCount, priorLabel.value)
+		: null));
+
+const sessionsTrend = computed(() =>
+	(analytics.value?.configured
+		? trend(analytics.value.sessions, analytics.value.previousSessions, priorLabel.value)
+		: null));
 
 /** A null referrer host is direct traffic, not an unknown one. */
 const sources = computed(() =>

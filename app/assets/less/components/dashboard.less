@@ -867,6 +867,24 @@
         color: var(--text);
     }
 
+    &-trend {
+        display: flex;
+        align-items: center;
+        gap: @vw6;
+        font-size: max(0.7em, @vw12);
+        font-weight: @medium;
+        white-space: normal;
+        color: var(--text-secondary);
+
+        .icon { font-size: max(0.85em, @vw15); }
+
+        // Direction is carried by the arrow and the colour together, never by
+        // colour alone — the label always says what changed.
+        &.is-up { color: var(--success); }
+        &.is-down { color: var(--error); }
+        &.is-flat { color: var(--text-tertiary); }
+    }
+
     &-hint {
         font-size: max(0.7em, @vw12);
         white-space: normal;
@@ -1444,13 +1462,21 @@
     flex-direction: column;
     gap: @vw12;
 
-    // One label column plus 24 hours. The cells carry the meaning, so they get
-    // every spare pixel and the labels take only what they need.
+    // Cells are a fixed size rather than stretching to fill the panel. Left to
+    // `1fr` they grew to ~50px on a wide screen, which made a seven-row grid
+    // taller than the chart above it for information that is a glance, not a
+    // study.
+    --cell: @vw13;
+
     &-grid {
         display: grid;
-        grid-template-columns: auto repeat(24, minmax(0, 1fr));
-        gap: max(2px, @vw3);
+        grid-template-columns: auto repeat(24, var(--cell));
+        gap: max(2px, @vw2);
         align-items: center;
+        // Keeps the grid its natural width instead of stretching, so the card
+        // can sit in a column beside another panel.
+        width: max-content;
+        max-width: 100%;
     }
 
     &-corner { display: block; }
@@ -1470,9 +1496,9 @@
 
     &-cell {
         display: block;
-        aspect-ratio: 1 / 1;
-        min-height: max(8px, @vw10);
-        border-radius: @vw3;
+        width: var(--cell);
+        height: var(--cell);
+        border-radius: @vw2;
         background-color: var(--accent);
 
         &.is-empty {
@@ -1502,10 +1528,10 @@
 
     &-legendCell {
         display: block;
-        width: max(8px, @vw10);
-        height: max(8px, @vw10);
+        width: var(--cell);
+        height: var(--cell);
         margin: 0 max(1px, @vw1);
-        border-radius: @vw3;
+        border-radius: @vw2;
         background-color: var(--accent);
 
         &.is-empty { background-color: var(--surface-raised); }
@@ -1866,6 +1892,8 @@
 
     .barChart-frame { grid-template-rows: @vw180-1080 auto; }
 
+    .heatmap { --cell: @vw13-1080; }
+
     .qr-image { width: @vw160-1080; height: @vw160-1080; }
 }
 
@@ -2027,7 +2055,8 @@
 
         &::-webkit-scrollbar { display: none; }
 
-        &-grid { min-width: calc(@vw300-580 + @vw300-580); }
+        --cell: @vw16-580;
+
         &-foot { position: sticky; left: 0; }
     }
 

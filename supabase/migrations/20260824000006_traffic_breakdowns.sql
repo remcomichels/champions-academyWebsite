@@ -15,9 +15,14 @@
 -- the session. No browser role can reach it, so the id parameter is not a
 -- tenancy hole.
 
+-- p_until makes the window closed at both ends, so the same function serves the
+-- current period and the one before it — which is what the trend under each
+-- figure compares. Without an upper bound the "previous" call would include the
+-- current period too.
 create or replace function public.affiliate_traffic(
   p_affiliate_id uuid,
   p_since        timestamptz,
+  p_until        timestamptz default now(),
   p_timezone     text default 'UTC'
 )
 returns jsonb
@@ -30,6 +35,7 @@ as $$
     from public.referral_visits
     where affiliate_id = p_affiliate_id
       and occurred_at >= p_since
+      and occurred_at <  p_until
   ),
   -- NULL referrer_host is direct traffic (someone typed it, or the referrer was
   -- stripped). Kept as its own bucket rather than dropped: for an affiliate
@@ -59,6 +65,10 @@ as $$
   )
   select jsonb_build_object(
     'total', (select count(*)::int from v),
+    -- Counted separately from the list above, which is capped at 12 for display
+    -- — an affiliate reaching more than twelve countries would otherwise see
+    -- the tile stick at 12.
+    'country_count', (select count(distinct country)::int from v where country is not null),
     'sources', (
       select coalesce(jsonb_agg(jsonb_build_object('host', host, 'visits', visits)
              order by visits desc), '[]'::jsonb) from src),
@@ -77,10 +87,10 @@ $$;
 -- Migration 0004 already revokes EXECUTE by default for new functions in this
 -- schema, but that file's own principle is to grant explicitly rather than rely
 -- on inheritance surviving a future change.
-revoke all on function public.affiliate_traffic(uuid, timestamptz, text)
+revoke all on function public.affiliate_traffic(uuid, timestamptz, timestamptz, text)
   from public, anon, authenticated;
 
-grant execute on function public.affiliate_traffic(uuid, timestamptz, text)
+grant execute on function public.affiliate_traffic(uuid, timestamptz, timestamptz, text)
   to service_role;
 
 -- The function filters on affiliate_id and occurred_at together.

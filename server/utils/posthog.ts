@@ -79,7 +79,7 @@ async function runQuery(config: PosthogConfig, query: string): Promise<HogQLResp
 
 export interface AffiliateAnalytics {
 	sessions: number;
-	countries: { country: string; sessions: number }[];
+	previousSessions: number;
 	days: number;
 }
 
@@ -115,31 +115,31 @@ export async function affiliateAnalytics(slug: string, days: number): Promise<Af
 	// omits this clause.
 	const scope = `properties.affiliate_slug = '${slug}' AND timestamp >= now() - INTERVAL ${window} DAY`;
 
-	const [totals, geo] = await Promise.all([
+	// The equally long window immediately before, for the trend under the tile.
+	const priorScope = `properties.affiliate_slug = '${slug}'`
+		+ ` AND timestamp >= now() - INTERVAL ${window * 2} DAY`
+		+ ` AND timestamp < now() - INTERVAL ${window} DAY`;
+
+	// The country breakdown that used to be the second query is gone: the same
+	// figures come from referral_visits, where an ad blocker cannot thin them
+	// out, so paying for a PostHog query to show a worse version of a list we
+	// already have made no sense.
+	const [totals, prior] = await Promise.all([
 		runQuery(config, `
 			SELECT count(DISTINCT properties.$session_id) AS sessions
 			FROM events
 			WHERE ${scope}
 		`),
 		runQuery(config, `
-			SELECT coalesce(properties.$geoip_country_name, 'Unknown') AS country,
-			       count(DISTINCT properties.$session_id) AS sessions
+			SELECT count(DISTINCT properties.$session_id) AS sessions
 			FROM events
-			WHERE ${scope}
-			GROUP BY country
-			ORDER BY sessions DESC
-			LIMIT 10
+			WHERE ${priorScope}
 		`),
 	]);
 
-	const row = totals.results?.[0] ?? [];
-
 	return {
-		sessions: Number(row[0] ?? 0),
-		countries: (geo.results ?? []).map(r => ({
-			country: String(r[0] ?? "Unknown"),
-			sessions: Number(r[1] ?? 0),
-		})),
+		sessions: Number(totals.results?.[0]?.[0] ?? 0),
+		previousSessions: Number(prior.results?.[0]?.[0] ?? 0),
 		days: window,
 	};
 }

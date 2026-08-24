@@ -45,9 +45,25 @@
 
 		<!-- ── Figures ───────────────────────────────────────────────────── -->
 		<div class="statGrid">
-			<NuxtDashboardStatCard label="Today" :value="summary.visits.today" icon="home" accent />
-			<NuxtDashboardStatCard label="Last 30 days" :value="summary.visits.last30d" icon="chart" />
-			<NuxtDashboardStatCard label="All time" :value="summary.visits.total" icon="tag" />
+			<NuxtDashboardStatCard
+				label="Today"
+				:value="summary.visits.today"
+				icon="home"
+				accent
+				:trend="todayTrend"
+			/>
+			<NuxtDashboardStatCard
+				label="Last 30 days"
+				:value="summary.visits.last30d"
+				icon="chart"
+				:trend="monthTrend"
+			/>
+			<NuxtDashboardStatCard
+				label="All time"
+				:value="summary.visits.total"
+				icon="tag"
+				:hint="allTimeHint"
+			/>
 		</div>
 
 		<!-- ── Chart + side panel ────────────────────────────────────────── -->
@@ -176,6 +192,25 @@ const series = computed(() => {
 	}
 
 	return out;
+});
+
+const todayTrend = computed(() =>
+	trend(props.summary.visits.today, props.summary.visits.yesterday, "vs yesterday"));
+
+const monthTrend = computed(() =>
+	trend(props.summary.visits.last30d, props.summary.visits.previous30d, "vs last month"));
+
+/**
+ * All-time gets a plain count, not a percentage.
+ *
+ * A cumulative total can only ever go up, so "change versus the previous
+ * all-time" is not a real quantity — any arrow next to it would be invented.
+ * What is genuinely useful is how much of that total is recent.
+ */
+const allTimeHint = computed(() => {
+	const recent = props.summary.visits.last30d;
+	if (!props.summary.visits.total) return null;
+	return `${recent.toLocaleString("en-GB")} in the last 30 days`;
 });
 
 const steps = computed(() => [

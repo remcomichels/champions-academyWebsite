@@ -14,7 +14,11 @@ export interface AffiliateSummary {
 	vipLinkPending: boolean;
 	visits: {
 		today: number;
+		/** Comparison window for the trend shown under "Today". */
+		yesterday: number;
 		last30d: number;
+		/** Days 31–60, so "vs last month" compares equal-length windows. */
+		previous30d: number;
 		total: number;
 		byDay: { day: string; count: number }[];
 	};
