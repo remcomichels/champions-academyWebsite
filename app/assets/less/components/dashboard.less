@@ -50,6 +50,7 @@
     background-color: var(--background);
 
     &-body {
+        position: relative;
         flex: 1;
         // Without this a wide table stretches the flex item instead of
         // scrolling inside its own container, and the whole page scrolls
@@ -61,16 +62,25 @@
     }
 
     &-main {
+        // Above the wash, which is painted by the column behind it.
         position: relative;
+        z-index: 1;
         flex: 1;
         padding: @vw32 @vw40 @vw96;
     }
 
-    // The accent wash. Anchored to the top of the content column and faded out
-    // well before the fold, so cards sit *on* the background rather than the
-    // gradient being a band with an edge. Behind everything, and never
+    // The accent wash.
+    //
+    // On the column, not on `main`. Anchored to `main` it started at the bottom
+    // edge of the control row, and because the gradient is at full strength at
+    // its own top, that edge rendered as a hard horizontal line right across
+    // the page — which read as a bar sitting there even though the row itself
+    // has no background at all.
+    //
+    // Faded out well before the fold, so cards sit *on* the background rather
+    // than the wash being a band with an edge. Behind everything, never
     // interactive.
-    &-main::before {
+    &-body::before {
         content: '';
         position: absolute;
         top: 0;
@@ -81,12 +91,6 @@
             radial-gradient(120% 100% at 50% 0%, var(--accent-wash) 0%, transparent 68%);
         pointer-events: none;
         z-index: 0;
-    }
-
-    // Everything in the content column sits above the wash.
-    &-main > * {
-        position: relative;
-        z-index: 1;
     }
 
     &-scrim {
@@ -194,6 +198,14 @@
         flex: 1;
         min-height: 0;
         overflow-y: auto;
+
+        // No scrollbar. `_general.less` already hides the window's, so an inner
+        // one here is the only track on screen and reads as a seam down the
+        // edge of the sheet. Scrolling still works by wheel, trackpad and
+        // keyboard; only the indicator goes.
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar { display: none; }
     }
 }
 
@@ -1734,11 +1746,8 @@
 
 // ── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1080px) {
-    .dashLayout-main {
-        padding: @vw24-1080 @vw32-1080 @vw80-1080;
-
-        &::before { height: calc(@vw300-1080 + @vw200-1080); }
-    }
+    .dashLayout-main { padding: @vw24-1080 @vw32-1080 @vw80-1080; }
+    .dashLayout-body::before { height: calc(@vw300-1080 + @vw200-1080); }
 
     .dashNav {
         width: @vw240-1080;
@@ -1864,11 +1873,8 @@
 }
 
 @media (max-width: 600px) {
-    .dashLayout-main {
-        padding: @vw20-580 @vw20-580 @vw64-580;
-
-        &::before { height: calc(@vw300-580 + @vw100-580); }
-    }
+    .dashLayout-main { padding: @vw20-580 @vw20-580 @vw64-580; }
+    .dashLayout-body::before { height: calc(@vw300-580 + @vw100-580); }
 
     .dashBar {
         gap: @vw10-580;
