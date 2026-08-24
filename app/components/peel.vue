@@ -198,7 +198,28 @@ export function createPeel(
   elements: PeelElements,
   options: PeelOptions = {},
 ): PeelInstance | null {
-  const config = { ...DEFAULTS, ...options };
+  /**
+   * Merge caller options over the defaults, ignoring undefined.
+   *
+   * A plain spread cannot be used here. `defineProps<PeelOptions>()` gives every
+   * declared-but-unpassed prop an own key set to `undefined`, so spreading the
+   * props object overwrites all thirteen defaults with undefined. The visible
+   * symptom is that `config.shineColor` stops being "auto", `syncShineColor()`
+   * assigns `shineRgb = undefined`, and `render()` throws on `shineRgb[0]` on
+   * its first frame — killing the loop before it ever draws, so the component
+   * silently renders nothing at all.
+   */
+  const applyOptions = (target: Required<PeelOptions>, next: PeelOptions) => {
+    for (const key of Object.keys(next) as (keyof PeelOptions)[]) {
+      const value = next[key];
+      if (value !== undefined) {
+        (target as Record<string, unknown>)[key] = value;
+      }
+    }
+    return target;
+  };
+
+  const config = applyOptions({ ...DEFAULTS }, options);
   const { source, content, output, under } = elements;
 
   const gl = output.getContext("webgl2", {
@@ -617,11 +638,12 @@ export function createPeel(
     setOptions(next) {
       if (
         !Object.entries(next).some(
-          ([key, value]) => config[key as keyof PeelOptions] !== value,
+          ([key, value]) =>
+            value !== undefined && config[key as keyof PeelOptions] !== value,
         )
       )
         return;
-      Object.assign(config, next);
+      applyOptions(config, next);
       syncShineColor();
       start();
     },

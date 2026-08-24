@@ -1,5 +1,5 @@
 <template>
-	<div class="dashLayout" :class="{ 'is-collapsed': collapsed }">
+	<div class="dashLayout" :class="{ 'is-collapsed': collapsed, 'is-peel': peelReady }">
 		<NuxtDashboardSidebar />
 
 		<!-- Mobile only: closes the drawer on a tap outside it. Not focusable —

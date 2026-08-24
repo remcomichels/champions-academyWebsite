@@ -115,13 +115,22 @@
         z-index: 1;
     }
 
-    // The sheet. Opaque, or the nav shows through instead of being revealed.
+    // The sheet's column. Deliberately transparent: the peel lifts `main` away,
+    // and whatever is painted behind it is what gets revealed. Putting the
+    // opaque background on this ancestor instead means the peel uncovers its
+    // own background rather than the nav, and the reveal reads as a black gap.
     .dashLayout-body {
         position: relative;
         z-index: 2;
-        background-color: var(--background);
+        background-color: transparent;
         .transition(margin-left, @durationMedium, @ease);
     }
+
+    // The opaque surface belongs to the element that actually peels, plus the
+    // top bar, which sits outside the sheet and would otherwise let the nav
+    // show through above it.
+    .dashLayout-main { background-color: var(--background); }
+    .dashBar { background-color: var(--background); }
 
     // Collapsed is the peel state: the sheet starts at the viewport edge and
     // covers the nav completely. Overrides the rail width — a 72px nav would
@@ -151,10 +160,47 @@
     &:not(.is-collapsed) .dashLayout-body {
         margin-left: @vw240;
     }
+
+    // Giving the sheet a definite height means the shell can no longer grow
+    // with the page, so the scroll moves inside it: the frame is pinned to the
+    // viewport and the content area scrolls. That is a common dashboard shell
+    // anyway, and it keeps the top bar in place without relying on `sticky` —
+    // which the peel wrapper's `overflow: hidden` would have broken.
+    height: 100vh;
+    overflow: hidden;
+
+    .dashLayout-body {
+        height: 100vh;
+        // Without this the flex item refuses to shrink below its content and
+        // the sheet is pushed past the bottom of the viewport.
+        min-height: 0;
+    }
+
+    .dashBar { position: static; }
+
+    .dashLayout-sheet {
+        flex: 1;
+        min-height: 0;
+    }
+
+    .dashLayout-main {
+        height: 100%;
+        overflow-y: auto;
+    }
 }
 
-// NuxtPeel's own wrapper. It needs to fill the column so the captured sheet is
-// the whole page rather than a short strip.
+// NuxtPeel's own wrapper.
+//
+// It needs a *definite* height, not just a width. Once the native path engages
+// the component absolutely positions all three of its children — the under
+// layer, the source canvas holding the content, and the output canvas — so
+// nothing is left in normal flow and the wrapper collapses to zero height.
+// A zero-height sheet has nothing to capture and nothing to peel, which is
+// exactly what happens the moment the browser flag is switched on: it works
+// until it is supported, then stops.
+//
+// The component's own demos are fixed-size cards, so they never meet this. A
+// dashboard column is auto-height, so the height has to be supplied here.
 .dashLayout-sheet {
     width: 100%;
 }
@@ -1729,10 +1775,21 @@
     // Without this the nav would sit under an opaque sheet with no way to
     // reach it on a touch screen.
     .dashLayout.is-peel {
+        height: auto;
+        overflow: visible;
+
         .dashLayout-body,
         &:not(.is-collapsed) .dashLayout-body {
             margin-left: 0;
-            background-color: transparent;
+            height: auto;
+            min-height: 100vh;
+        }
+
+        .dashBar { position: sticky; }
+
+        .dashLayout-main {
+            height: auto;
+            overflow-y: visible;
         }
 
         .dashNav { z-index: 50; }
