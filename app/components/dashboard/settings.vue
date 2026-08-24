@@ -23,7 +23,7 @@
 					hint="Used for dates on your dashboard. e.g. Europe/Amsterdam"
 				/>
 
-				<button type="submit" class="button button__secondary dashForm-submit" :disabled="busy === 'profile'">
+				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'profile'">
 					{{ busy === "profile" ? "Saving…" : "Save profile" }}
 				</button>
 			</form>
@@ -44,7 +44,7 @@
 
 			<form v-else class="dashForm" novalidate @submit.prevent="saveSlug">
 				<NuxtAuthField v-model="slug" label="Link" :error="errors.slug" hint="Lowercase letters, numbers and dashes." />
-				<button type="submit" class="button button__secondary dashForm-submit" :disabled="busy === 'slug'">
+				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'slug'">
 					{{ busy === "slug" ? "Changing…" : "Change link" }}
 				</button>
 			</form>
@@ -96,7 +96,7 @@
 					autocomplete="new-password"
 					:error="errors.newPasswordConfirm"
 				/>
-				<button type="submit" class="button button__secondary dashForm-submit" :disabled="busy === 'password'">
+				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'password'">
 					{{ busy === "password" ? "Changing…" : "Change password" }}
 				</button>
 			</form>

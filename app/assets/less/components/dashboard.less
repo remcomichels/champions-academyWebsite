@@ -1,13 +1,20 @@
+// ─────────────────────────────────────────────────────────────────────────────
 // Affiliate dashboard.
 //
-// Deliberately plain: structure and spacing only, on the existing tokens, with
-// a visual pass to follow. Class names are semantic and every value comes from
-// a token or a vw constant, so the restyle should be edits in this file rather
-// than changes to the markup.
+// Colour comes entirely from the custom properties in dashboardTokens.less, so
+// every rule here works in both themes without a single per-theme override.
+// Everything else — the @vwN scale, the spacing rhythm, the radius ladder,
+// `.transition()` plus an explicit transition-property, hover behind
+// `@media (hover: hover)`, and a restated :focus-visible because _reset.less
+// kills the global outline — is the marketing site's system, unchanged.
+//
+// Nothing in this file is loaded by a marketing component and nothing here
+// touches a Less variable, so the green system is untouched.
+// ─────────────────────────────────────────────────────────────────────────────
 
-// Screen-reader-only text. No global utility exists in this project, and the
-// checklist needs one so "done" is announced rather than conveyed by a tick
-// glyph alone.
+// Screen-reader-only text. No global utility exists in this project, and both
+// the checklist and the chart need one so state is announced rather than being
+// carried by a tick glyph or a bar height alone.
 .sr-only {
     position: absolute;
     width: 1px;
@@ -20,186 +27,462 @@
     border: 0;
 }
 
-// ── Layout ────────────────────────────────────────────────────────────
+.icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+}
+
+// ── Shell ────────────────────────────────────────────────────────────────────
 .dashLayout {
+    display: flex;
+    align-items: flex-start;
     min-height: 100vh;
+    background-color: var(--background);
+
+    &-body {
+        flex: 1;
+        // Without this a wide table stretches the flex item instead of
+        // scrolling inside its own container, and the whole page scrolls
+        // sideways.
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
 
     &-main {
+        position: relative;
         flex: 1;
-        padding: @vw48 @vw64 @vw96;
+        padding: @vw32 @vw40 @vw96;
+    }
+
+    // The accent wash. Anchored to the top of the content column and faded out
+    // well before the fold, so cards sit *on* the background rather than the
+    // gradient being a band with an edge. Behind everything, and never
+    // interactive.
+    &-main::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(@vw300 + @vw240);
+        background:
+            radial-gradient(120% 100% at 50% 0%, var(--accent-wash) 0%, transparent 68%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    // Everything in the content column sits above the wash.
+    &-main > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    &-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(@vw2);
+        -webkit-backdrop-filter: blur(@vw2);
     }
 }
 
-.dashBar {
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+.dashNav {
     position: sticky;
     top: 0;
-    z-index: 10;
-    background-color: fade(@background, 85%);
-    backdrop-filter: blur(@vw8);
-    -webkit-backdrop-filter: blur(@vw8);
-    border-bottom: max(1px, @vw1) solid @border;
+    z-index: 50;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: @vw240;
+    height: 100vh;
+    padding: @vw16 @vw12;
+    background-color: var(--surface);
+    border-right: max(1px, @vw1) solid var(--border);
+    .transition();
+    transition-property: width;
 
-    &-inner {
+    &.is-collapsed {
+        width: @vw72;
+    }
+
+    &-head {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: @vw16;
-        padding: @vw16 @vw64;
+        gap: @vw8;
+        padding: @vw4 @vw8 @vw20;
     }
 
     &-brand {
+        display: flex;
+        align-items: center;
+        gap: @vw10;
+        min-width: 0;
+        color: var(--text);
+    }
+
+    &-mark {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw32;
+        height: @vw32;
+        border-radius: @vw8;
+        background-color: var(--accent);
+        color: var(--on-accent);
+        font-size: max(0.7em, @vw13);
         font-weight: @bold;
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        font-size: clamp(12px, @vw14, 14px);
-        color: @text;
+        letter-spacing: 0.02em;
+    }
+
+    &-brandText {
+        font-size: max(0.85em, @vw15);
+        font-weight: @bold;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        overflow: hidden;
+        .transition();
+        transition-property: width, opacity;
+    }
+
+    &-collapse {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw28;
+        height: @vw28;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: @vw6;
+        font-size: max(0.9em, @vw18);
+        color: var(--text-tertiary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color, transform;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+
+    &-list {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        flex: 1;
+        // A long nav on a short viewport scrolls itself rather than pushing the
+        // theme and log-out controls off the bottom of the screen.
+        overflow-y: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar { display: none; }
+    }
+
+    &-foot {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        padding-top: @vw12;
+        margin-top: @vw12;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    &-item {
+        display: flex;
+        align-items: center;
+        gap: @vw12;
+        padding: @vw10 @vw12;
+        border-radius: @vw8;
+        font-size: max(0.85em, @vw15);
+        font-weight: @medium;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        .transition();
+        transition-property: color, background-color;
+
+        .icon { font-size: max(1em, @vw20); }
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+
+        // The active row is the accent's main job on this screen: a tinted fill
+        // rather than a solid one, so a whole sidebar of nav items never
+        // competes with the primary action in the page body.
+        &.is-active {
+            color: var(--accent);
+            background-color: var(--accent-subtle);
+        }
+    }
+
+    // Buttons in the nav are styled as rows, so they need the button reset that
+    // an <a> does not.
+    &-action {
+        width: 100%;
+        background: none;
+        border: none;
+        font-family: @body;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    &-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        .transition();
+        transition-property: width, opacity;
+    }
+
+    // Collapsed rail: icons only, centred, labels gone. `width: 0` rather than
+    // `display: none` so the label fades with the width transition instead of
+    // vanishing on the first frame.
+    &.is-collapsed &-label,
+    &.is-collapsed &-brandText {
+        width: 0;
+        opacity: 0;
+    }
+
+    &.is-collapsed &-item {
+        justify-content: center;
+        padding-left: @vw10;
+        padding-right: @vw10;
+        gap: 0;
+    }
+
+    &.is-collapsed &-head {
+        justify-content: center;
+    }
+
+    &.is-collapsed &-collapse {
+        transform: rotate(180deg);
+    }
+}
+
+// ── Top bar ──────────────────────────────────────────────────────────────────
+.dashBar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: @vw16;
+    padding: @vw16 @vw40;
+    background-color: var(--background);
+    border-bottom: max(1px, @vw1) solid var(--border);
+
+    &-menu {
+        // Desktop navigates from the sidebar; this is the drawer trigger and
+        // only exists below the layout switch.
+        display: none;
+        place-items: center;
+        width: @vw36;
+        height: @vw36;
+        padding: 0;
+        background: none;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw8;
+        font-size: max(1em, @vw20);
+        color: var(--text);
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+
+    &-title {
+        flex: 1;
+        min-width: 0;
+        font-family: @body;
+        font-size: max(1em, @vw18);
+        font-weight: @bold;
+        letter-spacing: 0.01em;
+        line-height: 1.2;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     &-right {
         display: flex;
         align-items: center;
-        gap: @vw20;
+        gap: @vw16;
     }
 
     &-who {
         font-size: max(0.8em, @vw14);
-        color: fade(@white, 55%);
-    }
-
-    &-link,
-    &-logout {
-        background: none;
-        border: none;
-        padding: 0;
-        font-size: max(0.8em, @vw14);
-        font-family: @body;
-        color: @primary;
-        cursor: pointer;
-        .transition();
-        transition-property: opacity;
-
-        @media (hover: hover) {
-            &:hover { opacity: 0.7; }
-        }
-
-        &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
-            outline-offset: @vw4;
-        }
+        color: var(--text-secondary);
+        white-space: nowrap;
     }
 }
 
-// ── Page header + tabs ────────────────────────────────────────────────
+// ── Page scaffolding ─────────────────────────────────────────────────────────
 .dash {
-    display: flex;
-    flex-direction: column;
-    gap: @vw32;
-
-    &-head {
-        display: flex;
-        flex-direction: column;
-        gap: @vw8;
-    }
-
-    &-preTitle {
-        font-size: max(0.8em, @vw14);
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: @primary;
-    }
-
-    &-title {
-        font-family: @body;
-        font-size: @vw40;
-        font-weight: @bold;
-        text-transform: uppercase;
-        line-height: 1.1;
-    }
-
-    &-loading {
-        color: fade(@white, 55%);
-    }
-}
-
-.dashTabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: @vw4;
-    border-bottom: max(1px, @vw1) solid @border;
-
-    &-tab {
-        background: none;
-        border: none;
-        border-bottom: max(2px, @vw2) solid transparent;
-        padding: @vw12 @vw16;
-        font-family: @body;
-        font-size: max(0.85em, @vw15);
-        font-weight: @medium;
-        color: fade(@white, 55%);
-        cursor: pointer;
-        .transition();
-        transition-property: color, border-color;
-
-        @media (hover: hover) {
-            &:hover { color: @text; }
-        }
-
-        &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
-            outline-offset: -@vw2;
-        }
-
-        &.is-active {
-            color: @text;
-            border-bottom-color: @primary;
-        }
-    }
-}
-
-// ── Panels ────────────────────────────────────────────────────────────
-.dashSection {
     display: flex;
     flex-direction: column;
     gap: @vw24;
 }
 
+.dashSection {
+    display: flex;
+    flex-direction: column;
+    gap: @vw20;
+}
+
+.dash-loading {
+    padding: @vw32 0;
+    color: var(--text-secondary);
+}
+
+// ── Hero ─────────────────────────────────────────────────────────────────────
+// Deliberately not a card: it sits directly on the accent wash, which is what
+// makes the wash read as the page background rather than a coloured banner.
+.dashHero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: @vw40;
+    padding: @vw16 0 @vw8;
+
+    &-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: @vw8;
+        min-width: 0;
+    }
+
+    &-eyebrow {
+        font-size: max(0.75em, @vw13);
+        font-weight: @bold;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--accent);
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: @vw44;
+        font-weight: @bold;
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+        color: var(--text);
+    }
+
+    &-sub {
+        max-width: calc(@vw300 + @vw140);
+        font-size: max(0.9em, @vw16);
+        line-height: 1.5;
+        // _general.less puts `white-space: pre-line` on every p, which turns a
+        // wrapped template string into stray line breaks.
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+
+    &-actions {
+        display: flex;
+        align-items: stretch;
+        flex-wrap: wrap;
+        gap: @vw12;
+        margin-top: @vw12;
+        width: 100%;
+        max-width: calc(@vw300 + @vw200);
+    }
+
+    &-qr {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: @vw10;
+        padding: @vw16;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw12;
+        box-shadow: var(--shadow-panel);
+    }
+
+    // The QR is generated as dark-on-transparent, so it needs a light plate
+    // behind it in both themes — on the dark surface it would otherwise be
+    // invisible.
+    &-qrImage {
+        width: @vw120;
+        height: @vw120;
+        padding: @vw8;
+        background-color: #FFFFFF;
+        border-radius: @vw8;
+    }
+
+    &-qrNote {
+        font-size: max(0.7em, @vw12);
+        color: var(--text-tertiary);
+    }
+}
+
+// ── Panels ───────────────────────────────────────────────────────────────────
 .dashPanel {
     display: flex;
     flex-direction: column;
     gap: @vw16;
-    padding: @vw32;
-    background-color: @secondary;
-    border: max(1px, @vw1) solid @border;
-    border-radius: @vw10;
+    padding: @vw24;
+    background-color: var(--surface);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @vw12;
+    box-shadow: var(--shadow-panel);
 
     &-head {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         justify-content: space-between;
         gap: @vw16;
     }
 
     &-title {
         font-family: @body;
-        font-size: max(1em, @vw20);
+        font-size: max(0.95em, @vw17);
         font-weight: @bold;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.01em;
+        color: var(--text);
     }
 
     &-count {
-        font-size: max(0.8em, @vw14);
-        color: @primary;
+        flex: none;
+        padding: @vw2 @vw8;
+        border-radius: @vw20;
+        background-color: var(--accent-subtle);
+        font-size: max(0.7em, @vw12);
+        font-weight: @medium;
+        color: var(--accent);
     }
 
     &-note,
     &-empty {
-        font-size: max(0.85em, @vw15);
+        font-size: max(0.8em, @vw14);
         line-height: 1.5;
-        // _general.less sets `white-space: pre-line` on p, which turns wrapped
-        // template strings into stray breaks.
         white-space: normal;
-        color: fade(@white, 55%);
+        color: var(--text-secondary);
+    }
+
+    &-empty {
+        padding: @vw8 0;
     }
 
     &--empty {
@@ -208,53 +491,172 @@
 
     &-cta {
         align-self: flex-start;
-        font-size: max(0.85em, @vw15);
-        color: @primary;
-        text-decoration: underline;
-        text-underline-offset: 0.25em;
-    }
-}
-
-// ── Copy field ────────────────────────────────────────────────────────
-.copyField {
-    display: flex;
-    align-items: stretch;
-    gap: @vw8;
-
-    &-value {
-        flex: 1;
-        min-width: 0;
-        padding: @vw12 @vw16;
-        background-color: @background;
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw6;
-        font-size: max(0.85em, @vw15);
-        color: @text;
-        // Long URLs must wrap rather than force the panel wide on mobile.
-        overflow-wrap: anywhere;
-    }
-
-    &-button {
-        flex: none;
-        padding: @vw12 @vw20;
-        background-color: @primary;
-        color: @black;
+        margin-top: auto;
+        padding-top: @vw4;
+        font-size: max(0.8em, @vw14);
+        font-weight: @medium;
+        color: var(--accent);
+        background: none;
         border: none;
-        border-radius: @vw6;
         font-family: @body;
-        font-size: clamp(12px, @vw14, 14px);
-        font-weight: @bold;
-        text-transform: uppercase;
         cursor: pointer;
         .transition();
         transition-property: opacity;
 
         @media (hover: hover) {
-            &:hover:not(:disabled) { opacity: 0.85; }
+            &:hover:not(:disabled) { opacity: 0.75; }
         }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+            border-radius: @vw4;
+        }
+
+        &:disabled { opacity: 0.5; cursor: wait; }
+    }
+}
+
+// Chart beside a narrower companion panel. Collapses to one column early —
+// a chart squeezed into half a tablet is unreadable.
+.dashGrid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: @vw20;
+    align-items: start;
+
+    &-main { min-width: 0; }
+    &-side { min-width: 0; }
+}
+
+// ── Buttons ──────────────────────────────────────────────────────────────────
+// The marketing `.button` is a green two-segment control with a detaching plus.
+// The dashboard needs a plain one, so it gets its own namespace rather than
+// overriding a shared class from underneath.
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: @vw8;
+    padding: @vw12 @vw18;
+    border-radius: @vw8;
+    border: max(1px, @vw1) solid transparent;
+    font-family: @body;
+    font-size: max(0.8em, @vw14);
+    font-weight: @semiBold;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    .transition();
+    transition-property: background-color, border-color, color, opacity;
+
+    .icon { font-size: max(0.9em, @vw16); }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // One per screen, for the actual next action.
+    &--primary {
+        background-color: var(--accent);
+        color: var(--on-accent);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { background-color: var(--accent-hover); }
+        }
+
+        &:active:not(:disabled) { background-color: var(--accent-pressed); }
+    }
+
+    // The default. Most buttons are this.
+    &--subtle {
+        background-color: var(--surface-raised);
+        border-color: var(--border);
+        color: var(--text);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { border-color: var(--border-strong); background-color: var(--surface-hover); }
+        }
+    }
+
+    &--ghost {
+        background: none;
+        border-color: var(--border);
+        color: var(--text-secondary);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { color: var(--text); background-color: var(--surface-hover); }
+        }
+    }
+
+    &--danger {
+        background: none;
+        border-color: transparent;
+        color: var(--error);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { border-color: var(--error); }
+        }
+    }
+
+    &--block { width: 100%; }
+}
+
+// ── Copy field ───────────────────────────────────────────────────────────────
+.copyField {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    min-width: 0;
+    gap: @vw8;
+    padding: @vw6;
+    background-color: var(--surface);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @vw10;
+
+    &-value {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        padding: @vw6 @vw12;
+        font-size: max(0.8em, @vw14);
+        color: var(--text);
+        // Long URLs wrap rather than forcing the panel wide on a phone.
+        overflow-wrap: anywhere;
+    }
+
+    &-button {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: @vw6;
+        padding: @vw10 @vw16;
+        background-color: var(--accent);
+        color: var(--on-accent);
+        border: none;
+        border-radius: @vw6;
+        font-family: @body;
+        font-size: max(0.75em, @vw13);
+        font-weight: @semiBold;
+        cursor: pointer;
+        .transition();
+        transition-property: background-color, opacity;
+
+        .icon { font-size: max(0.85em, @vw15); }
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { background-color: var(--accent-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
         }
 
@@ -262,53 +664,226 @@
     }
 }
 
-// ── Stats ─────────────────────────────────────────────────────────────
+// ── Stats ────────────────────────────────────────────────────────────────────
 .statGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(@vw180, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(@vw200, 1fr));
     gap: @vw16;
 }
 
 .statCard {
     display: flex;
     flex-direction: column;
-    gap: @vw4;
+    gap: @vw10;
     padding: @vw20;
-    background-color: @background;
-    border: max(1px, @vw1) solid @border;
-    border-radius: @vw8;
+    background-color: var(--surface);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @vw12;
+    box-shadow: var(--shadow-panel);
+    .transition();
+    transition-property: border-color;
 
-    &-label {
-        font-size: max(0.75em, @vw13);
-        text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: fade(@white, 55%);
+    @media (hover: hover) {
+        &:hover { border-color: var(--border-strong); }
     }
 
+    &-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw12;
+    }
+
+    &-label {
+        font-size: max(0.7em, @vw12);
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-secondary);
+    }
+
+    &-icon {
+        display: grid;
+        place-items: center;
+        width: @vw28;
+        height: @vw28;
+        border-radius: @vw8;
+        background-color: var(--surface-raised);
+        font-size: max(0.8em, @vw15);
+        color: var(--text-tertiary);
+    }
+
+    // Neutral by default. Most figures on a screen are not the point of it.
     &-value {
-        font-size: @vw40;
+        font-size: @vw36;
         font-weight: @bold;
         line-height: 1;
-        color: @primary;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
     }
 
     &-hint {
-        font-size: max(0.75em, @vw13);
+        font-size: max(0.7em, @vw12);
         white-space: normal;
-        color: fade(@white, 45%);
+        color: var(--text-tertiary);
+    }
+
+    &.is-accent &-value { color: var(--accent); }
+    &.is-accent &-icon { background-color: var(--accent-subtle); color: var(--accent); }
+}
+
+// ── Bar chart ────────────────────────────────────────────────────────────────
+.barChart {
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+
+    &-caption {
+        font-size: max(0.7em, @vw12);
+        color: var(--text-tertiary);
+    }
+
+    &-frame {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: @vw180 auto;
+        column-gap: @vw12;
+        row-gap: @vw8;
+    }
+
+    // Tick labels sit on the same rows as the gridlines, and both are
+    // justified with space-between, so they line up without magic offsets.
+    &-yAxis {
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-end;
+        list-style: none;
+        font-size: max(0.65em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--chart-axis-text);
+        // Centres each label on its line rather than hanging it below.
+        margin: -0.5em 0;
+    }
+
+    &-plot {
+        grid-column: 2;
+        grid-row: 1;
+        position: relative;
+    }
+
+    &-grid {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    &-gridLine {
+        display: block;
+        height: max(1px, @vw1);
+        background-color: var(--chart-grid);
+    }
+
+    &-cols {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: stretch;
+        gap: @vw4;
+        list-style: none;
+    }
+
+    &-col {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    &-track {
+        display: flex;
+        align-items: flex-end;
+        height: 100%;
+    }
+
+    &-fill {
+        display: block;
+        width: 100%;
+        background-color: var(--chart-bar);
+        border-radius: @vw4 @vw4 0 0;
+        .transition(background-color, @durationFast, @ease);
+    }
+
+    // Exactly one bar carries the accent — the current period. A chart where
+    // every bar is the accent has no accent.
+    &-col.is-highlight &-fill {
+        background-color: var(--chart-bar-highlight);
+    }
+
+    // Hover readout, so the exact figure is available without an axis label
+    // per bar.
+    &-value {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translate(-50%, -@vw4);
+        padding: @vw2 @vw6;
+        border-radius: @vw4;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        box-shadow: var(--shadow-pop);
+        font-size: max(0.65em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        .transition();
+        transition-property: opacity;
+    }
+
+    @media (hover: hover) {
+        &-col:hover &-fill { background-color: var(--chart-bar-hover); }
+        &-col:hover &-value { opacity: 1; }
+        &-col.is-highlight:hover &-fill { background-color: var(--accent-hover); }
+    }
+
+    &-xAxis {
+        grid-column: 2;
+        grid-row: 2;
+        display: flex;
+        gap: @vw4;
+        list-style: none;
+    }
+
+    &-xLabel {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        font-size: max(0.65em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--chart-axis-text);
+        overflow: hidden;
     }
 }
 
-// ── Onboarding ────────────────────────────────────────────────────────
+// ── Onboarding ───────────────────────────────────────────────────────────────
 .progress {
-    height: max(4px, @vw6);
-    background-color: @buttonSecondary;
-    border-radius: @vw4;
+    height: max(6px, @vw8);
+    background-color: var(--surface-raised);
+    border-radius: @vw8;
     overflow: hidden;
 
     &-fill {
         height: 100%;
-        background-color: @primary;
+        background-color: var(--accent);
         transform-origin: left center;
         .transition(transform, @durationMedium, @easeOut);
     }
@@ -317,40 +892,67 @@
 .checklist {
     display: flex;
     flex-direction: column;
-    gap: @vw10;
+    gap: @vw12;
     list-style: none;
 
     &-item {
         display: flex;
         align-items: center;
         gap: @vw12;
-        font-size: max(0.85em, @vw15);
-        color: fade(@white, 60%);
+        font-size: max(0.8em, @vw14);
+        color: var(--text-secondary);
 
-        &.is-done {
-            color: @text;
-        }
+        &.is-done { color: var(--text); }
     }
 
     &-mark {
         flex: none;
         display: grid;
         place-items: center;
-        width: @vw24;
-        height: @vw24;
+        width: @vw22;
+        height: @vw22;
         border-radius: 50%;
-        border: max(1px, @vw1) solid @border;
-        font-size: max(0.7em, @vw12);
-        color: @black;
+        border: max(1px, @vw1) solid var(--border-strong);
+        font-size: max(0.6em, @vw11);
+        color: var(--on-accent);
     }
 
     &-item.is-done &-mark {
-        background-color: @primary;
-        border-color: @primary;
+        background-color: var(--accent);
+        border-color: var(--accent);
     }
 }
 
-// ── Activity ──────────────────────────────────────────────────────────
+.linkStatus {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+
+    &-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw12;
+        padding: @vw12 0;
+        font-size: max(0.8em, @vw14);
+        color: var(--text);
+
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
+    }
+
+    &-state {
+        flex: none;
+        padding: @vw2 @vw8;
+        border-radius: @vw20;
+        font-size: max(0.65em, @vw11);
+        font-weight: @medium;
+
+        &.is-set { background-color: var(--accent-subtle); color: var(--accent); }
+        &.is-unset { background-color: var(--surface-raised); color: var(--text-tertiary); }
+    }
+}
+
+// ── Activity ─────────────────────────────────────────────────────────────────
 .activity {
     list-style: none;
 
@@ -360,18 +962,16 @@
         justify-content: space-between;
         gap: @vw16;
         padding: @vw12 0;
-        font-size: max(0.85em, @vw15);
+        font-size: max(0.8em, @vw14);
 
-        & + & {
-            border-top: max(1px, @vw1) solid @border;
-        }
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
     }
 
-    &-day { color: fade(@white, 60%); }
-    &-count { color: @text; font-weight: @medium; }
+    &-day { color: var(--text-secondary); }
+    &-count { color: var(--text); font-weight: @medium; }
 }
 
-// ── QR + forms ────────────────────────────────────────────────────────
+// ── QR + forms ───────────────────────────────────────────────────────────────
 .qr {
     display: flex;
     align-items: flex-start;
@@ -379,10 +979,11 @@
 
     &-image {
         flex: none;
-        width: @vw180;
-        height: @vw180;
-        background-color: @white;
-        border-radius: @vw8;
+        width: @vw160;
+        height: @vw160;
+        padding: @vw10;
+        background-color: #FFFFFF;
+        border-radius: @vw10;
     }
 
     &-side {
@@ -393,10 +994,9 @@
     }
 
     &-download {
-        font-size: max(0.85em, @vw15);
-        color: @primary;
-        text-decoration: underline;
-        text-underline-offset: 0.25em;
+        font-size: max(0.8em, @vw14);
+        font-weight: @medium;
+        color: var(--accent);
     }
 }
 
@@ -407,21 +1007,6 @@
 
     &-submit {
         align-self: flex-start;
-        padding: @vw12 @vw24;
-        font-weight: @bold;
-        cursor: pointer;
-        border: max(1px, @vw1) solid transparent;
-
-        @media (hover: hover) {
-            &:hover:not(:disabled) { border-color: @primary; color: @primary; }
-        }
-
-        &:focus-visible {
-            border-color: @primary;
-            box-shadow: 0 0 0 max(2px, @vw2) fade(@primary, 25%);
-        }
-
-        &:disabled { opacity: 0.6; cursor: wait; }
     }
 }
 
@@ -431,22 +1016,22 @@
     gap: @vw8;
 
     &-value {
-        padding: @vw14 @vw16;
-        background-color: fade(@white, 3%);
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw6;
-        font-size: max(0.85em, @vw15);
-        color: fade(@white, 70%);
+        padding: @vw12 @vw14;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw8;
+        font-size: max(0.8em, @vw14);
+        color: var(--text-secondary);
         overflow-wrap: anywhere;
 
         &--pending {
             font-style: italic;
-            color: fade(@white, 45%);
+            color: var(--text-tertiary);
         }
     }
 }
 
-// ── Activity inbox + toasts ───────────────────────────────────────────
+// ── Activity inbox + toasts ──────────────────────────────────────────────────
 .inbox {
     position: relative;
 
@@ -454,28 +1039,37 @@
         position: relative;
         display: grid;
         place-items: center;
+        width: @vw36;
+        height: @vw36;
         background: none;
-        border: none;
-        padding: @vw4;
-        font-size: max(0.9em, @vw16);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw8;
+        padding: 0;
+        font-size: max(0.9em, @vw18);
+        color: var(--text-secondary);
         line-height: 1;
         cursor: pointer;
+        .transition();
+        transition-property: color, border-color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
-            border-radius: @vw4;
         }
     }
 
     &-badge {
         position: absolute;
-        top: -@vw2;
+        top: -@vw4;
         right: -@vw4;
         min-width: @vw16;
         padding: 0 @vw4;
-        background-color: @primary;
-        color: @black;
+        background-color: var(--accent);
+        color: var(--on-accent);
         border-radius: @vw10;
         font-size: max(0.6em, @vw11);
         font-weight: @bold;
@@ -485,22 +1079,24 @@
 
     &-panel {
         position: absolute;
-        top: calc(100% + @vw12);
+        top: calc(100% + @vw10);
         right: 0;
-        z-index: 20;
+        z-index: 60;
         width: calc(@vw300 + @vw40);
-        max-width: 90vw;
+        max-width: 85vw;
         padding: @vw16;
-        background-color: @secondary;
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw8;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw12;
+        box-shadow: var(--shadow-pop);
     }
 
     &-title {
-        font-size: max(0.75em, @vw13);
+        font-size: max(0.7em, @vw12);
+        font-weight: @medium;
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: fade(@white, 55%);
+        letter-spacing: 0.06em;
+        color: var(--text-secondary);
         margin-bottom: @vw12;
     }
 
@@ -513,14 +1109,14 @@
         padding: @vw10 0;
         font-size: max(0.8em, @vw14);
 
-        & + & { border-top: max(1px, @vw1) solid @border; }
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
 
-        &.is-unread .inbox-text { color: @primary; }
+        &.is-unread .inbox-text { color: var(--accent); font-weight: @medium; }
     }
 
-    &-text { white-space: normal; }
-    &-when { font-size: max(0.7em, @vw12); color: fade(@white, 45%); }
-    &-empty { font-size: max(0.8em, @vw14); white-space: normal; color: fade(@white, 55%); }
+    &-text { white-space: normal; color: var(--text); }
+    &-when { font-size: max(0.65em, @vw11); color: var(--text-tertiary); }
+    &-empty { font-size: max(0.8em, @vw14); white-space: normal; color: var(--text-secondary); }
 }
 
 .toasts {
@@ -536,16 +1132,17 @@
 
 .toast {
     padding: @vw12 @vw16;
-    background-color: @secondary;
-    border: max(1px, @vw1) solid @primary;
-    border-radius: @vw8;
+    background-color: var(--surface);
+    border: max(1px, @vw1) solid var(--accent);
+    border-radius: @vw10;
+    box-shadow: var(--shadow-pop);
     font-size: max(0.8em, @vw14);
-    color: @text;
+    color: var(--text);
     white-space: normal;
     max-width: calc(@vw300 + @vw40);
 }
 
-// ── Funnel + table ────────────────────────────────────────────────────
+// ── Funnel + table ───────────────────────────────────────────────────────────
 .funnel {
     display: flex;
     align-items: stretch;
@@ -556,83 +1153,94 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: @vw4;
+        gap: @vw6;
         padding: @vw16;
-        background-color: @background;
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw8;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw10;
     }
 
     &-label {
-        font-size: max(0.75em, @vw13);
+        font-size: max(0.7em, @vw12);
         text-transform: uppercase;
-        letter-spacing: 0.04em;
-        color: fade(@white, 55%);
+        letter-spacing: 0.06em;
+        color: var(--text-secondary);
     }
 
     &-value {
-        font-size: @vw32;
+        font-size: @vw28;
         font-weight: @bold;
         line-height: 1;
-        color: @primary;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
     }
 }
 
 .dataTable {
     width: 100%;
     border-collapse: collapse;
-    font-size: max(0.85em, @vw15);
+    font-size: max(0.8em, @vw14);
 
     th {
         text-align: left;
-        padding: @vw10 0;
-        font-size: max(0.75em, @vw13);
+        padding: @vw10 @vw12 @vw10 0;
+        font-size: max(0.65em, @vw11);
         text-transform: uppercase;
-        letter-spacing: 0.04em;
+        letter-spacing: 0.06em;
         font-weight: @medium;
-        color: fade(@white, 55%);
-        border-bottom: max(1px, @vw1) solid @border;
+        color: var(--text-secondary);
+        border-bottom: max(1px, @vw1) solid var(--border);
     }
 
     td {
-        padding: @vw12 0;
-        border-bottom: max(1px, @vw1) solid @border;
+        padding: @vw12 @vw12 @vw12 0;
+        color: var(--text);
+        border-bottom: max(1px, @vw1) solid var(--border);
     }
 
-    tbody tr:last-child td {
-        border-bottom: none;
+    tbody tr:last-child td { border-bottom: none; }
+
+    @media (hover: hover) {
+        tbody tr:hover td { background-color: var(--surface-hover); }
     }
 }
 
-// ── Analytics ─────────────────────────────────────────────────────────
+// ── Range tabs ───────────────────────────────────────────────────────────────
 .rangeTabs {
     display: flex;
-    gap: @vw4;
+    flex: none;
+    gap: @vw2;
+    padding: @vw3;
+    background-color: var(--surface-raised);
+    border-radius: @vw8;
 
     &-tab {
         background: none;
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw4;
-        padding: @vw4 @vw10;
+        border: none;
+        border-radius: @vw6;
+        padding: @vw6 @vw12;
         font-family: @body;
         font-size: max(0.7em, @vw12);
-        color: fade(@white, 55%);
+        font-weight: @medium;
+        color: var(--text-secondary);
         cursor: pointer;
         .transition();
-        transition-property: color, border-color;
+        transition-property: color, background-color;
 
         @media (hover: hover) {
-            &:hover { color: @text; }
+            &:hover { color: var(--text); }
         }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
         }
 
+        // A filled pill rather than an accent-coloured label: the segmented
+        // control reads as one control with a selected segment.
         &.is-active {
-            color: @primary;
-            border-color: @primary;
+            color: var(--text);
+            background-color: var(--surface);
         }
     }
 }
@@ -640,7 +1248,7 @@
 .geoList {
     display: flex;
     flex-direction: column;
-    gap: @vw10;
+    gap: @vw12;
     list-style: none;
 
     &-row {
@@ -648,7 +1256,8 @@
         grid-template-columns: minmax(@vw100, 30%) 1fr auto;
         align-items: center;
         gap: @vw12;
-        font-size: max(0.85em, @vw15);
+        font-size: max(0.8em, @vw14);
+        color: var(--text);
     }
 
     &-name {
@@ -659,31 +1268,35 @@
 
     &-bar {
         height: max(6px, @vw8);
-        background-color: @buttonSecondary;
-        border-radius: @vw4;
+        background-color: var(--surface-raised);
+        border-radius: @vw8;
         overflow: hidden;
     }
 
     &-fill {
         display: block;
         height: 100%;
-        background-color: @primary;
+        background-color: var(--chart-bar);
         transform-origin: left center;
         .transition(transform, @durationMedium, @easeOut);
     }
 
+    // Only the busiest country takes the accent.
+    &-row:first-child &-fill { background-color: var(--accent); }
+
     &-count {
-        color: fade(@white, 70%);
+        color: var(--text-secondary);
         font-variant-numeric: tabular-nums;
     }
 }
 
-// ── Settings ──────────────────────────────────────────────────────────
+// ── Settings ─────────────────────────────────────────────────────────────────
 .toggle {
     display: flex;
     align-items: center;
     gap: @vw12;
-    font-size: max(0.85em, @vw15);
+    font-size: max(0.8em, @vw14);
+    color: var(--text);
     cursor: pointer;
 
     input[type="checkbox"] {
@@ -693,16 +1306,16 @@
         flex: none;
         width: @vw20;
         height: @vw20;
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw4;
-        background-color: @background;
+        border: max(1px, @vw1) solid var(--border-strong);
+        border-radius: @vw6;
+        background-color: var(--surface-raised);
         cursor: pointer;
         .transition();
         transition-property: background-color, border-color;
 
         &:checked {
-            background-color: @primary;
-            border-color: @primary;
+            background-color: var(--accent);
+            border-color: var(--accent);
         }
 
         &:checked::after {
@@ -712,12 +1325,12 @@
             height: 100%;
             // Tick drawn as a mask so it takes the contrast colour rather than
             // needing a second element.
-            background-color: @black;
+            background-color: var(--on-accent);
             clip-path: polygon(14% 44%, 0 60%, 40% 100%, 100% 22%, 84% 6%, 38% 68%);
         }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
         }
     }
@@ -734,25 +1347,27 @@
         justify-content: space-between;
         gap: @vw16;
         padding: @vw12 0;
-        font-size: max(0.85em, @vw15);
+        font-size: max(0.8em, @vw14);
+        color: var(--text);
 
-        & + & { border-top: max(1px, @vw1) solid @border; }
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
     }
 
     &-current {
         margin-left: @vw8;
-        padding: 0 @vw6;
-        border-radius: @vw4;
-        background-color: fade(@primary, 12%);
-        color: @primary;
-        font-size: max(0.65em, @vw11);
+        padding: @vw2 @vw8;
+        border-radius: @vw20;
+        background-color: var(--accent-subtle);
+        color: var(--accent);
+        font-size: max(0.6em, @vw11);
+        font-weight: @medium;
         text-transform: uppercase;
         letter-spacing: 0.04em;
     }
 
     &-meta {
-        color: fade(@white, 45%);
-        font-size: max(0.75em, @vw13);
+        color: var(--text-tertiary);
+        font-size: max(0.7em, @vw12);
         white-space: nowrap;
     }
 }
@@ -762,10 +1377,9 @@
     border: none;
     padding: 0;
     font-family: @body;
-    font-size: max(0.85em, @vw15);
-    color: @primary;
-    text-decoration: underline;
-    text-underline-offset: 0.25em;
+    font-size: max(0.8em, @vw14);
+    font-weight: @medium;
+    color: var(--accent);
     cursor: pointer;
     .transition();
     transition-property: opacity;
@@ -775,14 +1389,14 @@
     }
 
     &:focus-visible {
-        outline: max(2px, @vw2) solid @primary;
+        outline: max(2px, @vw2) solid var(--accent);
         outline-offset: @vw4;
         border-radius: @vw2;
     }
 
     &:disabled { opacity: 0.5; cursor: wait; }
 
-    &.is-danger { color: @error; }
+    &.is-danger { color: var(--error); }
 }
 
 .dangerRow {
@@ -792,16 +1406,9 @@
     gap: @vw24;
 }
 
-// ── Support ───────────────────────────────────────────────────────────
+// ── Support ──────────────────────────────────────────────────────────────────
 .supportCta {
     align-self: flex-start;
-    padding: @vw14 @vw24;
-    font-weight: @bold;
-    border: max(1px, @vw1) solid transparent;
-
-    @media (hover: hover) {
-        &:hover { border-color: @primary; color: @primary; }
-    }
 }
 
 .supportSearch {
@@ -815,7 +1422,7 @@
     list-style: none;
 
     &-item + &-item {
-        border-top: max(1px, @vw1) solid @border;
+        border-top: max(1px, @vw1) solid var(--border);
     }
 
     &-question {
@@ -825,19 +1432,19 @@
         border: none;
         padding: @vw14 0;
         font-family: @body;
-        font-size: max(0.9em, @vw16);
+        font-size: max(0.85em, @vw15);
         font-weight: @medium;
-        color: @text;
+        color: var(--text);
         cursor: pointer;
         .transition();
         transition-property: color;
 
         @media (hover: hover) {
-            &:hover { color: @primary; }
+            &:hover { color: var(--accent); }
         }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: -@vw2;
         }
     }
@@ -852,10 +1459,10 @@
 
         > p {
             overflow: hidden;
-            font-size: max(0.85em, @vw15);
+            font-size: max(0.8em, @vw14);
             line-height: 1.5;
             white-space: normal;
-            color: fade(@white, 65%);
+            color: var(--text-secondary);
         }
 
         &.is-open {
@@ -866,9 +1473,9 @@
     }
 }
 
-// ── Admin ─────────────────────────────────────────────────────────────
+// ── Admin ────────────────────────────────────────────────────────────────────
 .inviteDialog {
-    border-color: @primary;
+    border-color: var(--accent);
 }
 
 .adminForm {
@@ -878,22 +1485,7 @@
     gap: @vw16;
 
     &-submit {
-        padding: @vw14 @vw24;
-        font-weight: @bold;
-        cursor: pointer;
-        border: max(1px, @vw1) solid transparent;
         white-space: nowrap;
-
-        @media (hover: hover) {
-            &:hover:not(:disabled) { border-color: @primary; color: @primary; }
-        }
-
-        &:focus-visible {
-            border-color: @primary;
-            box-shadow: 0 0 0 max(2px, @vw2) fade(@primary, 25%);
-        }
-
-        &:disabled { opacity: 0.6; cursor: wait; }
     }
 }
 
@@ -914,33 +1506,34 @@
 
     td { vertical-align: top; }
 
-    &-name { display: block; font-weight: @medium; }
+    &-name { display: block; font-weight: @medium; color: var(--text); }
 
     &-slug {
         display: block;
-        font-size: max(0.7em, @vw12);
-        color: fade(@white, 45%);
+        font-size: max(0.65em, @vw11);
+        color: var(--text-tertiary);
     }
 
     &-status {
         display: inline-block;
         margin-top: @vw4;
-        padding: 0 @vw6;
-        border-radius: @vw4;
-        font-size: max(0.65em, @vw11);
+        padding: @vw2 @vw8;
+        border-radius: @vw20;
+        font-size: max(0.6em, @vw11);
+        font-weight: @medium;
         text-transform: uppercase;
         letter-spacing: 0.04em;
 
-        &.is-active  { color: @primary;  background-color: fade(@primary, 12%); }
-        &.is-paused  { color: @warning;  background-color: fade(@warning, 12%); }
-        &.is-revoked { color: @error;    background-color: fade(@error, 12%); }
+        &.is-active  { color: var(--accent); background-color: var(--accent-subtle); }
+        &.is-paused  { color: var(--warning); background-color: var(--surface-raised); }
+        &.is-revoked { color: var(--error); background-color: var(--surface-raised); }
     }
 
     &-invite {
         display: block;
         margin-top: @vw6;
         font-size: max(0.65em, @vw11);
-        color: @warning;
+        color: var(--warning);
     }
 }
 
@@ -951,15 +1544,16 @@
     list-style: none;
 
     li {
-        padding: 0 @vw6;
-        border-radius: @vw4;
-        border: max(1px, @vw1) solid @border;
-        font-size: max(0.65em, @vw11);
-        color: fade(@white, 40%);
+        padding: @vw2 @vw8;
+        border-radius: @vw20;
+        border: max(1px, @vw1) solid var(--border);
+        font-size: max(0.6em, @vw11);
+        color: var(--text-tertiary);
 
         &.is-done {
-            color: @primary;
-            border-color: fade(@primary, 40%);
+            color: var(--accent);
+            border-color: var(--accent-subtle);
+            background-color: var(--accent-subtle);
         }
     }
 }
@@ -972,23 +1566,23 @@
 
     button {
         background: none;
-        border: max(1px, @vw1) solid @border;
-        border-radius: @vw4;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw6;
         padding: @vw4 @vw10;
         font-family: @body;
-        font-size: max(0.7em, @vw12);
-        color: @text;
+        font-size: max(0.65em, @vw12);
+        color: var(--text);
         cursor: pointer;
         white-space: nowrap;
         .transition();
-        transition-property: color, border-color;
+        transition-property: color, border-color, background-color;
 
         @media (hover: hover) {
-            &:hover:not(:disabled) { border-color: @primary; color: @primary; }
+            &:hover:not(:disabled) { border-color: var(--border-strong); background-color: var(--surface-hover); }
         }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
         }
 
@@ -997,62 +1591,204 @@
         // Ends sessions and stops their links — coloured so it is not clicked
         // by accident while scanning the row.
         &.is-danger {
-            color: @error;
-            border-color: fade(@error, 40%);
+            color: var(--error);
 
             @media (hover: hover) {
-                &:hover:not(:disabled) { border-color: @error; color: @error; }
+                &:hover:not(:disabled) { border-color: var(--error); }
             }
         }
     }
 }
 
-// ── Responsive ────────────────────────────────────────────────────────
+// ── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1080px) {
-    .dashLayout-main { padding: @vw40-1080 @vw32-1080 @vw80-1080; }
-    .dashBar-inner { padding: @vw16-1080 @vw32-1080; }
+    .dashLayout-main {
+        padding: @vw24-1080 @vw32-1080 @vw80-1080;
 
-    .dash { gap: @vw32-1080; }
-    .dash-title { font-size: @vw40-1080; }
+        &::before { height: calc(@vw300-1080 + @vw200-1080); }
+    }
 
-    .dashPanel { padding: @vw24-1080; gap: @vw16-1080; }
-    .dashSection { gap: @vw24-1080; }
-    .statGrid { gap: @vw16-1080; grid-template-columns: repeat(auto-fit, minmax(@vw180-1080, 1fr)); }
-    .statCard-value { font-size: @vw40-1080; }
-    .qr-image { width: @vw180-1080; height: @vw180-1080; }
+    .dashNav {
+        width: @vw240-1080;
+        padding: @vw16-1080 @vw12-1080;
+
+        &.is-collapsed { width: @vw72-1080; }
+        &-head { padding: @vw4-1080 @vw8-1080 @vw20-1080; }
+        &-item { padding: @vw10-1080 @vw12-1080; gap: @vw12-1080; }
+        &-mark { width: @vw32-1080; height: @vw32-1080; }
+    }
+
+    .dashBar { padding: @vw14-1080 @vw32-1080; }
+
+    .dash { gap: @vw20-1080; }
+    .dashSection { gap: @vw16-1080; }
+
+    .dashHero {
+        gap: @vw24-1080;
+
+        &-title { font-size: @vw44-1080; }
+        &-qrImage { width: @vw100-1080; height: @vw100-1080; }
+    }
+
+    .dashPanel { padding: @vw20-1080; gap: @vw16-1080; }
+    .dashGrid { gap: @vw16-1080; }
+
+    .statGrid {
+        gap: @vw16-1080;
+        grid-template-columns: repeat(auto-fit, minmax(@vw200-1080, 1fr));
+    }
+
+    .statCard { padding: @vw16-1080; }
+    .statCard-value { font-size: @vw36-1080; }
+
+    .barChart-frame { grid-template-rows: @vw180-1080 auto; }
+
+    .qr-image { width: @vw160-1080; height: @vw160-1080; }
+}
+
+// Layout switch. The sidebar stops being part of the page flow and becomes an
+// overlay drawer — below this width a persistent rail costs more room than the
+// navigation is worth. `is-collapsed` is deliberately ignored here: the desktop
+// rail state must not leak into the drawer and render a 72px-wide panel.
+@media (max-width: 768px) {
+    .dashNav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100dvh;
+        // The vw ladder tops out at 300 (≈52vw at this tier), which is too
+        // narrow for a drawer, so it is composed and then capped — the same
+        // pattern as `calc(@vw300 + @vw58)` in _general.less.
+        width: min(calc(@vw300-580 + @vw150-580), 320px);
+        transform: translateX(-100%);
+        box-shadow: var(--shadow-pop);
+        .transition(transform, @durationFast, @ease);
+
+        &.is-collapsed { width: min(calc(@vw300-580 + @vw150-580), 320px); }
+        &.is-open { transform: translateX(0); }
+
+        &.is-collapsed .dashNav-label,
+        &.is-collapsed .dashNav-brandText {
+            width: auto;
+            opacity: 1;
+        }
+
+        &.is-collapsed .dashNav-item {
+            justify-content: flex-start;
+            gap: @vw12-580;
+            padding: @vw10-580 @vw12-580;
+        }
+
+        &.is-collapsed .dashNav-head { justify-content: space-between; }
+        &.is-collapsed .dashNav-collapse { transform: none; }
+    }
+
+    .dashBar-menu { display: grid; }
+
+    .dashGrid { grid-template-columns: 1fr; }
+
+    .dashHero {
+        flex-direction: column;
+        align-items: stretch;
+
+        &-actions { max-width: none; }
+
+        // Side by side with the copy would leave the QR stranded on its own
+        // row at full width; inline-flex keeps it card-sized.
+        &-qr { align-self: flex-start; }
+    }
 }
 
 @media (max-width: 600px) {
-    .dashLayout-main { padding: @vw32-580 @vw24-580 @vw64-580; }
-    .dashBar-inner { padding: @vw16-580 @vw24-580; }
+    .dashLayout-main {
+        padding: @vw20-580 @vw20-580 @vw64-580;
 
-    .dash { gap: @vw24-580; }
-    .dash-title { font-size: @vw40-580; }
-
-    .dashTabs {
-        // Horizontal scroll rather than wrapping to three rows on a phone.
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        scrollbar-width: none;
-        &::-webkit-scrollbar { display: none; }
-
-        &-tab { flex: none; padding: @vw12-580 @vw16-580; }
+        &::before { height: calc(@vw300-580 + @vw100-580); }
     }
 
-    .dashPanel { padding: @vw24-580; gap: @vw16-580; }
-    .dashSection { gap: @vw20-580; }
+    .dashBar {
+        gap: @vw12-580;
+        padding: @vw12-580 @vw20-580;
 
-    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw12-580; }
-    .statCard { padding: @vw16-580; }
-    .statCard-value { font-size: @vw40-580; }
+        &-menu { width: @vw36-580; height: @vw36-580; }
+        &-title { font-size: max(0.9em, @vw16-580); }
+        &-right { gap: @vw12-580; }
+        // The name is the first thing to go: the bell and the page title both
+        // carry more, and three items do not fit at 320.
+        &-who { display: none; }
+    }
+
+    .dash { gap: @vw16-580; }
+    .dashSection { gap: @vw16-580; }
+
+    .dashNav {
+        padding: @vw16-580 @vw12-580;
+
+        &-item { font-size: max(0.85em, @vw15-580); }
+    }
+
+    .dashHero {
+        gap: @vw16-580;
+        padding: @vw8-580 0 0;
+
+        &-title { font-size: @vw40-580; }
+        &-sub { font-size: max(0.85em, @vw15-580); }
+        &-actions { flex-direction: column; margin-top: @vw8-580; }
+    }
+
+    .dashPanel { padding: @vw16-580; gap: @vw12-580; }
+
+    .dashPanel-head {
+        // The title and its control stack rather than squeezing a segmented
+        // control next to a heading at 320.
+        flex-wrap: wrap;
+        gap: @vw10-580;
+    }
+
+    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw10-580; }
+
+    .statCard {
+        padding: @vw14-580;
+        gap: @vw8-580;
+
+        &-value { font-size: @vw32-580; }
+        &-icon { display: none; }
+    }
 
     .copyField {
         flex-direction: column;
-        &-button { width: 100%; padding: @vw14-580; }
+        gap: @vw6-580;
+
+        &-button { width: 100%; justify-content: center; padding: @vw12-580; }
     }
+
+    .barChart-frame {
+        grid-template-rows: @vw150-580 auto;
+        column-gap: @vw8-580;
+    }
+
+    // At 30 bars on a 320px screen the labels overlap into a grey smear, so
+    // every other one is dropped. The hover readout still names each bar.
+    .barChart-xLabel:nth-child(even) { visibility: hidden; }
+
+    .funnel { flex-direction: column; }
 
     .qr {
         flex-direction: column;
-        &-image { width: @vw200-580; height: @vw200-580; }
+        &-image { width: @vw180-580; height: @vw180-580; }
     }
+
+    .toasts {
+        right: @vw12-580;
+        left: @vw12-580;
+        bottom: @vw12-580;
+    }
+
+    .toast { max-width: none; }
+
+    .supportSearch,
+    .adminSearch { width: 100%; min-width: 0; }
+
+    .adminForm { grid-template-columns: 1fr; }
 }

@@ -18,7 +18,7 @@
 				{{ formatDate(issuedInvite.expiresAt) }}, and <strong>will not be shown
 					again</strong> — if it's lost, issue a new one.
 			</p>
-			<button type="button" class="button button__secondary" @click="issuedInvite = null">
+			<button type="button" class="btn btn--subtle" @click="issuedInvite = null">
 				Done
 			</button>
 		</section>
@@ -48,7 +48,7 @@
 					:error="createErrors.whopUsername"
 					hint="Needed by Whop to pay their commission."
 				/>
-				<button type="submit" class="button button__secondary adminForm-submit" :disabled="creating">
+				<button type="submit" class="btn btn--primary adminForm-submit" :disabled="creating">
 					{{ creating ? "Adding…" : "Add affiliate" }}
 				</button>
 			</form>

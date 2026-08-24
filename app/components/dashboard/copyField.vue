@@ -7,6 +7,7 @@
 			:disabled="!value"
 			@click="copy"
 		>
+			<NuxtDashboardIcon :name="copied ? 'check' : 'copy'" />
 			{{ copied ? "Copied" : "Copy" }}
 		</button>
 	</div>

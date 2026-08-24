@@ -88,42 +88,56 @@
     }
 }
 
-// Inline status messages. Uses the @error / @success / @warning tokens that
-// have been declared and unused in _variables.less since the boilerplate.
+// Inline status messages, on the dashboard and auth surfaces only. Themed with
+// the dashboard custom properties; the consent banner above is marketing
+// furniture and stays on the green system.
 
 .alert {
-    padding: @vw12 @vw16;
-    border-radius: @vw6;
-    border-left: max(2px, @vw2) solid currentColor;
-    background-color: fade(@white, 4%);
+    display: flex;
+    gap: @vw12;
+    padding: @vw12 @vw14;
+    border-radius: @vw10;
+    border: max(1px, @vw1) solid var(--border);
+    background-color: var(--surface-raised);
+
+    // The status colour is carried by a full-height rule down the leading edge
+    // rather than by tinting the text, which keeps the message at full
+    // contrast in both themes.
+    &::before {
+        content: '';
+        flex: none;
+        width: max(2px, @vw3);
+        border-radius: @vw3;
+        background-color: currentColor;
+    }
 
     &-text {
-        font-size: max(0.85em, @vw15);
-        line-height: 1.4;
+        font-size: max(0.8em, @vw14);
+        line-height: 1.45;
         // Body copy inherits `white-space: pre-line` from _general.less, which
         // would turn wrapped message strings into stray line breaks.
         white-space: normal;
-        color: @text;
+        color: var(--text);
     }
 
-    // The border and icon colour carry the meaning; the text stays readable
-    // rather than being tinted to the point of low contrast.
-    &--error   { color: @error; }
-    &--success { color: @success; }
-    &--warning { color: @warning; }
-    &--info    { color: @primary; }
+    &--error   { color: var(--error); }
+    &--success { color: var(--success); }
+    &--warning { color: var(--warning); }
+    &--info    { color: var(--accent); }
 }
 
 @media (max-width: 1080px) {
     .alert {
-        padding: @vw12-1080 @vw16-1080;
-        border-radius: @vw6-1080;
+        gap: @vw12-1080;
+        padding: @vw12-1080 @vw14-1080;
+        border-radius: @vw10-1080;
     }
 }
 
 @media (max-width: 600px) {
     .alert {
-        padding: @vw12-580 @vw16-580;
-        border-radius: @vw6-580;
+        gap: @vw10-580;
+        padding: @vw12-580 @vw14-580;
+        border-radius: @vw10-580;
     }
 }

@@ -8,7 +8,7 @@
 			:aria-label="unread ? `Activity, ${unread} unread` : 'Activity'"
 			@click="toggle"
 		>
-			<span class="inbox-bell" aria-hidden="true">🔔</span>
+			<NuxtDashboardIcon name="bell" />
 			<span v-if="unread" class="inbox-badge">{{ unread > 9 ? "9+" : unread }}</span>
 		</button>
 

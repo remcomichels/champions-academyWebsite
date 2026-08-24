@@ -5,7 +5,7 @@
 			<p class="dashPanel-note">
 				Message us directly — that's the fastest route, and there's no ticket queue.
 			</p>
-			<a class="button button__secondary supportCta" :href="telegramUrl" target="_blank" rel="noopener noreferrer">
+			<a class="btn btn--primary supportCta" :href="telegramUrl" target="_blank" rel="noopener noreferrer">
 				Message us on Telegram
 			</a>
 		</section>

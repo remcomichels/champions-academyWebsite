@@ -60,7 +60,7 @@
 					hint="Must be a calendly.com link."
 				/>
 
-				<button type="submit" class="button button__secondary dashForm-submit" :disabled="pending">
+				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="pending">
 					{{ pending ? "Saving…" : "Save links" }}
 				</button>
 			</form>

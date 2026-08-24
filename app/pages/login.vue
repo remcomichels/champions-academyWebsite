@@ -2,6 +2,7 @@
 	<div class="auth">
 		<div class="auth-card">
 			<header class="auth-head">
+				<span class="auth-mark" aria-hidden="true">CA</span>
 				<p class="auth-preTitle">Champions Academy</p>
 				<h1 class="auth-title">
 					{{ mode === "login" ? "Affiliate sign in" : "Set up your account" }}
@@ -71,7 +72,7 @@
 					required
 				/>
 
-				<button type="submit" class="button button__secondary auth-submit" :disabled="pending">
+				<button type="submit" class="btn btn--primary auth-submit" :disabled="pending">
 					{{ pending
 						? "Working…"
 						: mode === "login" ? "Sign in" : "Create account" }}

@@ -1,7 +1,13 @@
 // Sign-in / invite-redemption page.
+//
+// Themed with the dashboard custom properties so signing in and landing in the
+// dashboard are visibly the same product. The green sun is gone from this
+// surface for the same reason — it belongs to the marketing site.
 
 .authLayout {
+    position: relative;
     min-height: 100vh;
+    background-color: var(--background);
 
     &-main {
         display: flex;
@@ -11,20 +17,37 @@
         padding: @vw64 @vw32;
         min-height: 100vh;
     }
+
+    // The same accent wash as the dashboard, anchored to the top of the
+    // viewport rather than the content, since this page is one centred card.
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: calc(@vw300 + @vw240);
+        background: radial-gradient(120% 100% at 50% 0%, var(--accent-wash) 0%, transparent 68%);
+        pointer-events: none;
+        z-index: 0;
+    }
+
+    &-main { position: relative; z-index: 1; }
 }
 
 .auth {
     width: 100%;
-    max-width: calc(@vw300 + @vw180);
+    max-width: calc(@vw300 + @vw160);
 
     &-card {
         display: flex;
         flex-direction: column;
         gap: @vw24;
-        padding: @vw48 @vw40;
-        background-color: @secondary;
-        border-radius: @vw10;
-        border: max(1px, @vw1) solid @border;
+        padding: @vw40 @vw36;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @vw16;
+        box-shadow: var(--shadow-pop);
     }
 
     &-head {
@@ -33,11 +56,26 @@
         gap: @vw8;
     }
 
+    &-mark {
+        align-self: flex-start;
+        display: grid;
+        place-items: center;
+        width: @vw40;
+        height: @vw40;
+        margin-bottom: @vw8;
+        border-radius: @vw10;
+        background-color: var(--accent);
+        color: var(--on-accent);
+        font-size: max(0.8em, @vw15);
+        font-weight: @bold;
+    }
+
     &-preTitle {
-        font-size: max(0.8em, @vw14);
+        font-size: max(0.7em, @vw12);
+        font-weight: @semiBold;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        color: @primary;
+        color: var(--accent);
     }
 
     &-title {
@@ -45,17 +83,18 @@
         // to the body face; matching that keeps the dashboard in the same
         // visual system as the marketing pages.
         font-family: @body;
-        font-size: @vw32;
+        font-size: @vw28;
         font-weight: @bold;
-        text-transform: uppercase;
-        line-height: 1.1;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        color: var(--text);
     }
 
     &-subTitle {
-        font-size: max(0.9em, @vw16);
-        line-height: 1.4;
+        font-size: max(0.85em, @vw15);
+        line-height: 1.5;
         white-space: normal;
-        color: fade(@white, 60%);
+        color: var(--text-secondary);
     }
 
     &-form {
@@ -67,30 +106,12 @@
     &-submit {
         margin-top: @vw8;
         width: 100%;
-        // .button__secondary is a text-sized pill by default; a form's primary
-        // action needs to read as a full-width commit.
-        padding: @vw16 @vw24;
+        // A form's primary action reads as a full-width commit rather than the
+        // text-sized pill the shared .btn padding gives it.
+        padding: @vw15 @vw24;
         font-size: max(0.85em, @vw15);
-        font-weight: @bold;
-        cursor: pointer;
-        border: max(1px, @vw1) solid transparent;
 
-        @media (hover: hover) {
-            &:hover:not(:disabled) {
-                border-color: @primary;
-                color: @primary;
-            }
-        }
-
-        &:focus-visible {
-            border-color: @primary;
-            box-shadow: 0 0 0 max(2px, @vw2) fade(@primary, 25%);
-        }
-
-        &:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
+        &:disabled { cursor: wait; }
     }
 
     &-foot {
@@ -98,7 +119,7 @@
         flex-direction: column;
         gap: @vw8;
         padding-top: @vw20;
-        border-top: max(1px, @vw1) solid @border;
+        border-top: max(1px, @vw1) solid var(--border);
     }
 
     &-switch {
@@ -106,11 +127,11 @@
         background: none;
         border: none;
         padding: 0;
-        font-size: max(0.85em, @vw15);
-        color: @primary;
+        font-family: @body;
+        font-size: max(0.8em, @vw14);
+        font-weight: @medium;
+        color: var(--accent);
         cursor: pointer;
-        text-decoration: underline;
-        text-underline-offset: 0.25em;
         .transition();
         transition-property: opacity;
 
@@ -119,44 +140,52 @@
         }
 
         &:focus-visible {
-            outline: max(2px, @vw2) solid @primary;
+            outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw4;
             border-radius: @vw2;
         }
     }
 
     &-help {
-        font-size: max(0.75em, @vw14);
-        line-height: 1.4;
+        font-size: max(0.7em, @vw12);
+        line-height: 1.45;
         white-space: normal;
-        color: fade(@white, 45%);
+        color: var(--text-tertiary);
     }
 }
 
 @media (max-width: 1080px) {
-    .authLayout-main { padding: @vw64-1080 @vw32-1080; }
+    .authLayout {
+        &-main { padding: @vw64-1080 @vw32-1080; }
+        &::before { height: calc(@vw300-1080 + @vw200-1080); }
+    }
 
     .auth {
-        max-width: calc(@vw300-1080 + @vw180-1080);
+        max-width: calc(@vw300-1080 + @vw160-1080);
 
-        &-card { gap: @vw24-1080; padding: @vw48-1080 @vw40-1080; }
-        &-title { font-size: @vw32-1080; }
+        &-card { gap: @vw24-1080; padding: @vw40-1080 @vw36-1080; }
+        &-title { font-size: @vw28-1080; }
+        &-mark { width: @vw40-1080; height: @vw40-1080; }
         &-form { gap: @vw20-1080; }
-        &-submit { padding: @vw16-1080 @vw24-1080; }
+        &-submit { padding: @vw15-1080 @vw24-1080; }
         &-foot { padding-top: @vw20-1080; }
     }
 }
 
 @media (max-width: 600px) {
-    .authLayout-main { padding: @vw48-580 @vw24-580; }
+    .authLayout {
+        &-main { padding: @vw40-580 @vw20-580; }
+        &::before { height: calc(@vw300-580 + @vw100-580); }
+    }
 
     .auth {
         max-width: 100%;
 
-        &-card { gap: @vw24-580; padding: @vw40-580 @vw24-580; }
-        &-title { font-size: @vw32-580; }
-        &-form { gap: @vw20-580; }
-        &-submit { padding: @vw16-580 @vw24-580; }
-        &-foot { padding-top: @vw20-580; }
+        &-card { gap: @vw20-580; padding: @vw32-580 @vw20-580; }
+        &-title { font-size: @vw28-580; }
+        &-mark { width: @vw40-580; height: @vw40-580; }
+        &-form { gap: @vw16-580; }
+        &-submit { padding: @vw15-580 @vw24-580; }
+        &-foot { padding-top: @vw16-580; }
     }
 }
