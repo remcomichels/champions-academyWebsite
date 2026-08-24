@@ -1389,7 +1389,11 @@
     }
 }
 
-.geoList {
+
+// ── Traffic breakdowns ───────────────────────────────────────────────────────
+// Replaces .geoList, which did the same job for one dimension. Bars scale
+// against the busiest row rather than the total, so a long tail stays readable.
+.breakdown {
     display: flex;
     flex-direction: column;
     gap: @vw12;
@@ -1397,7 +1401,7 @@
 
     &-row {
         display: grid;
-        grid-template-columns: minmax(@vw100, 30%) 1fr auto;
+        grid-template-columns: minmax(@vw100, 34%) 1fr auto;
         align-items: center;
         gap: @vw12;
         font-size: max(0.8em, @vw14);
@@ -1425,12 +1429,86 @@
         .transition(transform, @durationMedium, @easeOut);
     }
 
-    // Only the busiest country takes the accent.
+    // Only the top row takes the accent — the rest stay neutral.
     &-row:first-child &-fill { background-color: var(--accent); }
 
     &-count {
         color: var(--text-secondary);
         font-variant-numeric: tabular-nums;
+    }
+}
+
+// ── Activity heatmap ─────────────────────────────────────────────────────────
+.heatmap {
+    display: flex;
+    flex-direction: column;
+    gap: @vw12;
+
+    // One label column plus 24 hours. The cells carry the meaning, so they get
+    // every spare pixel and the labels take only what they need.
+    &-grid {
+        display: grid;
+        grid-template-columns: auto repeat(24, minmax(0, 1fr));
+        gap: max(2px, @vw3);
+        align-items: center;
+    }
+
+    &-corner { display: block; }
+
+    &-hourLabel {
+        font-size: max(0.6em, @vw11);
+        color: var(--chart-axis-text);
+        font-variant-numeric: tabular-nums;
+    }
+
+    &-dayLabel {
+        padding-right: @vw8;
+        font-size: max(0.6em, @vw11);
+        color: var(--chart-axis-text);
+        white-space: nowrap;
+    }
+
+    &-cell {
+        display: block;
+        aspect-ratio: 1 / 1;
+        min-height: max(8px, @vw10);
+        border-radius: @vw3;
+        background-color: var(--accent);
+
+        &.is-empty {
+            background-color: var(--surface-raised);
+            opacity: 1;
+        }
+    }
+
+    &-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: @vw12;
+        font-size: max(0.7em, @vw12);
+        color: var(--text-secondary);
+    }
+
+    &-peak strong { color: var(--text); font-weight: @semiBold; }
+
+    &-legend {
+        display: flex;
+        align-items: center;
+        gap: max(2px, @vw3);
+        color: var(--text-tertiary);
+    }
+
+    &-legendCell {
+        display: block;
+        width: max(8px, @vw10);
+        height: max(8px, @vw10);
+        margin: 0 max(1px, @vw1);
+        border-radius: @vw3;
+        background-color: var(--accent);
+
+        &.is-empty { background-color: var(--surface-raised); }
     }
 }
 
@@ -1939,6 +2017,19 @@
     .barChart-xLabel:nth-child(even) { visibility: hidden; }
 
     .funnel { flex-direction: column; }
+
+    // 24 columns will not fit legibly on a phone. Rather than shrinking the
+    // cells to specks, the grid keeps a usable cell size and scrolls sideways
+    // inside its own card — the page itself never scrolls horizontally.
+    .heatmap {
+        overflow-x: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar { display: none; }
+
+        &-grid { min-width: calc(@vw300-580 + @vw300-580); }
+        &-foot { position: sticky; left: 0; }
+    }
 
     .qr {
         flex-direction: column;
