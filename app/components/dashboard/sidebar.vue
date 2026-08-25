@@ -32,18 +32,23 @@
 		</div>
 
 		<nav class="dashNav-list">
-			<NuxtLink
-				v-for="item in items"
-				:key="item.to"
-				:to="item.to"
-				class="dashNav-item"
-				:class="{ 'is-active': isActive(item.to) }"
-				:aria-current="isActive(item.to) ? 'page' : undefined"
-				:title="collapsed ? item.label : undefined"
-			>
-				<NuxtDashboardIcon :name="item.icon" />
-				<span class="dashNav-label">{{ item.label }}</span>
-			</NuxtLink>
+			<template v-for="item in items" :key="item.to">
+				<!-- Presentational: the rule is a grouping cue for the eye, and
+				     announcing a separator between two links adds nothing for a
+				     screen reader that is already reading them as a list. -->
+				<hr v-if="item.group" class="dashNav-rule" aria-hidden="true" >
+
+				<NuxtLink
+					:to="item.to"
+					class="dashNav-item"
+					:class="{ 'is-active': isActive(item.to) }"
+					:aria-current="isActive(item.to) ? 'page' : undefined"
+					:title="collapsed ? item.label : undefined"
+				>
+					<NuxtDashboardIcon :name="item.icon" />
+					<span class="dashNav-label">{{ item.label }}</span>
+				</NuxtLink>
+			</template>
 		</nav>
 
 		<div class="dashNav-foot">

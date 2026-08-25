@@ -241,6 +241,21 @@
         &::-webkit-scrollbar { display: none; }
     }
 
+    // Splits the nav into groups. Same rule as the one over the foot, so the
+    // sidebar reads as one set of bands rather than two different dividers.
+    // Full content width for that reason too — inset to the labels it would
+    // sit under the icons, which are the one thing that holds position through
+    // the collapse.
+    &-rule {
+        flex: none;
+        height: 0;
+        // The list's own @vw2 gap sits either side of these, so the visual
+        // spacing is a touch more than the margin alone.
+        margin: @vw10 0;
+        border: none;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
     &-foot {
         display: flex;
         flex-direction: column;
@@ -2119,6 +2134,7 @@
         // @vw14 for the same reason as the baseline: it centres a @vw20 icon
         // in a @vw72 rail once the @vw12 nav padding is taken off.
         &-item { padding: @vw10-1080 @vw14-1080; gap: @vw12-1080; }
+        &-rule { margin: @vw10-1080 0; }
         &-mark { width: @vw32-1080; height: @vw32-1080; }
     }
 
@@ -2248,6 +2264,7 @@
         padding: @vw16-580 @vw12-580;
 
         &-item { font-size: max(0.85em, @vw15-580); }
+        &-rule { margin: @vw10-580 0; }
     }
 
     .dashHero {

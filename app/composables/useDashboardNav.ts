@@ -12,6 +12,13 @@ export interface DashboardNavItem {
 	icon: string;
 	/** Admin-only entries are filtered out for everyone else. */
 	admin?: boolean;
+	/**
+	 * Draws a rule *above* this entry, splitting the list into groups. Sitting
+	 * on the item rather than between two of them means a group whose opening
+	 * entry is filtered out — an admin-only one, say — takes its rule with it,
+	 * instead of leaving a divider hanging over nothing.
+	 */
+	group?: boolean;
 }
 
 export const dashboardNav: DashboardNavItem[] = [
@@ -19,7 +26,9 @@ export const dashboardNav: DashboardNavItem[] = [
 	{ to: "/dashboard/analytics", label: "Analytics", icon: "chart" },
 	{ to: "/dashboard/sales", label: "Sales", icon: "tag" },
 	{ to: "/dashboard/links", label: "Links & Assets", icon: "link" },
-	{ to: "/dashboard/settings", label: "Settings", icon: "cog" },
+	// Account and help sit below the rule: the four above are the affiliate's
+	// actual work, these are the things you visit once and leave again.
+	{ to: "/dashboard/settings", label: "Settings", icon: "cog", group: true },
 	{ to: "/dashboard/support", label: "Support", icon: "help" },
 	{ to: "/dashboard/admin", label: "Admin", icon: "shield", admin: true },
 ];
