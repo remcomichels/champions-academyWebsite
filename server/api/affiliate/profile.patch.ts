@@ -1,8 +1,5 @@
 import { object, optional, str } from "../../utils/validate";
 
-/** Timezones the browser reports that we're willing to store verbatim. */
-const TIMEZONE_RE = /^[A-Za-z]+\/[A-Za-z0-9_+-]+(\/[A-Za-z0-9_+-]+)?$|^UTC$/;
-
 /**
  * Profile and notification preferences.
  *
@@ -27,14 +24,21 @@ export default defineEventHandler(async (event) => {
 	if (body.displayName) update.display_name = body.displayName;
 
 	if (body.timezone) {
-		if (!TIMEZONE_RE.test(body.timezone)) {
+		// Asked of ICU rather than matched against a pattern. The old regex
+		// tested the *shape* of the name, which let `Foo/Bar` through to
+		// Postgres — where `at time zone` raises — while turning away real
+		// zones that do not look like `Area/City`. It also normalises the
+		// casing, so the stored value is the canonical spelling.
+		const timezone = canonicalTimezone(body.timezone);
+
+		if (!timezone) {
 			throw createError({
 				statusCode: 400,
-				statusMessage: "That doesn't look like a timezone",
-				data: { field: "timezone", message: "Use a name like Europe/Amsterdam" },
+				statusMessage: "That isn't a timezone we recognise",
+				data: { field: "timezone", message: "Pick one from the list — search for a city, or UTC" },
 			});
 		}
-		update.timezone = body.timezone;
+		update.timezone = timezone;
 	}
 
 	if (body.locale) {

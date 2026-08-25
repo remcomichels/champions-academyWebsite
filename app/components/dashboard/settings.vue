@@ -16,11 +16,11 @@
 					<p class="field-message">Message us to change this — we can't verify a new address automatically yet.</p>
 				</div>
 
-				<NuxtAuthField
+				<NuxtDashboardTimezoneField
 					v-model="profile.timezone"
 					label="Timezone"
 					:error="errors.timezone"
-					hint="Used for dates on your dashboard. e.g. Europe/Amsterdam"
+					hint="Used for dates and times on your dashboard."
 				/>
 
 				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'profile'">

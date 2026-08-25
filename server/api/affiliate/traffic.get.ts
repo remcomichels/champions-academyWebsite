@@ -105,13 +105,5 @@ export default defineEventHandler(async (event) => {
  * UTC keeps the page working; the hours are just less useful until they fix it.
  */
 function safeTimezone(value: string | null | undefined): string {
-	if (!value) return "UTC";
-
-	try {
-		new Intl.DateTimeFormat("en-GB", { timeZone: value });
-		return value;
-	}
-	catch {
-		return "UTC";
-	}
+	return canonicalTimezone(value) ?? "UTC";
 }

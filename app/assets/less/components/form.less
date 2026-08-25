@@ -100,3 +100,116 @@
         }
     }
 }
+
+// ── Timezone combobox ────────────────────────────────────────────────────────
+// A searching picker rather than a text field: the names are IANA identifiers
+// nobody recalls exactly, so typing one from memory failed far more often than
+// it worked.
+.tzField {
+    // Raised while open, on the field itself rather than on the list.
+    // `.dashForm` is a flex container and flex items paint atomically, like
+    // inline-blocks — so a z-index on the dropdown is sorted *inside* this
+    // item, and the Save button, being a later flex item, still painted over
+    // it. Only a stacking context on the item itself outranks a later sibling.
+    &.is-open {
+        position: relative;
+        z-index: 1;
+    }
+
+    &-control {
+        position: relative;
+    }
+
+    // The list overlaps whatever follows it in the form instead of pushing the
+    // Save button down the panel each time it opens.
+    &-list {
+        position: absolute;
+        top: calc(100% + @vw6);
+        left: 0;
+        z-index: 20;
+        width: 100%;
+        max-height: @vw260;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: @vw6;
+        list-style: none;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border-strong);
+        border-radius: @vw10;
+        box-shadow: var(--shadow-pop);
+    }
+
+    &-option {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: @vw12;
+        padding: @vw8 @vw10;
+        border-radius: @vw6;
+        font-size: max(0.8em, @vw14);
+        color: var(--text);
+        cursor: pointer;
+
+        // No hover rule of its own — the keyboard and the pointer drive the
+        // same `is-active` row, so there is only ever one highlighted option
+        // and arrowing down cannot leave a second one lit under the cursor.
+        &.is-active { background-color: var(--surface-hover); }
+        &.is-selected { color: var(--accent); font-weight: @semiBold; }
+    }
+
+    &-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-offset {
+        flex: none;
+        font-size: max(0.7em, @vw12);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+    }
+
+    &-empty {
+        padding: @vw10;
+        font-size: max(0.8em, @vw14);
+        line-height: 1.4;
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+
+    // Sits inside the hint line, so it is styled as text rather than as a
+    // second control competing with Save.
+    &-detect {
+        padding: 0;
+        background: none;
+        border: none;
+        font-family: @body;
+        font-size: inherit;
+        font-weight: @semiBold;
+        color: var(--accent);
+        cursor: pointer;
+        .transition();
+        transition-property: color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--accent-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+            border-radius: @vw4;
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .tzField-list { max-height: @vw260-1080; padding: @vw6-1080; }
+    .tzField-option { padding: @vw8-1080 @vw10-1080; }
+}
+
+@media (max-width: 600px) {
+    .tzField-list { max-height: @vw220-580; }
+    .tzField-option { padding: @vw10-580; }
+}
