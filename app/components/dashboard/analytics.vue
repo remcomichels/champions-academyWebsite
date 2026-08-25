@@ -70,9 +70,10 @@
 		<div class="dashGrid">
 			<section class="dashPanel dashGrid-main" :aria-busy="trafficPending || undefined">
 				<h2 class="dashPanel-title">Where they came from</h2>
-				<NuxtDashboardBreakdown
+				<NuxtDashboardDonut
 					:class="{ 'dash-refreshing': trafficPending }"
 					:items="sources"
+					:period-label="priorLabel"
 					empty="No sources yet. Once people start opening your link, the sites they came from show up here."
 				/>
 				<p class="dashPanel-note">
@@ -145,7 +146,12 @@ interface TrafficResponse {
 	total: number;
 	countryCount: number;
 	clickTotal: number;
-	previous: { total: number; countryCount: number; clickTotal: number };
+	previous: {
+		total: number;
+		countryCount: number;
+		clickTotal: number;
+		sources: { host: string | null; visits: number }[];
+	};
 	sources: { host: string | null; visits: number }[];
 	countries: { country: string; visits: number }[];
 	clicks: { role: string; clicks: number }[];
@@ -221,12 +227,28 @@ const sessionsTrend = computed(() =>
 		? trend(analytics.value.sessions, analytics.value.previousSessions, priorLabel.value)
 		: null));
 
-/** A null referrer host is direct traffic, not an unknown one. */
-const sources = computed(() =>
-	(traffic.value?.sources ?? []).map(row => ({
+/**
+ * Each source with its own change, joined to the prior window by host.
+ *
+ * A host that had traffic last period and none now has no row here at all, and
+ * gets none: the panel answers "where is my traffic coming from", and a source
+ * sending nobody is not an answer to that. It is still inside the page total's
+ * own trend, which is where a drop that size shows up.
+ *
+ * A null referrer host is direct traffic — DMs, stories and QR scans all land
+ * there — not an unknown one.
+ */
+const sources = computed(() => {
+	const before = new Map(
+		(traffic.value?.previous.sources ?? []).map(row => [row.host, row.visits]),
+	);
+
+	return (traffic.value?.sources ?? []).map(row => ({
 		label: row.host ?? "Direct",
 		visits: row.visits,
-	})));
+		previousVisits: before.get(row.host) ?? 0,
+	}));
+});
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 

@@ -1097,6 +1097,145 @@
     }
 }
 
+// ── Sources donut ────────────────────────────────────────────────────────────
+// Ring left, ranked legend right. The legend is not optional decoration: it
+// carries the exact figures, and it is what licenses two of the slot colours
+// that fall under 3:1 on the light surface.
+.donut {
+    display: grid;
+    // The ring takes what it needs and the legend takes the rest, rather than
+    // an even split that would leave a small ring stranded in a wide column.
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: @vw40;
+
+    &.is-empty {
+        display: block;
+    }
+
+    &-ring {
+        position: relative;
+        flex: none;
+        width: @vw160;
+        height: @vw160;
+    }
+
+    &-svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+    }
+
+    &-arc {
+        fill: none;
+        // Square ends, not round: a rounded cap eats into the gap either side
+        // and makes a small slice look bigger than its share.
+        stroke-linecap: butt;
+        cursor: default;
+        .transition(opacity, @durationFast, @ease);
+
+        // Everything else recedes rather than the hovered slice growing —
+        // a slice that changes size on hover misreports its own share.
+        &.is-dim { opacity: 0.35; }
+    }
+
+    &-centre {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: @vw2;
+        // The ring owns the pointer; this sits on top of the hole and must not
+        // take the hover away from the arc underneath it.
+        pointer-events: none;
+        text-align: center;
+    }
+
+    &-centreValue {
+        font-size: max(1.1em, @vw22);
+        font-weight: @bold;
+        line-height: 1.1;
+        color: var(--text);
+    }
+
+    &-centreLabel {
+        max-width: @vw96;
+        font-size: max(0.6em, @vw11);
+        color: var(--text-secondary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-legend {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+        list-style: none;
+        min-width: 0;
+        // Fills the column, so the counts and their arrows land on the panel's
+        // own right edge rather than stopping short of it with a band of air
+        // between them and the border.
+        width: 100%;
+    }
+
+    &-legendRow {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: @vw8;
+        font-size: max(0.75em, @vw13);
+        color: var(--text);
+        .transition(opacity, @durationFast, @ease);
+
+        &.is-dim { opacity: 0.4; }
+    }
+
+    // A swatch, because the legend mirrors the mark: a ring is a filled shape,
+    // so its key is a filled shape too.
+    &-key {
+        flex: none;
+        width: @vw10;
+        height: @vw10;
+        border-radius: @vw3;
+    }
+
+    &-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-count {
+        font-variant-numeric: tabular-nums;
+        color: var(--text-secondary);
+    }
+
+    &-trend {
+        display: flex;
+        align-items: center;
+        gap: @vw2;
+        // Reserved whether or not the row has a trend, so the counts beside
+        // them stay in one column instead of jogging left on the rows that
+        // have no comparison.
+        min-width: @vw40;
+        justify-content: flex-end;
+        font-size: max(0.6em, @vw11);
+        font-variant-numeric: tabular-nums;
+
+        .icon { font-size: max(0.7em, @vw12); }
+
+        // The same three colours the stat tiles use, so an arrow means the
+        // same thing wherever it appears on the dashboard.
+        &.is-up { color: var(--success); }
+        &.is-down { color: var(--error); }
+        &.is-flat { color: var(--text-tertiary); }
+    }
+}
+
 // ── Sparkline bars ───────────────────────────────────────────────────────────
 // The distribution behind a highlight card, at card scale.
 .sparkbars {
@@ -2339,6 +2478,17 @@
 
     .dashPanel { padding: @vw20-1080; gap: @vw16-1080; }
     .dashSetup { padding: @vw16-1080 @vw20-1080; gap: @vw12-1080; }
+    .donut {
+        gap: @vw32-1080;
+
+        &-ring { width: @vw140-1080; height: @vw140-1080; }
+        &-legend { gap: @vw8-1080; }
+        &-legendRow { gap: @vw8-1080; font-size: max(0.75em, @vw13-1080); }
+        &-key { width: @vw10-1080; height: @vw10-1080; }
+        &-centreValue { font-size: max(1.1em, @vw20-1080); }
+        &-trend { min-width: @vw40-1080; }
+    }
+
     .miniGrid { gap: @vw10-1080; }
     .miniCard { padding: @vw12-1080; }
     .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
@@ -2479,6 +2629,21 @@
 
     .checklist--row { gap: @vw10-580 @vw16-580; }
     .linkStatus--row { gap: @vw12-580; }
+    // Side by side stops working once the ring has to shrink to leave the
+    // legend a readable width — below this the ring sits above its legend and
+    // both get the full column.
+    .donut {
+        grid-template-columns: minmax(0, 1fr);
+        justify-items: center;
+        gap: @vw20-580;
+
+        &-ring { width: @vw150-580; height: @vw150-580; }
+        &-legend { gap: @vw10-580; }
+        &-legendRow { font-size: max(0.75em, @vw14-580); }
+        &-centreValue { font-size: max(1.1em, @vw24-580); }
+        &-trend { min-width: @vw44-580; }
+    }
+
     .miniGrid { gap: @vw8-580; }
     .miniCard { padding: @vw12-580; }
     .miniCard-plot { padding: @vw6-580 0 @vw2-580; }

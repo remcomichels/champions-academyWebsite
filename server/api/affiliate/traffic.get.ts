@@ -94,6 +94,12 @@ export default defineEventHandler(async (event) => {
 			total: previous.total ?? 0,
 			countryCount: previous.country_count ?? 0,
 			clickTotal: previous.click_total ?? 0,
+			// The prior window's ranked sources, so each row on "Where they came
+			// from" can carry its own change rather than only the page total
+			// doing so. Already fetched — the RPC above returns the whole
+			// breakdown for the prior window and this was the one part of it
+			// being dropped on the floor.
+			sources: previous.sources ?? [],
 		},
 	};
 });

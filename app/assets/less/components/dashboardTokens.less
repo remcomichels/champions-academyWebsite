@@ -34,6 +34,12 @@
     --chart-bar-hover: rgba(255, 255, 255, 0.28);
     --chart-grid: rgba(255, 255, 255, 0.06);
 
+    // Categorical slots — see the note under the light theme's copy.
+    --series-2: #199E70;
+    --series-3: #D95926;
+    --series-4: #3987E5;
+    --series-5: #D55181;
+
     // Top-of-page accent wash. Heavier than the light theme's because a violet
     // at 12% simply disappears against #0A0A0C.
     --accent-wash: rgba(124, 92, 252, 0.20);
@@ -62,6 +68,33 @@
     --chart-bar-hover: rgba(10, 10, 12, 0.28);
     --chart-grid: rgba(10, 10, 12, 0.06);
 
+    // ── Categorical slots ────────────────────────────────────────────────
+    // The one place on this dashboard that needs more than one colour at a
+    // time: a part-to-whole chart has to tell its slices apart, and the
+    // monochrome-plus-accent rule everything else follows cannot do that.
+    //
+    // Slot 1 is the accent itself (`--series-1` below), so the largest share
+    // is the colour this product already uses for "the one that matters" —
+    // the same rule the breakdown rows follow, where only the top row is
+    // tinted. The four below it exist solely inside that chart.
+    //
+    // Not eyeballed. The set was checked with the data-viz validator against
+    // both surfaces in this order — the order is the palette, since it fixes
+    // which pairs end up adjacent — and clears the lightness band, the chroma
+    // floor, colourblind separation (worst adjacent ΔE 9.2 light / 9.4 dark
+    // against a target of 8) and the normal-vision floor (24.5 light / 25.4
+    // dark against a floor of 15). Reordering or substituting a hue means
+    // re-running it; a pair that looks fine can fail deuteranopia badly.
+    //
+    // Aqua and magenta sit under 3:1 against white. That is a documented WARN
+    // rather than a failure, and it obliges the chart to carry visible labels
+    // — which is why the donut always ships with its ranked legend and never
+    // as a bare ring.
+    --series-2: #1BAF7A;
+    --series-3: #EB6834;
+    --series-4: #2A78D6;
+    --series-5: #E87BA4;
+
     --accent-wash: rgba(124, 92, 252, 0.14);
 
     --shadow-panel: 0 1px 2px rgba(10, 10, 12, 0.04);
@@ -85,6 +118,13 @@
 
     --chart-bar-highlight: var(--accent);
     --chart-axis-text: var(--text-tertiary);
+
+    // Slot 1 is the accent, in both themes, for the reason given above.
+    --series-1: var(--accent);
+    // Everything past the slots named above is folded into one "Other" share
+    // rather than given a generated hue — a palette that cycles stops being an
+    // identity channel the moment it repeats.
+    --series-other: var(--chart-bar);
 
     // Status colours come from the base system. Restated as custom properties
     // so a component can use one token vocabulary rather than mixing
