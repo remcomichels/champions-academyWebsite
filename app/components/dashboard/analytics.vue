@@ -25,11 +25,6 @@
 			Couldn't load your traffic just now. Try again in a minute.
 		</NuxtAlertBanner>
 
-		<!-- Each card waits on its own request rather than on both. The session
-		     count comes from PostHog and the other two from our own database, so
-		     tying all three to the slower of the pair would hold two finished
-		     figures back for no reason. They settle at different moments, which
-		     is invisible: the placeholder occupies the same box the figure does. -->
 		<div v-else class="statGrid">
 			<NuxtDashboardStatCard
 				label="Link visits"
@@ -41,12 +36,12 @@
 				:loading="trafficPending"
 			/>
 			<NuxtDashboardStatCard
-				label="Sessions"
-				:value="analytics?.configured ? analytics.sessions : '—'"
+				label="Link clicks"
+				:value="traffic?.clickTotal ?? 0"
 				icon="chart"
-				:trend="sessionsTrend"
-				:hint="analytics?.configured ? 'Measured in the browser' : 'Analytics not switched on here'"
-				:loading="analyticsPending"
+				:trend="clicksTrend"
+				hint="Tapped through to a plan"
+				:loading="trafficPending"
 			/>
 			<NuxtDashboardStatCard
 				label="Countries"
@@ -58,10 +53,12 @@
 		</div>
 
 		<p class="dashNote">
-			<strong>Link visits</strong> is your real number — counted on our server when
-			someone opens your link, once per person per day, where nothing can block it.
-			<strong>Sessions</strong> is measured in the browser and misses anyone using
-			an ad blocker, so it will always be lower. Neither is wrong.
+			<strong>Link visits</strong> is someone opening your link.
+			<strong>Link clicks</strong> is them going on to tap one of your plans from
+			there. Both are counted on our own server, once per person per day, so
+			refreshing your own link won't inflate either and no ad blocker can thin
+			them out — and the gap between the two is the people who arrived and went
+			no further.
 		</p>
 
 		<!-- Two rows of two. The heatmap sits in the narrower column because its
@@ -158,13 +155,6 @@ interface TrafficResponse {
 	heatmap: { dow: number; hour: number; visits: number }[];
 }
 
-interface AnalyticsResponse {
-	configured: boolean;
-	days: number;
-	sessions: number;
-	previousSessions: number;
-}
-
 const ranges = [
 	{ id: "7", label: "7d" },
 	{ id: "30", label: "30d" },
@@ -181,8 +171,8 @@ const rangeQuery = computed(() =>
 
 const headers = () => (import.meta.server ? useRequestHeaders(["cookie"]) : undefined);
 
-// Our own figures. Server-side, unblockable, and the source for everything on
-// this page except the session count.
+// Our own figures, and now the only ones on this page: server-side, and
+// counted where an ad blocker cannot reach them.
 const { data: traffic, pending: trafficPending, error: trafficError } =
 	await useAsyncData<TrafficResponse>(
 		"affiliate-traffic",
@@ -192,19 +182,6 @@ const { data: traffic, pending: trafficPending, error: trafficError } =
 		}),
 		{ watch: [range] },
 	);
-
-// PostHog, for the session count only. Its country breakdown was dropped from
-// the query entirely: we have the same figures from our own server where an ad
-// blocker cannot thin them out, and two different "where they are" lists on one
-// page is the confusion we already removed once.
-const { data: analytics, pending: analyticsPending } = await useAsyncData<AnalyticsResponse>(
-	"affiliate-analytics",
-	() => $fetch<AnalyticsResponse>("/api/affiliate/analytics", {
-		query: rangeQuery.value,
-		headers: headers(),
-	}),
-	{ watch: [range] },
-);
 
 // Each tile compares against the equally long window immediately before the
 // selected one, so the label follows the range rather than saying "last month"
@@ -217,14 +194,14 @@ const priorLabel = computed(() => {
 const visitsTrend = computed(() =>
 	(traffic.value ? trend(traffic.value.total, traffic.value.previous.total, priorLabel.value) : null));
 
+const clicksTrend = computed(() =>
+	(traffic.value
+		? trend(traffic.value.clickTotal, traffic.value.previous.clickTotal, priorLabel.value)
+		: null));
+
 const countriesTrend = computed(() =>
 	(traffic.value
 		? trend(traffic.value.countryCount, traffic.value.previous.countryCount, priorLabel.value)
-		: null));
-
-const sessionsTrend = computed(() =>
-	(analytics.value?.configured
-		? trend(analytics.value.sessions, analytics.value.previousSessions, priorLabel.value)
 		: null));
 
 /**
