@@ -1,5 +1,5 @@
 <template>
-	<div class="inbox">
+	<div ref="root" class="inbox">
 		<button
 			type="button"
 			class="inbox-trigger"
@@ -43,5 +43,5 @@
 <script setup lang="ts">
 import { useInbox } from "~/assets/js/components/inbox";
 
-const { open, toggle, items, unread, toasts, describe, formatWhen } = useInbox();
+const { open, root, toggle, items, unread, toasts, describe, formatWhen } = useInbox();
 </script>

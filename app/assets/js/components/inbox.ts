@@ -1,4 +1,4 @@
-import { ref, computed, onMounted, onUnmounted } from "vue";
+import { ref, computed, onMounted, onUnmounted, type Ref } from "vue";
 
 /**
  * Activity inbox and live sale toasts.
@@ -22,6 +22,8 @@ const TOAST_MS = 8000;
 
 export function useInbox() {
 	const open = ref(false);
+	/** The panel and its trigger, so a click can be tested against both. */
+	const root = ref<HTMLElement | null>(null);
 	const items = ref<InboxItem[]>([]);
 	const unread = ref(0);
 	const toasts = ref<InboxItem[]>([]);
@@ -86,8 +88,38 @@ export function useInbox() {
 		return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 	}
 
+	/**
+	 * Anything outside the bell and its panel closes it.
+	 *
+	 * On `pointerdown` rather than `click`: a click only lands once the button
+	 * is released, so pressing down on a link outside left the panel open for
+	 * the whole press. Capture phase for the same reason a modal uses it — a
+	 * handler inside the page that calls `stopPropagation` should not be able
+	 * to strand the panel open.
+	 */
+	function onPointerDown(event: PointerEvent) {
+		if (!open.value) return;
+
+		const target = event.target as Node | null;
+		if (target && root.value?.contains(target)) return;
+
+		open.value = false;
+	}
+
+	function onKeydown(event: KeyboardEvent) {
+		if (event.key !== "Escape" || !open.value) return;
+
+		open.value = false;
+		// Focus goes back to the bell rather than being left on whatever the
+		// panel contained, which is where it was before the panel opened.
+		root.value?.querySelector<HTMLButtonElement>(".inbox-trigger")?.focus();
+	}
+
 	onMounted(() => {
 		void load();
+
+		document.addEventListener("pointerdown", onPointerDown, true);
+		document.addEventListener("keydown", onKeydown);
 
 		source = new EventSource("/api/affiliate/stream");
 
@@ -108,6 +140,9 @@ export function useInbox() {
 	});
 
 	onUnmounted(() => {
+		document.removeEventListener("pointerdown", onPointerDown, true);
+		document.removeEventListener("keydown", onKeydown);
+
 		source?.close();
 		source = null;
 		timers.forEach(clearTimeout);
@@ -115,6 +150,7 @@ export function useInbox() {
 
 	return {
 		open,
+		root: root as Ref<HTMLElement | null>,
 		toggle,
 		items: computed(() => items.value),
 		unread: computed(() => unread.value),
