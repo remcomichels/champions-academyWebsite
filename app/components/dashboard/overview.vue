@@ -142,7 +142,34 @@
 				<div class="miniGrid">
 					<div v-for="card in highlights" :key="card.label" class="miniCard">
 						<p class="miniCard-label">{{ card.label }}</p>
-						<p class="miniCard-value" :class="{ 'is-empty': !card.note }">{{ card.value }}</p>
+
+						<p class="miniCard-value" :class="{ 'is-empty': !card.note }">
+							<span
+								v-if="card.flag"
+								class="miniCard-flag"
+								aria-hidden="true"
+							>{{ card.flag }}</span>{{ card.value }}
+						</p>
+
+						<!-- One mark per card, and only where there is something
+						     behind it: a card with no figure shows its em dash
+						     alone rather than an empty plot, which would read as
+						     a chart that failed to load. -->
+						<div v-if="card.note" class="miniCard-plot">
+							<NuxtDashboardSparkbars
+								v-if="card.bars"
+								:points="card.bars"
+								:peak="card.peak ?? null"
+							/>
+
+							<span v-else-if="card.share !== null" class="miniCard-meter" aria-hidden="true">
+								<span
+									class="miniCard-meterFill"
+									:style="{ transform: `scaleX(${card.share ?? 0})` }"
+								/>
+							</span>
+						</div>
+
 						<p v-if="card.note" class="miniCard-note">{{ card.note }}</p>
 					</div>
 				</div>
@@ -265,15 +292,75 @@ const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
 const visitCount = (n: number) => `${n.toLocaleString("en-GB")} ${n === 1 ? "visit" : "visits"}`;
 
+interface HighlightCard {
+	label: string;
+	value: string;
+	note: string | null;
+	/** The distribution the figure came out of, for the cards that have one. */
+	bars?: { label: string; value: number }[];
+	/** Index within `bars` to accent — the slot the value names. */
+	peak?: number | null;
+	/** 0–1 share of all visits, for the cards that are a proportion. */
+	share?: number | null;
+	flag?: string | null;
+}
+
+/**
+ * ISO 3166-1 alpha-2 to a flag, via the regional-indicator block.
+ *
+ * Windows ships no glyph for these pairs and draws the two letters instead, so
+ * a Dutch flag becomes "NL". That is a fine outcome and the reason the country
+ * name still sits beside it — the flag is a second read of something already
+ * written, never the only one.
+ */
+const flagOf = (code: string) => {
+	if (!/^[a-z]{2}$/i.test(code)) return null;
+
+	return String.fromCodePoint(
+		...[...code.toUpperCase()].map(letter => 0x1F1E6 + letter.charCodeAt(0) - 65),
+	);
+};
+
 /**
  * The four summary cards.
  *
  * A missing figure shows an em dash with no supporting line, rather than a
  * zero: "Best day — 0 visits" reads as a measurement, when the truth is that
  * there is nothing to measure yet.
+ *
+ * Each card carries one proportional mark under its value: the day and hour
+ * cards plot the distribution their peak came out of, and the source and
+ * country cards show what fraction of all visits they account for. A peak with
+ * no shape behind it is an assertion — six quiet days and one busy Saturday
+ * and a week of even traffic both produce "Saturday", and they mean opposite
+ * things.
  */
-const highlights = computed(() => {
+const highlights = computed<HighlightCard[]>(() => {
 	const h = props.summary.highlights;
+
+	/**
+	 * "412 visits · 38% of all".
+	 *
+	 * Anything under half a percent is left off rather than rounded, because
+	 * "0% of all" beside a row that demonstrably has traffic reads as none.
+	 * Same reasoning as the null in shared/utils/trend.ts.
+	 */
+	const shareNote = (visits: number) => {
+		const fraction = h.total > 0 ? visits / h.total : 0;
+		return fraction >= 0.005
+			? `${visitCount(visits)} · ${Math.round(fraction * 100)}% of all`
+			: visitCount(visits);
+	};
+
+	/**
+	 * Floored at 2%, matching the sliver NuxtDashboardBreakdown leaves on its
+	 * smallest row. Under that the fill renders as a nub against the track and
+	 * reads as a rendering fault rather than a small number — and the exact
+	 * figure is not what this mark is for. The note beside it carries the
+	 * count, and drops the percentage entirely below half a percent.
+	 */
+	const shareOf = (visits: number) =>
+		(h.total > 0 ? Math.max(visits / h.total, 0.02) : null);
 
 	// A three-hour band, because "21:00" implies a precision an hourly bucket
 	// does not have — the visits in that bucket are spread across the hour.
@@ -297,23 +384,36 @@ const highlights = computed(() => {
 			label: "Best day",
 			value: h.bestDay ? DAY_NAMES[h.bestDay.dow - 1] ?? "—" : "—",
 			note: h.bestDay ? visitCount(h.bestDay.visits) : null,
+			// Full day names in the readout, short ones would need a second
+			// lookup table for no gain — the tip has room for "Wednesday".
+			bars: h.dowTotals.map((value, index) => ({
+				label: DAY_NAMES[index] ?? "",
+				value,
+			})),
+			// dow is the ISO weekday, 1 = Monday, and the array is Monday-first.
+			peak: h.bestDay ? h.bestDay.dow - 1 : null,
 		},
 		{
 			label: "Best hour",
 			value: h.bestHour ? hourBand(h.bestHour.hour) : "—",
 			note: h.bestHour ? visitCount(h.bestHour.visits) : null,
+			bars: h.hourTotals.map((value, hour) => ({ label: hourBand(hour), value })),
+			peak: h.bestHour ? h.bestHour.hour : null,
 		},
 		{
 			// A null referrer host is direct traffic — DMs, stories and QR scans
 			// all land there — not an unknown one.
 			label: "Top source",
 			value: h.topSource ? h.topSource.host ?? "Direct" : "—",
-			note: h.topSource ? visitCount(h.topSource.visits) : null,
+			note: h.topSource ? shareNote(h.topSource.visits) : null,
+			share: h.topSource ? shareOf(h.topSource.visits) : null,
 		},
 		{
 			label: "Top country",
 			value: h.topCountry ? countryName(h.topCountry.country) : "—",
-			note: h.topCountry ? visitCount(h.topCountry.visits) : null,
+			note: h.topCountry ? shareNote(h.topCountry.visits) : null,
+			share: h.topCountry ? shareOf(h.topCountry.visits) : null,
+			flag: h.topCountry ? flagOf(h.topCountry.country) : null,
 		},
 	];
 });

@@ -1053,6 +1053,139 @@
         font-variant-numeric: tabular-nums;
         color: var(--text-tertiary);
     }
+
+    // Between the value and its note, so the card reads headline → shape →
+    // detail. `margin-top: auto` is deliberately not used: the four cards
+    // stretch to meet the chart beside them, and pinning the plot to the bottom
+    // would leave each one a different distance below its value.
+    &-plot {
+        padding: @vw6 0 @vw2;
+    }
+
+    // The share of all visits behind a Top source / Top country figure. One
+    // proportion rather than a distribution — the question those two cards
+    // answer is "how much of my traffic is this", which is a single number.
+    // Same track and fill as the breakdown rows on Analytics, so a proportion
+    // looks like a proportion wherever it turns up.
+    &-meter {
+        // Block, or the height below is ignored: this is a <span> in a plain
+        // div, unlike the breakdown track it borrows its look from, which is a
+        // grid item and gets blockified for free.
+        display: block;
+        height: max(4px, @vw6);
+        background-color: var(--surface-raised);
+        border-radius: @vw6;
+        overflow: hidden;
+    }
+
+    &-meterFill {
+        display: block;
+        height: 100%;
+        background-color: var(--accent);
+        transform-origin: left center;
+        .transition(transform, @durationMedium, @easeOut);
+    }
+
+    // Regional-indicator pairs have no glyph in Segoe UI Emoji, so Windows
+    // draws the two letters instead — "NL" rather than a Dutch flag. That is a
+    // fine outcome and the reason the country name still sits beside it: the
+    // flag is a second read of something already written, never the only one.
+    &-flag {
+        margin-right: @vw6;
+        font-size: max(0.9em, @vw16);
+        line-height: 1;
+    }
+}
+
+// ── Sparkline bars ───────────────────────────────────────────────────────────
+// The distribution behind a highlight card, at card scale.
+.sparkbars {
+    display: flex;
+    // Stretch, not flex-end. The slots have to fill this box for the bars'
+    // percentage heights to have anything to resolve against — bottom-aligning
+    // here instead would size each slot to its own content, which is the bar,
+    // which is a percentage of the slot: circular, and every bar collapses.
+    // The bottom alignment lives on the slot, one level down.
+    align-items: stretch;
+    // The house surface gap. Bars separate because of the space between them,
+    // never a stroke drawn around them.
+    gap: max(2px, @vw2);
+    height: @vw30;
+    // The axis the bars stand on. Hairline, solid, one step off the surface, so
+    // it reads as the baseline rather than as another mark — and an hour with
+    // no traffic still shows its slot on the line instead of leaving a hole.
+    border-bottom: max(1px, @vw1) solid var(--chart-grid);
+
+    // The hit target, and the reason it is a wrapper rather than the bar
+    // itself: a quiet hour is a two-pixel mark, and pointing at two pixels is
+    // not something anyone should have to do. The slot is the full height of
+    // the plot, so only horizontal aim matters — the same trade the bar chart
+    // makes with its columns.
+    &-slot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    &-bar {
+        width: 100%;
+        background-color: var(--chart-bar);
+        // Rounded at the data end, square at the baseline. The house spec is a
+        // 4px cap; at this scale the bars are about five pixels wide, where 4px
+        // would round the whole top into a dome, so it is stepped down to keep
+        // the same read a full-size bar has.
+        border-radius: @vw2 @vw2 0 0;
+        .transition(height, @durationMedium, @easeOut);
+        transition-property: height, background-color;
+
+        // The one slot the card's headline names. Everything else stays in the
+        // de-emphasis hue — that contrast is the entire point of the plot.
+        &.is-peak { background-color: var(--accent); }
+    }
+
+    // The hovered mark answers. Same pair the bar chart uses, so a bar under
+    // the pointer behaves the same way wherever it is on the dashboard.
+    @media (hover: hover) {
+        &-slot:hover &-bar { background-color: var(--chart-bar-hover); }
+        &-slot:hover &-bar.is-peak { background-color: var(--accent-hover); }
+    }
+
+    // The readout. Same box as the heatmap's, for the same reason it exists
+    // there: a native `title` waits about a second, which on something you read
+    // by sweeping across it means the label is never up when you want it.
+    &-tip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        z-index: 3;
+        transform: translate(-50%, -@vw6);
+        padding: @vw4 @vw8;
+        border-radius: @vw4;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        box-shadow: var(--shadow-pop);
+        font-size: max(0.65em, @vw11);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: var(--text);
+        // The slot underneath keeps the pointer, or crossing the row would
+        // flicker: the tip would take the hover, the slot would lose it, the
+        // tip would unmount, and the slot would take it back.
+        pointer-events: none;
+
+        &.is-start {
+            left: 0;
+            transform: translate(0, -@vw6);
+        }
+
+        &.is-end {
+            left: auto;
+            right: 0;
+            transform: translate(0, -@vw6);
+        }
+    }
 }
 
 // ── Bar chart ────────────────────────────────────────────────────────────────
@@ -2208,6 +2341,10 @@
     .dashSetup { padding: @vw16-1080 @vw20-1080; gap: @vw12-1080; }
     .miniGrid { gap: @vw10-1080; }
     .miniCard { padding: @vw12-1080; }
+    .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
+    .miniCard-meter { height: max(4px, @vw6-1080); }
+    .miniCard-flag { margin-right: @vw6-1080; font-size: max(0.9em, @vw16-1080); }
+    .sparkbars { height: @vw30-1080; }
     .dashGrid { gap: @vw16-1080; }
 
     .statGrid {
@@ -2344,6 +2481,10 @@
     .linkStatus--row { gap: @vw12-580; }
     .miniGrid { gap: @vw8-580; }
     .miniCard { padding: @vw12-580; }
+    .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
+    .miniCard-meter { height: max(4px, @vw6-580); }
+    .miniCard-flag { margin-right: @vw6-580; font-size: max(0.9em, @vw16-580); }
+    .sparkbars { height: @vw30-580; }
 
     .statCard {
         padding: @vw14-580;

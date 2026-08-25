@@ -36,6 +36,12 @@ export interface AffiliateSummary {
 		/** A null host is direct traffic, not an unknown one. */
 		topSource: { host: string | null; visits: number } | null;
 		topCountry: { country: string; visits: number } | null;
+		/** Visits per weekday, Monday first. Dense — a quiet day is a 0. */
+		dowTotals: number[];
+		/** Visits per hour, 00:00 first. Dense, same reason. */
+		hourTotals: number[];
+		/** Visits in the window, the denominator behind the share figures. */
+		total: number;
 	};
 	onboarding: {
 		steps: {

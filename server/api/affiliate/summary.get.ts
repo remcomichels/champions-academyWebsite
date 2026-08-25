@@ -133,13 +133,19 @@ export default defineEventHandler(async (event) => {
 });
 
 interface TrafficRow {
+	total?: number;
 	sources?: { host: string | null; visits: number }[];
 	countries?: { country: string; visits: number }[];
 	heatmap?: { dow: number; hour: number; visits: number }[];
 }
 
 /**
- * The four "what's working" figures, from one pass over the RPC's output.
+ * The four "what's working" cards, from one pass over the RPC's output.
+ *
+ * Returns the whole day and hour distributions alongside the peak of each, so
+ * the cards can plot the shape the peak came out of rather than asserting it.
+ * Both were already being built here to find the maximum and then discarded —
+ * keeping them costs nothing, and in particular costs no extra query.
  *
  * Day and hour are aggregated separately rather than read off the single
  * busiest cell. One cell is 1/168th of the window, so on ordinary volume the
@@ -155,10 +161,12 @@ function summarise(data: unknown) {
 
 	const byDow = new Map<number, number>();
 	const byHour = new Map<number, number>();
+	let counted = 0;
 
 	for (const cell of heatmap) {
 		byDow.set(cell.dow, (byDow.get(cell.dow) ?? 0) + cell.visits);
 		byHour.set(cell.hour, (byHour.get(cell.hour) ?? 0) + cell.visits);
+		counted += cell.visits;
 	}
 
 	const top = <T>(entries: Map<number, number>, build: (key: number, visits: number) => T): T | null => {
@@ -169,10 +177,26 @@ function summarise(data: unknown) {
 		return best ? build(best.key, best.visits) : null;
 	};
 
+	// Dense, in order, zeros included. The maps above are sparse — an hour with
+	// no traffic has no entry — and a chart that skipped those slots would
+	// redraw the day at the wrong width and imply visits at hours that had
+	// none. Filling them here rather than in the component keeps the shape the
+	// client receives the same shape it plots.
+	const dowTotals = Array.from({ length: 7 }, (_, i) => byDow.get(i + 1) ?? 0);
+	const hourTotals = Array.from({ length: 24 }, (_, i) => byHour.get(i) ?? 0);
+
 	return {
 		bestDay: top(byDow, (dow, visits) => ({ dow, visits })),
 		bestHour: top(byHour, (hour, visits) => ({ hour, visits })),
 		topSource: row.sources?.[0] ?? null,
 		topCountry: row.countries?.[0] ?? null,
+
+		dowTotals,
+		hourTotals,
+
+		// The denominator behind "38% of visits" on the source and country
+		// cards. The RPC's own total is authoritative; the heatmap sum is the
+		// fallback, and the two are the same figure counted two ways.
+		total: row.total ?? counted,
 	};
 }
