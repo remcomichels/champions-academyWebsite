@@ -35,6 +35,7 @@
 			<span
 				v-if="hover"
 				class="heatmap-tip"
+				:class="tipEdge"
 				aria-hidden="true"
 				:style="tipStyle"
 			>{{ hoverLabel }}</span>
@@ -112,14 +113,40 @@ const hoverLabel = computed(() => {
  * Grid placement rather than measured coordinates: the columns already know
  * where every hour is, so there is nothing to read from the layout and nothing
  * to recompute when the card resizes.
+ *
+ * Both ends of each placement are given explicitly. A single line number —
+ * `grid-column: 14` — leaves the end line `auto`, and for an absolutely
+ * positioned grid child `auto` does not mean "span 1" the way it does for an
+ * in-flow item: it resolves to the grid container's padding edge. That made the
+ * tooltip's containing block the whole rectangle from the hovered cell down to
+ * the bottom-right of the grid, so `left: 50%` centred it in *that* and the
+ * label drifted further right the earlier the hour.
  */
 const tipStyle = computed(() => {
 	if (!hover.value) return undefined;
 	const { row, cell } = hover.value;
+	const col = cell.hour + 2;
+	const line = row.dow + 1;
 	return {
-		gridColumn: `${cell.hour + 2}`,
-		gridRow: `${row.dow + 1}`,
+		gridColumn: `${col} / ${col + 1}`,
+		gridRow: `${line} / ${line + 1}`,
 	};
+});
+
+/**
+ * Which end of the label to pin to the cell near the edges of the grid.
+ *
+ * Centred on an hour-0 or hour-23 cell, a label this wide hangs well past the
+ * side of the card — the panel does not clip, so it would simply sit outside
+ * it. Within about three columns of either end it aligns to that edge of the
+ * cell instead and opens inwards.
+ */
+const tipEdge = computed(() => {
+	if (!hover.value) return undefined;
+	const { hour } = hover.value.cell;
+	if (hour <= 3) return "is-start";
+	if (hour >= 20) return "is-end";
+	return undefined;
 });
 
 const lookup = computed(() => {

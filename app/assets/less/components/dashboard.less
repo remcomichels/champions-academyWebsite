@@ -1710,7 +1710,18 @@
         // space to its right. `minmax(0, 1fr)` rather than `1fr`, or a wide
         // card lets the tooltip's own width push the track out.
         grid-template-columns: auto repeat(24, minmax(0, 1fr));
-        gap: max(2px, @vw2);
+        // A set pixel gap rather than a vw constant, which is the one place in
+        // this file that earns the exception.
+        //
+        // The hour tracks are `1fr`, so they land on fractional pixel widths
+        // and each square's painted edge snaps independently. The gap itself is
+        // exact either way, but that snapping shows up *as* the gap: at @vw2 it
+        // is a ±0.5px wobble on a 2px gutter, which is the quarter of it you
+        // can see. Holding the gutter at a set 3px keeps the same wobble at an
+        // eighth, below the point it reads as uneven — and one value covers
+        // every tier, so a square never sits closer to its neighbour on one
+        // screen than another.
+        gap: 3px;
         align-items: center;
         width: 100%;
         // Containing block for the tooltip, which is placed on the grid but
@@ -1726,9 +1737,30 @@
         font-variant-numeric: tabular-nums;
     }
 
+    // Deliberately contributes no height.
+    //
+    // The rows are `auto`, so whichever item in a row is tallest sets its
+    // height — and this label was it. At @vw11 against the reset's 1.5
+    // line-height it is a ~16px box, while an hour track in this column is
+    // nearer 12px wide, so every row was sized by its label and `align-items:
+    // center` split the surplus above and below the square. The columns kept
+    // the 2px gap and the rows quietly gained about four more, which is the
+    // asymmetry.
+    //
+    // Zero height takes it out of that calculation entirely: rows are sized by
+    // the cells alone, so the vertical gap is the grid's `gap` and nothing
+    // else. The text still draws — the flex centring balances it on the
+    // zero-height line, so it overhangs equally in both directions, and the
+    // `auto` column is sized by its width, which is untouched.
     &-dayLabel {
+        display: flex;
+        align-items: center;
+        height: 0;
         padding-right: @vw8;
         font-size: max(0.6em, @vw11);
+        // Also trimmed, so the overhang stays inside the row pitch rather than
+        // reaching into its neighbours.
+        line-height: 1;
         color: var(--chart-axis-text);
         white-space: nowrap;
     }
@@ -1762,6 +1794,8 @@
         // which hid the tooltip, which restored the row — the two states
         // flickered against each other and the cell never settled.
         position: absolute;
+        // `bottom: 100%` against the cell's own area puts the label's underside
+        // on the cell's top edge; the translate lifts it clear by @vw4.
         bottom: 100%;
         left: 50%;
         z-index: 2;
@@ -1775,6 +1809,20 @@
         white-space: nowrap;
         color: var(--text);
         pointer-events: none;
+
+        // Near either end of the day the centred label would hang past the side
+        // of the card — see `tipEdge`. These pin it to that edge of the cell
+        // instead, so it opens inwards across the grid.
+        &.is-start {
+            left: 0;
+            transform: translate(0, -@vw4);
+        }
+
+        &.is-end {
+            left: auto;
+            right: 0;
+            transform: translate(0, -@vw4);
+        }
     }
 
     &-foot {
