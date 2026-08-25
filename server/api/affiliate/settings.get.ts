@@ -24,7 +24,11 @@ export default defineEventHandler(async (event) => {
 			.select("at, action, ip")
 			.eq("subject_affiliate_id", affiliate.id)
 			.order("at", { ascending: false })
-			.limit(20),
+			// Five. This panel answers "has anything happened to my account
+			// that I did not do", which the most recent handful settles — a
+			// twenty-row log makes the card the tallest thing on the page and
+			// still is not a real audit trail.
+			.limit(5),
 
 		db().from("gdpr_requests")
 			.select("id, kind, status, execute_after, created_at")

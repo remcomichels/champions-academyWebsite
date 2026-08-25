@@ -1,6 +1,10 @@
 <template>
-	<div v-if="data" class="dashSection">
-		<NuxtAlertBanner v-if="banner" :variant="banner.variant">
+	<!-- Two columns, in source order. Nothing is reordered to make the heights
+	     line up: these panels are read top to bottom the first time somebody
+	     opens the page, and pairing them by height would shuffle that for a
+	     tidier bottom edge, which is the wrong trade. -->
+	<div v-if="data" class="dashSettings">
+		<NuxtAlertBanner v-if="banner" class="dashSettings-wide" :variant="banner.variant">
 			{{ banner.text }}
 		</NuxtAlertBanner>
 

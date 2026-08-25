@@ -479,6 +479,49 @@
     gap: @vw20;
 }
 
+// ── Settings ─────────────────────────────────────────────────────────────────
+// Two columns. Stacked, every panel here ran the full width of the page and a
+// name field was an eleven-hundred-pixel input — usable, but it reads as a page
+// nobody finished, and it made the form roughly twice as long to scroll as it
+// needed to be.
+.dashSettings {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    // Stretch, matching `.dashGrid` one screen over. Sized to content instead,
+    // a two-toggle panel beside a three-field form leaves a couple of hundred
+    // pixels of nothing under it, and a hole in the page reads as something
+    // failing to load. Stretched, the same empty space sits inside a card with
+    // a border around it and reads as a panel with room to spare.
+    align-items: stretch;
+    gap: @vw20;
+
+    // A banner speaks for the whole page, and the danger panel is deliberately
+    // alone on its row.
+    &-wide { grid-column: 1 / -1; }
+
+    // Scoped to this page on purpose.
+    //
+    // `.dashForm`, `.readonlyField` and `.field-label` are shared: the Links
+    // page uses the first two, and `.field-label` comes from NuxtAuthField,
+    // which is what the login and invite screens are built from. Capping the
+    // width on those classes themselves would narrow a form on three other
+    // screens that never asked for it. Nesting the cap inside this wrapper
+    // keeps it here.
+    //
+    // The panel is already about half the page, so this only bites on a wide
+    // monitor — enough to stop an input growing past the length of the thing
+    // it holds, without leaving an obvious band of dead space beside it.
+    .dashForm { max-width: calc(@vw300 + @vw120); }
+
+    // `.dashPanel-note` pins itself to the bottom of its card, so that two
+    // panels sharing a row on the dashboard line their notes up. Here it is
+    // actively wrong: these notes sit *between* things — under a heading, above
+    // the form it explains — and pinning strands the heading at the top of a
+    // stretched card with a hole beneath it. The space belongs at the bottom,
+    // after the content, not punched through the middle of it.
+    .dashPanel-note { margin-top: 0; }
+}
+
 .dash-loading {
     padding: @vw32 0;
     color: var(--text-secondary);
@@ -2497,6 +2540,12 @@
     .sparkbars { height: @vw30-1080; }
     .dashGrid { gap: @vw16-1080; }
 
+    .dashSettings {
+        gap: @vw16-1080;
+
+        .dashForm { max-width: calc(@vw300-1080 + @vw60-1080); }
+    }
+
     .statGrid {
         gap: @vw16-1080;
         grid-template-columns: repeat(auto-fit, minmax(@vw200-1080, 1fr));
@@ -2558,6 +2607,13 @@
 
     .dashGrid { grid-template-columns: 1fr; }
 
+    // Below this a half-width panel is narrower than the field inside it.
+    .dashSettings {
+        grid-template-columns: minmax(0, 1fr);
+
+        .dashForm { max-width: none; }
+    }
+
     .dashHero {
         flex-direction: column;
         align-items: stretch;
@@ -2585,6 +2641,7 @@
 
     .dash { gap: @vw16-580; }
     .dashSection { gap: @vw16-580; }
+    .dashSettings { gap: @vw16-580; }
     .dashNav-logo { width: @vw104-580; height: @vw29-580; }
 
     // Four range tabs plus a title do not fit across a phone, and the tabs are
