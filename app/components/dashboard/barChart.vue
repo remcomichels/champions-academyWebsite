@@ -41,7 +41,11 @@
 			<!-- Inside the frame grid, sharing its second column, so the labels
 			     stay aligned with the bars whatever width the y-axis takes. -->
 			<ul class="barChart-xAxis" aria-hidden="true">
-				<li v-for="point in scaled" :key="point.label" class="barChart-xLabel">{{ point.label }}</li>
+				<li
+					v-for="(point, i) in scaled"
+					:key="point.label"
+					class="barChart-xLabel"
+				>{{ i % labelStep === 0 ? point.label : "" }}</li>
 			</ul>
 		</div>
 	</figure>
@@ -105,6 +109,17 @@ const scaled = computed(() =>
 
 const highlightIndex = computed(() =>
 	(props.highlightLast ? props.points.length - 1 : -1));
+
+/**
+ * Show about eight labels, whatever the point count.
+ *
+ * A label under every column stops being readable somewhere around twenty of
+ * them: the slots are narrower than the text, so "10" renders as "1" and a
+ * clipped bracket, which is worse than no label because it looks like a
+ * different number. The blanked slots are kept in the DOM rather than removed,
+ * so the remaining labels stay aligned with the columns they belong to.
+ */
+const labelStep = computed(() => Math.max(1, Math.ceil(props.points.length / 8)));
 
 const format = (value: number) => value.toLocaleString("en-GB");
 </script>

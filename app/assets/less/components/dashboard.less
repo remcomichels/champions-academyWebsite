@@ -1443,7 +1443,12 @@
         inset: 0;
         display: flex;
         align-items: stretch;
-        gap: @vw4;
+        // The house surface gap, and it has to be this small rather than @vw4:
+        // at ninety days the gutter was wider than the bars themselves, so a
+        // chart of hairlines separated by generous white space read as texture
+        // rather than as a series. Two pixels is enough to separate adjacent
+        // bars at any count, which is the only job it has.
+        gap: max(2px, @vw2);
         list-style: none;
     }
 
@@ -1512,7 +1517,9 @@
         grid-column: 2;
         grid-row: 2;
         display: flex;
-        gap: @vw4;
+        // Matches the columns' gap exactly, or every label drifts off the bar
+        // it belongs to, further with each one across the chart.
+        gap: max(2px, @vw2);
         list-style: none;
     }
 
@@ -1523,7 +1530,14 @@
         font-size: max(0.65em, @vw11);
         font-variant-numeric: tabular-nums;
         color: var(--chart-axis-text);
-        overflow: hidden;
+        // Deliberately not `overflow: hidden`. A column's slot is about twelve
+        // pixels wide at a month, and "13" is thirteen — clipping took the
+        // right-hand edge off every two-digit day, which is worse than no
+        // label because "1" and a sliver reads as a different number. The
+        // component blanks all but every eighth label, so what a label
+        // overflows into is an empty slot, and centring keeps it over its own
+        // bar. Nothing here affects layout: the slots stay equal.
+        white-space: nowrap;
     }
 }
 
@@ -2741,10 +2755,6 @@
         grid-template-rows: @vw150-580 auto;
         column-gap: @vw8-580;
     }
-
-    // At 30 bars on a 320px screen the labels overlap into a grey smear, so
-    // every other one is dropped. The hover readout still names each bar.
-    .barChart-xLabel:nth-child(even) { visibility: hidden; }
 
     .funnel { flex-direction: column; }
 
