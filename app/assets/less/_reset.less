@@ -93,13 +93,21 @@ input:-webkit-autofill {
   scroll-margin-block: 5ex;
 }
 
-/* Selection */
-::-moz-selection {
+/* Selection — marketing pages only.
+
+   `html:not([data-theme])` excludes the dashboard and login, which set that
+   attribute on <html>. There is no way to hand selection back to the browser
+   from a more specific rule — `revert`, `all: revert` and `unset` were each
+   measured against a control page and all three leave the author colour in
+   place — so the only way for those pages to get the native highlight is for
+   no author rule to match them at all. Every other page still matches this,
+   and renders exactly as it did. */
+html:not([data-theme]) ::-moz-selection {
 	background: rgba(0, 0, 0, 0.3);
 	color: white;
 }
 
-::selection {
+html:not([data-theme]) ::selection {
 	background: rgba(0, 0, 0, 0.3);
 	color: white;
 }
