@@ -1,5 +1,5 @@
 <template>
-	<div class="statCard" :class="{ 'is-accent': accent }">
+	<div class="statCard" :class="{ 'is-accent': accent, 'is-loading': loading }" :aria-busy="loading || undefined">
 		<div class="statCard-head">
 			<p class="statCard-label">{{ label }}</p>
 			<span v-if="icon" class="statCard-icon" aria-hidden="true">
@@ -15,6 +15,12 @@
 		</p>
 
 		<p v-if="hint" class="statCard-hint">{{ hint }}</p>
+
+		<!-- The stale figure above is still in the DOM while loading — that is
+		     what holds the card's height steady — so it is announced as busy
+		     rather than read out as current. Absolutely positioned, so it adds
+		     no flex gap. -->
+		<span v-if="loading" class="sr-only">Updating {{ label }}…</span>
 	</div>
 </template>
 
@@ -37,7 +43,14 @@ const props = withDefaults(defineProps<{
 	 * exists to show — if two cards in a row set this, neither reads as special.
 	 */
 	accent?: boolean;
-}>(), { hint: null, icon: null, trend: null, accent: false });
+	/**
+	 * Paints a placeholder over the figure and its trend while a new one is
+	 * fetched. The label, icon and hint keep rendering: they are known before
+	 * the request lands, and a card that only greys out the parts that change
+	 * cannot shift the grid underneath it.
+	 */
+	loading?: boolean;
+}>(), { hint: null, icon: null, trend: null, accent: false, loading: false });
 
 // Grouped digits, because a four-figure visit count read as "1234" is the kind
 // of thing people misread at a glance.

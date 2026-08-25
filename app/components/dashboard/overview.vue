@@ -43,6 +43,42 @@
 			site show the standard link and those sales won't be credited to you.
 		</NuxtAlertBanner>
 
+		<!-- ── Getting set up ────────────────────────────────────────────── -->
+		<!-- Directly under the notice rather than in the grid below. It is a
+		     temporary strip, not a permanent panel: it is the first thing to read
+		     while there is anything left to do, and once all four steps are done
+		     it disappears for good instead of leaving a card behind. -->
+		<section v-if="!onboardingComplete" class="dashSetup">
+			<div class="dashSetup-head">
+				<h2 class="dashSetup-title">Getting set up</h2>
+				<span class="dashPanel-count">{{ summary.onboarding.completed }} of {{ summary.onboarding.total }}</span>
+			</div>
+
+			<div
+				class="progress"
+				role="progressbar"
+				:aria-valuenow="summary.onboarding.completed"
+				aria-valuemin="0"
+				:aria-valuemax="summary.onboarding.total"
+			>
+				<div class="progress-fill" :style="{ transform: `scaleX(${progress})` }" />
+			</div>
+
+			<ul class="checklist checklist--row">
+				<li v-for="step in steps" :key="step.key" class="checklist-item" :class="{ 'is-done': step.done }">
+					<span class="checklist-mark" aria-hidden="true">
+						<NuxtDashboardIcon v-if="step.done" name="check" />
+					</span>
+					<span class="checklist-text">
+						{{ step.label }}
+						<span class="sr-only">{{ step.done ? "(done)" : "(not done)" }}</span>
+					</span>
+				</li>
+			</ul>
+
+			<NuxtLink to="/dashboard/links" class="dashSetup-cta">Finish setup</NuxtLink>
+		</section>
+
 		<!-- ── Figures ───────────────────────────────────────────────────── -->
 		<div class="statGrid">
 			<NuxtDashboardStatCard
@@ -93,54 +129,49 @@
 				</p>
 			</section>
 
-			<!-- Swaps to a link summary once setup is done, rather than leaving a
-			     hole in the grid where the checklist used to be. -->
-			<section v-if="!onboardingComplete" class="dashPanel dashGrid-side">
-				<div class="dashPanel-head">
-					<h2 class="dashPanel-title">Getting set up</h2>
-					<span class="dashPanel-count">{{ summary.onboarding.completed }} of {{ summary.onboarding.total }}</span>
+			<!-- The four figures worth knowing at a glance, in the slot the setup
+			     checklist used to occupy. Deliberately not wrapped in a panel:
+			     four cards inside a fifth card is a box that earns nothing, so
+			     they sit on the page as peers of the chart beside them. -->
+			<section class="dashGrid-side dashSide">
+				<!-- Kept for the heading outline a screen reader navigates by.
+				     Sighted readers get the same from the four labels, which is
+				     why there is no visible title to go with them. -->
+				<h2 class="sr-only">What's working</h2>
+
+				<div class="miniGrid">
+					<div v-for="card in highlights" :key="card.label" class="miniCard">
+						<p class="miniCard-label">{{ card.label }}</p>
+						<p class="miniCard-value" :class="{ 'is-empty': !card.note }">{{ card.value }}</p>
+						<p v-if="card.note" class="miniCard-note">{{ card.note }}</p>
+					</div>
 				</div>
 
-				<div
-					class="progress"
-					role="progressbar"
-					:aria-valuenow="summary.onboarding.completed"
-					aria-valuemin="0"
-					:aria-valuemax="summary.onboarding.total"
-				>
-					<div class="progress-fill" :style="{ transform: `scaleX(${progress})` }" />
-				</div>
-
-				<ul class="checklist">
-					<li v-for="step in steps" :key="step.key" class="checklist-item" :class="{ 'is-done': step.done }">
-						<span class="checklist-mark" aria-hidden="true">
-							<NuxtDashboardIcon v-if="step.done" name="check" />
-						</span>
-						<span class="checklist-text">
-							{{ step.label }}
-							<span class="sr-only">{{ step.done ? "(done)" : "(not done)" }}</span>
-						</span>
-					</li>
-				</ul>
-
-				<NuxtLink to="/dashboard/links" class="dashPanel-cta">Finish setup</NuxtLink>
-			</section>
-
-			<section v-else class="dashPanel dashGrid-side">
-				<h2 class="dashPanel-title">Where your buttons point</h2>
-
-				<ul class="linkStatus">
-					<li v-for="row in linkRows" :key="row.label" class="linkStatus-row">
-						<span class="linkStatus-label">{{ row.label }}</span>
-						<span class="linkStatus-state" :class="row.set ? 'is-set' : 'is-unset'">
-							{{ row.set ? "Yours" : "Site default" }}
-						</span>
-					</li>
-				</ul>
-
-				<NuxtLink to="/dashboard/links" class="dashPanel-cta">Manage links</NuxtLink>
+				<p class="dashSide-note">
+					Hours are in {{ summary.highlights.timezone }}
+					<span class="dashPanel-count">last {{ summary.highlights.days }} days</span>
+				</p>
 			</section>
 		</div>
+
+		<!-- Kept out of the grid above, which the summary now fills. Only once
+		     setup is done, exactly as before — mid-setup the checklist at the top
+		     is already saying this. -->
+		<section v-if="onboardingComplete" class="dashPanel">
+			<div class="dashPanel-head">
+				<h2 class="dashPanel-title">Where your buttons point</h2>
+				<NuxtLink to="/dashboard/links" class="dashPanel-cta dashPanel-cta--inline">Manage links</NuxtLink>
+			</div>
+
+			<ul class="linkStatus linkStatus--row">
+				<li v-for="row in linkRows" :key="row.label" class="linkStatus-row">
+					<span class="linkStatus-label">{{ row.label }}</span>
+					<span class="linkStatus-state" :class="row.set ? 'is-set' : 'is-unset'">
+						{{ row.set ? "Yours" : "Site default" }}
+					</span>
+				</li>
+			</ul>
+		</section>
 	</div>
 </template>
 
@@ -227,6 +258,65 @@ const progress = computed(() =>
 	props.summary.onboarding.total === 0
 		? 0
 		: props.summary.onboarding.completed / props.summary.onboarding.total);
+
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
+const visitCount = (n: number) => `${n.toLocaleString("en-GB")} ${n === 1 ? "visit" : "visits"}`;
+
+/**
+ * The four summary cards.
+ *
+ * A missing figure shows an em dash with no supporting line, rather than a
+ * zero: "Best day — 0 visits" reads as a measurement, when the truth is that
+ * there is nothing to measure yet.
+ */
+const highlights = computed(() => {
+	const h = props.summary.highlights;
+
+	// A three-hour band, because "21:00" implies a precision an hourly bucket
+	// does not have — the visits in that bucket are spread across the hour.
+	const hourBand = (hour: number) => {
+		const pad = (n: number) => String((n + 24) % 24).padStart(2, "0");
+		return `${pad(hour)}:00–${pad(hour + 1)}:00`;
+	};
+
+	// Vercel sends ISO codes; an unrecognised one must not throw.
+	const countryName = (code: string) => {
+		try {
+			return regionNames.of(code) ?? code;
+		}
+		catch {
+			return code;
+		}
+	};
+
+	return [
+		{
+			label: "Best day",
+			value: h.bestDay ? DAY_NAMES[h.bestDay.dow - 1] ?? "—" : "—",
+			note: h.bestDay ? visitCount(h.bestDay.visits) : null,
+		},
+		{
+			label: "Best hour",
+			value: h.bestHour ? hourBand(h.bestHour.hour) : "—",
+			note: h.bestHour ? visitCount(h.bestHour.visits) : null,
+		},
+		{
+			// A null referrer host is direct traffic — DMs, stories and QR scans
+			// all land there — not an unknown one.
+			label: "Top source",
+			value: h.topSource ? h.topSource.host ?? "Direct" : "—",
+			note: h.topSource ? visitCount(h.topSource.visits) : null,
+		},
+		{
+			label: "Top country",
+			value: h.topCountry ? countryName(h.topCountry.country) : "—",
+			note: h.topCountry ? visitCount(h.topCountry.visits) : null,
+		},
+	];
+});
 
 const linkRows = computed(() => [
 	{ label: "VIP checkout", set: Boolean(props.summary.links.vip) },

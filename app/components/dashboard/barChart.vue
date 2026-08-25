@@ -24,9 +24,15 @@
 						:class="{ 'is-highlight': i === highlightIndex }"
 					>
 						<span class="barChart-track">
-							<span class="barChart-fill" :style="{ height: `${point.pct}%` }" />
+							<!-- The readout lives inside the bar rather than beside it.
+							     Anchored to the column it sat at the top of the chart,
+							     which for a short bar was a long way from the thing it
+							     described; anchored to the bar, `bottom: 100%` is the
+							     bar's own top edge whatever its height. -->
+							<span class="barChart-fill" :style="{ height: `${point.pct}%` }">
+								<span class="barChart-value" aria-hidden="true">{{ format(point.value) }}</span>
+							</span>
 						</span>
-						<span class="barChart-value" aria-hidden="true">{{ format(point.value) }}</span>
 						<span class="sr-only">{{ point.label }}: {{ point.value }} {{ unit }}</span>
 					</li>
 				</ul>

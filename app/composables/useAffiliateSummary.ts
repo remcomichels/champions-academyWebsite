@@ -22,6 +22,21 @@ export interface AffiliateSummary {
 		total: number;
 		byDay: { day: string; count: number }[];
 	};
+	/**
+	 * The four "what's working" figures on Overview, over a fixed 30-day window.
+	 * Each is null when nothing is behind it — a new affiliate has no best day.
+	 */
+	highlights: {
+		days: number;
+		/** The affiliate's own zone, which `bestHour` is expressed in. */
+		timezone: string;
+		/** ISO weekday, 1 = Monday. */
+		bestDay: { dow: number; visits: number } | null;
+		bestHour: { hour: number; visits: number } | null;
+		/** A null host is direct traffic, not an unknown one. */
+		topSource: { host: string | null; visits: number } | null;
+		topCountry: { country: string; visits: number } | null;
+	};
 	onboarding: {
 		steps: {
 			liteTelegramAdded: boolean;

@@ -18,10 +18,19 @@ export default defineEventHandler(async (event) => {
 	const thirtyDaysAgo = dayOffset(30);
 	const sixtyDaysAgo = dayOffset(60);
 
+	// The heatmap and breakdowns behind the Overview highlights come from the
+	// same RPC the Analytics tab uses, over a fixed 30-day window. Reused rather
+	// than reimplemented here: PostgREST cannot group, so doing it in this
+	// handler would mean pulling every visit row and counting them in memory —
+	// which `db_max_rows` would silently truncate on a busy affiliate.
+	const HIGHLIGHT_DAYS = 30;
+	const timezone = canonicalTimezone(affiliate.timezone) ?? "UTC";
+
 	const [
 		todayVisits, yesterdayVisits,
 		recentVisits, priorVisits,
 		totalVisits, firstVisit, byDay,
+		traffic,
 	] = await Promise.all([
 		db().from("referral_visits").select("*", { count: "exact", head: true })
 			.eq("affiliate_id", affiliate.id).eq("day", today),
@@ -49,6 +58,13 @@ export default defineEventHandler(async (event) => {
 
 		db().from("referral_visits").select("day")
 			.eq("affiliate_id", affiliate.id).gte("day", thirtyDaysAgo),
+
+		db().rpc("affiliate_traffic", {
+			p_affiliate_id: affiliate.id,
+			p_since: new Date(Date.now() - HIGHLIGHT_DAYS * 24 * 60 * 60 * 1000).toISOString(),
+			p_until: new Date().toISOString(),
+			p_timezone: timezone,
+		}),
 	]);
 
 	// Counted in memory rather than with a group-by: PostgREST has no grouping,
@@ -58,6 +74,8 @@ export default defineEventHandler(async (event) => {
 		const day = row.day as string;
 		dailyCounts.set(day, (dailyCounts.get(day) ?? 0) + 1);
 	}
+
+	const highlights = summarise(traffic.data);
 
 	const onboarding = (affiliate.onboarding ?? {}) as Record<string, unknown>;
 
@@ -109,5 +127,52 @@ export default defineEventHandler(async (event) => {
 		},
 
 		onboarding: { steps, completed, total: Object.keys(steps).length },
+
+		highlights: { days: HIGHLIGHT_DAYS, timezone, ...highlights },
 	};
 });
+
+interface TrafficRow {
+	sources?: { host: string | null; visits: number }[];
+	countries?: { country: string; visits: number }[];
+	heatmap?: { dow: number; hour: number; visits: number }[];
+}
+
+/**
+ * The four "what's working" figures, from one pass over the RPC's output.
+ *
+ * Day and hour are aggregated separately rather than read off the single
+ * busiest cell. One cell is 1/168th of the window, so on ordinary volume the
+ * peak is often a coincidence — "Saturday" and "around 21:00" as independent
+ * totals are both steadier and more useful than "Saturday at 21:00".
+ *
+ * Every field is null when there is nothing behind it, so the UI shows an
+ * empty state instead of a confident-looking zero.
+ */
+function summarise(data: unknown) {
+	const row = (data ?? {}) as TrafficRow;
+	const heatmap = row.heatmap ?? [];
+
+	const byDow = new Map<number, number>();
+	const byHour = new Map<number, number>();
+
+	for (const cell of heatmap) {
+		byDow.set(cell.dow, (byDow.get(cell.dow) ?? 0) + cell.visits);
+		byHour.set(cell.hour, (byHour.get(cell.hour) ?? 0) + cell.visits);
+	}
+
+	const top = <T>(entries: Map<number, number>, build: (key: number, visits: number) => T): T | null => {
+		let best: { key: number; visits: number } | null = null;
+		for (const [key, visits] of entries) {
+			if (visits > 0 && (!best || visits > best.visits)) best = { key, visits };
+		}
+		return best ? build(best.key, best.visits) : null;
+	};
+
+	return {
+		bestDay: top(byDow, (dow, visits) => ({ dow, visits })),
+		bestHour: top(byHour, (hour, visits) => ({ hour, visits })),
+		topSource: row.sources?.[0] ?? null,
+		topCountry: row.countries?.[0] ?? null,
+	};
+}

@@ -19,9 +19,25 @@
 					class="heatmap-cell"
 					:class="{ 'is-empty': cell.visits === 0 }"
 					:style="cell.visits ? { opacity: cell.intensity } : undefined"
-					:title="`${row.full} ${pad(cell.hour)}:00 — ${cell.visits} ${cell.visits === 1 ? 'visit' : 'visits'}`"
+					@pointerenter="hover = { row, cell }"
+					@pointerleave="hover = null"
 				/>
 			</template>
+
+			<!-- Replaces the cells' `title` attributes. A native tooltip waits
+			     about a second before it appears, which on a grid you read by
+			     sweeping across it means the label is almost never up when you
+			     want it. This one is up on the frame the pointer arrives.
+
+			     Positioned on the grid rather than inside a cell so it can
+			     overhang neighbouring cells without being clipped by them, and
+			     it never takes the pointer — the cell underneath keeps it. -->
+			<span
+				v-if="hover"
+				class="heatmap-tip"
+				aria-hidden="true"
+				:style="tipStyle"
+			>{{ hoverLabel }}</span>
 		</div>
 
 		<figcaption class="heatmap-foot">
@@ -78,6 +94,33 @@ const hourTicks = [0, 3, 6, 9, 12, 15, 18, 21].map(hour => ({
 }));
 
 const pad = (hour: number) => String(hour).padStart(2, "0");
+
+interface Row { dow: number; label: string; full: string }
+interface Cell { hour: number; visits: number; intensity: number }
+
+const hover = ref<{ row: Row; cell: Cell } | null>(null);
+
+const hoverLabel = computed(() => {
+	if (!hover.value) return "";
+	const { row, cell } = hover.value;
+	return `${row.full} ${pad(cell.hour)}:00 — ${cell.visits} ${cell.visits === 1 ? "visit" : "visits"}`;
+});
+
+/**
+ * Sits in the same grid cell as the hovered square, then lifts clear of it.
+ *
+ * Grid placement rather than measured coordinates: the columns already know
+ * where every hour is, so there is nothing to read from the layout and nothing
+ * to recompute when the card resizes.
+ */
+const tipStyle = computed(() => {
+	if (!hover.value) return undefined;
+	const { row, cell } = hover.value;
+	return {
+		gridColumn: `${cell.hour + 2}`,
+		gridRow: `${row.dow + 1}`,
+	};
+});
 
 const lookup = computed(() => {
 	const map = new Map<string, number>();

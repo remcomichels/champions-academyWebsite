@@ -1,66 +1,77 @@
 <template>
 	<div class="dashSection">
-		<section class="dashPanel">
-			<div class="dashPanel-head">
-				<h2 class="dashPanel-title">Your traffic</h2>
-				<div class="rangeTabs">
-					<button
-						v-for="option in ranges"
-						:key="option.id"
-						type="button"
-						class="rangeTabs-tab"
-						:class="{ 'is-active': range === option.id }"
-						@click="range = option.id"
-					>
-						{{ option.label }}
-					</button>
-				</div>
+		<!-- The three figures sit directly on the page, not inside a panel of
+		     their own. A card holding three cards reads as a box someone forgot
+		     to remove, and it boxed the range tabs in with the figures when they
+		     govern everything below them too. This matches Overview, where the
+		     same three-up run is bare. -->
+		<header class="dashHead">
+			<h2 class="dashHead-title">Your traffic</h2>
+			<div class="rangeTabs">
+				<button
+					v-for="option in ranges"
+					:key="option.id"
+					type="button"
+					class="rangeTabs-tab"
+					:class="{ 'is-active': range === option.id }"
+					@click="range = option.id"
+				>
+					{{ option.label }}
+				</button>
 			</div>
+		</header>
 
-			<p v-if="trafficPending" class="dashPanel-note">Loading…</p>
-			<NuxtAlertBanner v-else-if="trafficError" variant="error">
-				Couldn't load your traffic just now. Try again in a minute.
-			</NuxtAlertBanner>
+		<NuxtAlertBanner v-if="trafficError" variant="error">
+			Couldn't load your traffic just now. Try again in a minute.
+		</NuxtAlertBanner>
 
-			<div v-else class="statGrid">
-				<NuxtDashboardStatCard
-					label="Link visits"
-					:value="traffic?.total ?? 0"
-					icon="home"
-					accent
-					:trend="visitsTrend"
-					hint="Counted on our own server"
-				/>
-				<NuxtDashboardStatCard
-					label="Sessions"
-					:value="analytics?.configured ? analytics.sessions : '—'"
-					icon="chart"
-					:trend="sessionsTrend"
-					:hint="analytics?.configured ? 'Measured in the browser' : 'Analytics not switched on here'"
-				/>
-				<NuxtDashboardStatCard
-					label="Countries"
-					:value="traffic?.countryCount ?? 0"
-					icon="tag"
-					:trend="countriesTrend"
-				/>
-			</div>
+		<!-- Each card waits on its own request rather than on both. The session
+		     count comes from PostHog and the other two from our own database, so
+		     tying all three to the slower of the pair would hold two finished
+		     figures back for no reason. They settle at different moments, which
+		     is invisible: the placeholder occupies the same box the figure does. -->
+		<div v-else class="statGrid">
+			<NuxtDashboardStatCard
+				label="Link visits"
+				:value="traffic?.total ?? 0"
+				icon="home"
+				accent
+				:trend="visitsTrend"
+				hint="Counted on our own server"
+				:loading="trafficPending"
+			/>
+			<NuxtDashboardStatCard
+				label="Sessions"
+				:value="analytics?.configured ? analytics.sessions : '—'"
+				icon="chart"
+				:trend="sessionsTrend"
+				:hint="analytics?.configured ? 'Measured in the browser' : 'Analytics not switched on here'"
+				:loading="analyticsPending"
+			/>
+			<NuxtDashboardStatCard
+				label="Countries"
+				:value="traffic?.countryCount ?? 0"
+				icon="tag"
+				:trend="countriesTrend"
+				:loading="trafficPending"
+			/>
+		</div>
 
-			<p class="dashPanel-note">
-				<strong>Link visits</strong> is your real number — counted on our server when
-				someone opens your link, once per person per day, where nothing can block it.
-				<strong>Sessions</strong> is measured in the browser and misses anyone using
-				an ad blocker, so it will always be lower. Neither is wrong.
-			</p>
-		</section>
+		<p class="dashNote">
+			<strong>Link visits</strong> is your real number — counted on our server when
+			someone opens your link, once per person per day, where nothing can block it.
+			<strong>Sessions</strong> is measured in the browser and misses anyone using
+			an ad blocker, so it will always be lower. Neither is wrong.
+		</p>
 
 		<!-- Two rows of two. The heatmap sits in the narrower column because its
 		     grid is a fixed width — given a wide column it would just carry dead
 		     space to its right. -->
 		<div class="dashGrid">
-			<section class="dashPanel dashGrid-main">
+			<section class="dashPanel dashGrid-main" :aria-busy="trafficPending || undefined">
 				<h2 class="dashPanel-title">Where they came from</h2>
 				<NuxtDashboardBreakdown
+					:class="{ 'dash-refreshing': trafficPending }"
 					:items="sources"
 					empty="No sources yet. Once people start opening your link, the sites they came from show up here."
 				/>
@@ -71,14 +82,17 @@
 				</p>
 			</section>
 
-			<section class="dashPanel dashGrid-side">
+			<section class="dashPanel dashGrid-side" :aria-busy="trafficPending || undefined">
 				<div class="dashPanel-head">
 					<h2 class="dashPanel-title">When it gets opened</h2>
+					<!-- Not dimmed with the grid: the timezone is a setting, not
+					     a figure, and it reads the same for every range. -->
 					<span v-if="traffic" class="dashPanel-count">{{ traffic.timezone }}</span>
 				</div>
 
 				<NuxtDashboardHeatmap
 					v-if="traffic"
+					:class="{ 'dash-refreshing': trafficPending }"
 					:cells="traffic.heatmap"
 					:timezone="traffic.timezone"
 				/>
@@ -91,12 +105,17 @@
 		</div>
 
 		<div class="dashGrid">
-			<section class="dashPanel dashGrid-main">
+			<section class="dashPanel dashGrid-main" :aria-busy="trafficPending || undefined">
 				<div class="dashPanel-head">
 					<h2 class="dashPanel-title">What they clicked</h2>
-					<span v-if="clickRate !== null" class="dashPanel-count">{{ clickRate }}% of visits</span>
+					<span
+						v-if="clickRate !== null"
+						class="dashPanel-count"
+						:class="{ 'dash-refreshing': trafficPending }"
+					>{{ clickRate }}% of visits</span>
 				</div>
 				<NuxtDashboardBreakdown
+					:class="{ 'dash-refreshing': trafficPending }"
 					:items="clicks"
 					empty="No clicks yet. Once someone opens your link and taps through to a plan, it shows up here."
 				/>
@@ -106,9 +125,10 @@
 				</p>
 			</section>
 
-			<section class="dashPanel dashGrid-side">
+			<section class="dashPanel dashGrid-side" :aria-busy="trafficPending || undefined">
 				<h2 class="dashPanel-title">Where they are</h2>
 				<NuxtDashboardBreakdown
+					:class="{ 'dash-refreshing': trafficPending }"
 					:items="countries"
 					empty="No location data yet."
 				/>
@@ -171,7 +191,7 @@ const { data: traffic, pending: trafficPending, error: trafficError } =
 // the query entirely: we have the same figures from our own server where an ad
 // blocker cannot thin them out, and two different "where they are" lists on one
 // page is the confusion we already removed once.
-const { data: analytics } = await useAsyncData<AnalyticsResponse>(
+const { data: analytics, pending: analyticsPending } = await useAsyncData<AnalyticsResponse>(
 	"affiliate-analytics",
 	() => $fetch<AnalyticsResponse>("/api/affiliate/analytics", {
 		query: rangeQuery.value,

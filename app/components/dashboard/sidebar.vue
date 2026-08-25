@@ -5,21 +5,30 @@
 		:aria-label="'Dashboard sections'"
 	>
 		<div class="dashNav-head">
-			<NuxtLink to="/" class="dashNav-brand" :title="collapsed ? 'Champions Academy' : undefined">
-				<span class="dashNav-mark" aria-hidden="true">CA</span>
-				<span class="dashNav-brandText">Champions</span>
-			</NuxtLink>
+			<!-- The rail's own control, and the only thing showing once it is
+			     collapsed. Deliberately not a chevron: the glyph is a picture of
+			     a sidebar, so it reads the same whichever way the panel is about
+			     to move, and nothing has to flip mid-animation.
 
-			<!-- Hidden from the collapsed rail on desktop, where the whole rail is
-			     the click target instead; on mobile this is the drawer's close. -->
+			     On mobile the same button closes the drawer — see
+			     `onCollapseClick`. -->
 			<button
 				type="button"
-				class="dashNav-collapse"
+				class="dashNav-toggle"
 				:aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+				:aria-expanded="!collapsed"
+				:title="collapsed ? 'Expand sidebar' : undefined"
 				@click="onCollapseClick"
 			>
-				<NuxtDashboardIcon name="chevronLeft" />
+				<NuxtDashboardIcon name="sidebar" />
 			</button>
+
+			<!-- The wordmark is decorative, so the link carries the name itself. -->
+			<NuxtLink to="/" class="dashNav-brand" aria-label="Champions Academy">
+				<span class="dashNav-brandText">
+					<span class="dashNav-logo" aria-hidden="true" />
+				</span>
+			</NuxtLink>
 		</div>
 
 		<nav class="dashNav-list">

@@ -29,6 +29,12 @@
 const props = defineProps<{ name: string }>();
 
 const icons: Record<string, string[]> = {
+	// A panel with its divider about 30% in — the sidebar drawn as a picture of
+	// itself. Box spans x 3–21, so the rule at 8.5 sits just left of centre.
+	sidebar: [
+		"M5.5 4h13a2.5 2.5 0 0 1 2.5 2.5v11a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5v-11A2.5 2.5 0 0 1 5.5 4Z",
+		"M8.5 4v16",
+	],
 	home: ["M3 10.6 12 3l9 7.6", "M5.5 9.6V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.6"],
 	chart: ["M4.5 20.5v-5.5", "M12 20.5V4.5", "M19.5 20.5v-9"],
 	tag: ["M3.5 3.5h6.4l10.6 10.6-6.4 6.4L3.5 9.9V3.5Z", "M7.2 7.3v.01"],
