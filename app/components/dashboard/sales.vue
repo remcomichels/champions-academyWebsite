@@ -77,6 +77,7 @@
 						:class="{ 'dash-refreshing': pending }"
 						:points="series"
 						unit="sales"
+						unit-one="sale"
 						:highlight-last="false"
 					/>
 
@@ -244,13 +245,23 @@ const allTimeHint = computed(() => {
  * date under each one is an unreadable smear — the tooltip carries the rest.
  */
 const series = computed(() =>
-	(data.value?.series ?? []).map(point => ({
-		label: new Date(`${point.day}T00:00:00Z`).toLocaleDateString("en-GB", {
-			day: "numeric",
-			timeZone: "UTC",
-		}),
-		value: point.sales,
-	})));
+	(data.value?.series ?? []).map((point) => {
+		const date = new Date(`${point.day}T00:00:00Z`);
+
+		return {
+			label: date.toLocaleDateString("en-GB", { day: "numeric", timeZone: "UTC" }),
+			// The readout gets the whole date. Only every eighth axis label is
+			// drawn, so on the other seven the bar is otherwise a number over
+			// an unnamed column.
+			title: date.toLocaleDateString("en-GB", {
+				weekday: "short",
+				day: "numeric",
+				month: "short",
+				timeZone: "UTC",
+			}),
+			value: point.sales,
+		};
+	}));
 
 /**
  * Both steps on one scale, so the drop between them is the thing you see.

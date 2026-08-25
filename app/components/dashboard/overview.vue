@@ -121,7 +121,7 @@
 					</div>
 				</div>
 
-				<NuxtDashboardBarChart :points="series" unit="visits" />
+				<NuxtDashboardBarChart :points="series" unit="visits" unit-one="visit" />
 
 				<p class="dashPanel-note">
 					Counted once per person per day, on our own server — so refreshing your
@@ -233,7 +233,7 @@ const rangeDays = ref<number>(14);
  */
 const series = computed(() => {
 	const counts = new Map(props.summary.visits.byDay.map(row => [row.day, row.count]));
-	const out: { label: string; value: number }[] = [];
+	const out: { label: string; title: string; value: number }[] = [];
 
 	const today = new Date();
 	today.setUTCHours(0, 0, 0, 0);
@@ -245,6 +245,14 @@ const series = computed(() => {
 		const key = date.toISOString().slice(0, 10);
 		out.push({
 			label: date.toLocaleDateString("en-GB", { day: "numeric", timeZone: "UTC" }),
+			// Same reason as the Sales chart: the axis is thinned, so the hover
+			// readout is the only thing that names most of these days.
+			title: date.toLocaleDateString("en-GB", {
+				weekday: "short",
+				day: "numeric",
+				month: "short",
+				timeZone: "UTC",
+			}),
 			value: counts.get(key) ?? 0,
 		});
 	}

@@ -1524,6 +1524,20 @@
         pointer-events: none;
         .transition();
         transition-property: opacity;
+
+        // Centred on the first or last bar the readout hangs past the side of
+        // the plot, where the panel's own padding is all that catches it. These
+        // pin it to that end of the bar so it opens inwards instead.
+        &.is-start {
+            left: 0;
+            transform: translate(0, -@vw6);
+        }
+
+        &.is-end {
+            left: auto;
+            right: 0;
+            transform: translate(0, -@vw6);
+        }
     }
 
     @media (hover: hover) {

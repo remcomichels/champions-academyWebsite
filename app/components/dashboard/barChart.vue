@@ -30,10 +30,14 @@
 							     described; anchored to the bar, `bottom: 100%` is the
 							     bar's own top edge whatever its height. -->
 							<span class="barChart-fill" :style="{ height: `${point.pct}%` }">
-								<span class="barChart-value" aria-hidden="true">{{ format(point.value) }}</span>
+								<span
+									class="barChart-value"
+									:class="point.edge"
+									aria-hidden="true"
+								>{{ point.caption }}</span>
 							</span>
 						</span>
-						<span class="sr-only">{{ point.label }}: {{ point.value }} {{ unit }}</span>
+						<span class="sr-only">{{ point.caption }}</span>
 					</li>
 				</ul>
 			</div>
@@ -64,13 +68,22 @@
  * it has stopped being an accent.
  */
 const props = withDefaults(defineProps<{
-	points: { label: string; value: number }[];
+	/**
+	 * `label` goes under the axis and is kept short, because it has a column's
+	 * width to fit in. `title` is what the hover readout says — give it the
+	 * unabbreviated version, since a readout that says "3" over a bar in a row
+	 * of ninety does not tell anybody which day it is.
+	 */
+	points: { label: string; value: number; title?: string }[];
 	unit?: string;
+	/** Singular of `unit`, so a lone bar does not read "1 sales". */
+	unitOne?: string;
 	caption?: string | null;
 	/** Highlights the final bar, i.e. the current day or period. */
 	highlightLast?: boolean;
 }>(), {
 	unit: "",
+	unitOne: "",
 	caption: null,
 	highlightLast: true,
 });
@@ -99,13 +112,26 @@ const ticks = computed(() => {
 	return [max, max / 2, 0];
 });
 
-const scaled = computed(() =>
-	props.points.map(point => ({
-		...point,
-		// Floored at a hair above zero for any non-zero value, so "one visit"
-		// is visible rather than rounding away to an empty column.
-		pct: point.value === 0 ? 0 : Math.max((point.value / axisMax.value) * 100, 2),
-	})));
+const scaled = computed(() => {
+	const last = props.points.length - 1;
+
+	return props.points.map((point, index) => {
+		const unit = point.value === 1 && props.unitOne ? props.unitOne : props.unit;
+		// Near either end the centred readout hangs past the side of the plot,
+		// so it pins to that end of its bar and opens inwards. A fraction rather
+		// than a fixed index, because this draws a fortnight and a quarter.
+		const position = last > 0 ? index / last : 0.5;
+
+		return {
+			...point,
+			// Floored at a hair above zero for any non-zero value, so "one visit"
+			// is visible rather than rounding away to an empty column.
+			pct: point.value === 0 ? 0 : Math.max((point.value / axisMax.value) * 100, 2),
+			caption: `${point.title ?? point.label} — ${format(point.value)}${unit ? ` ${unit}` : ""}`,
+			edge: position < 0.12 ? "is-start" : position > 0.88 ? "is-end" : undefined,
+		};
+	});
+});
 
 const highlightIndex = computed(() =>
 	(props.highlightLast ? props.points.length - 1 : -1));
