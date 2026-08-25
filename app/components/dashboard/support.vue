@@ -51,15 +51,15 @@ const telegramUrl = "https://t.me/TheMeganSavage";
 const faq = [
 	{
 		q: "How do I get paid?",
-		a: "Whop pays you directly. It works out the commission, holds it for 30 days after the sale, then pays out automatically — we never handle the money. Use the “Manage payouts in Whop” button on the Sales tab for anything financial.",
+		a: "Whop pays you directly. It works out the commission, holds it for 30 days after the sale, then pays out automatically — we never handle the money. The Sales tab links straight through to your Whop dashboard for anything financial.",
 	},
 	{
 		q: "Why does Sales show fewer sales than I expected?",
 		a: "A sale is only credited when it completes. Checkouts that are started and abandoned, or where the card is declined, don't count. If someone tells you they bought and it isn't showing after an hour, message us with the date and we'll look it up.",
 	},
 	{
-		q: "Why don't Link visits and Sessions match?",
-		a: "They measure different things. Link visits is counted on our own server, so nothing can hide it — that's your real number. Sessions is measured in the browser and misses anyone using an ad blocker, so it's always lower. Neither is wrong.",
+		q: "Why is Link clicks lower than Link visits?",
+		a: "They are two different steps. A visit is someone opening your link. A click is them going on to tap one of your plans from the page they landed on. Not everyone who arrives taps through, so clicks is always the smaller number — the gap between the two is the people who looked and left.",
 	},
 	{
 		q: "How long does my link keep working after someone clicks it?",

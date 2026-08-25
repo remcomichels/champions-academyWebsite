@@ -1,8 +1,12 @@
 <template>
 	<div class="dash">
+		<!-- h2, not h1. The dashboard layout renders an sr-only h1 with the
+		     page's own name on every tab, so a second one here gave this page
+		     two — and the one that would win is the one repeating the nav
+		     label. Every other tab heads its content at h2. -->
 		<header class="dash-head">
 			<p class="dash-preTitle">Admin</p>
-			<h1 class="dash-title">Affiliates</h1>
+			<h2 class="dash-title">Affiliates</h2>
 		</header>
 
 		<NuxtAlertBanner v-if="banner" :variant="banner.variant">
