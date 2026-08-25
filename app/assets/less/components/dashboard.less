@@ -485,19 +485,31 @@
 // nobody finished, and it made the form roughly twice as long to scroll as it
 // needed to be.
 .dashSettings {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    // Stretch, matching `.dashGrid` one screen over. Sized to content instead,
-    // a two-toggle panel beside a three-field form leaves a couple of hundred
-    // pixels of nothing under it, and a hole in the page reads as something
-    // failing to load. Stretched, the same empty space sits inside a card with
-    // a border around it and reads as a panel with room to spare.
-    align-items: stretch;
-    gap: @vw20;
+    // Columns, not a grid, and this is the whole point: a grid has rows, and a
+    // row makes two unrelated panels share a height. Whichever way that is
+    // resolved it looks wrong — stretched, a short panel is a mostly-empty box;
+    // sized to content, the shorter one leaves a hole beside it. Here each
+    // panel is exactly as tall as what is in it, and the only thing being
+    // equalised is the two columns, which is the part a reader actually sees.
+    column-count: 2;
+    column-gap: @vw20;
+    // The default, stated on purpose: it is what evens the two columns up by
+    // moving panels between them, rather than filling the first and leaving
+    // the second short.
+    column-fill: balance;
 
-    // A banner speaks for the whole page, and the danger panel is deliberately
-    // alone on its row.
-    &-wide { grid-column: 1 / -1; }
+    > * {
+        // Column layout has no block-axis `gap`, so the rhythm is a margin.
+        margin-bottom: @vw20;
+        // Without this a panel is free to be cut in half at the column
+        // boundary and continue at the top of the next one.
+        -webkit-column-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    // A banner speaks for the whole page rather than for the column it landed
+    // in, so it takes the full width and the balancing restarts under it.
+    &-wide { column-span: all; }
 
     // Scoped to this page on purpose.
     //
@@ -514,11 +526,11 @@
     .dashForm { max-width: calc(@vw300 + @vw120); }
 
     // `.dashPanel-note` pins itself to the bottom of its card, so that two
-    // panels sharing a row on the dashboard line their notes up. Here it is
-    // actively wrong: these notes sit *between* things — under a heading, above
-    // the form it explains — and pinning strands the heading at the top of a
-    // stretched card with a hole beneath it. The space belongs at the bottom,
-    // after the content, not punched through the middle of it.
+    // panels sharing a row on the dashboard line their notes up. These notes
+    // sit *between* things — under a heading, above the form they explain — so
+    // they belong where the markup puts them. Inert while the panels are sized
+    // to their content, and the rule that keeps it that way if one ever gains
+    // a minimum height.
     .dashPanel-note { margin-top: 0; }
 }
 
@@ -2541,7 +2553,9 @@
     .dashGrid { gap: @vw16-1080; }
 
     .dashSettings {
-        gap: @vw16-1080;
+        column-gap: @vw16-1080;
+
+        > * { margin-bottom: @vw16-1080; }
 
         .dashForm { max-width: calc(@vw300-1080 + @vw60-1080); }
     }
@@ -2609,7 +2623,7 @@
 
     // Below this a half-width panel is narrower than the field inside it.
     .dashSettings {
-        grid-template-columns: minmax(0, 1fr);
+        column-count: 1;
 
         .dashForm { max-width: none; }
     }
@@ -2641,7 +2655,7 @@
 
     .dash { gap: @vw16-580; }
     .dashSection { gap: @vw16-580; }
-    .dashSettings { gap: @vw16-580; }
+    .dashSettings > * { margin-bottom: @vw16-580; }
     .dashNav-logo { width: @vw104-580; height: @vw29-580; }
 
     // Four range tabs plus a title do not fit across a phone, and the tabs are
