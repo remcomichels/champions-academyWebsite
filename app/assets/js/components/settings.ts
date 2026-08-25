@@ -19,7 +19,6 @@ export interface SettingsData {
 		memberSince: string;
 	};
 	slugChange: { nextAllowedAt: string | null; cooldownDays: number };
-	notificationPrefs: { saleInApp: boolean; saleEmail: boolean };
 	sessions: {
 		id: string;
 		current: boolean;
@@ -38,7 +37,7 @@ export interface SettingsData {
 	}[];
 }
 
-type Busy = "profile" | "slug" | "prefs" | "password" | "sessions" | "gdpr" | null;
+type Busy = "profile" | "slug" | "password" | "sessions" | "gdpr" | null;
 
 /** Turns an audit action into something an affiliate can read. */
 const ACTION_LABELS: Record<string, string> = {
@@ -72,11 +71,6 @@ export async function useSettings() {
 	});
 
 	const slug = ref(data.value?.profile.slug ?? "");
-
-	const prefs = reactive({
-		saleInApp: data.value?.notificationPrefs.saleInApp ?? true,
-		saleEmail: data.value?.notificationPrefs.saleEmail ?? false,
-	});
 
 	const passwords = reactive({
 		currentPassword: "",
@@ -134,16 +128,6 @@ export async function useSettings() {
 		catch (error) { handle(error, "Could not change your link."); }
 	});
 
-	const savePrefs = () => run("prefs", async () => {
-		try {
-			await $fetch("/api/affiliate/profile", {
-				method: "PATCH",
-				// Sent as strings so an unset value is distinguishable from false.
-				body: { saleInApp: String(prefs.saleInApp), saleEmail: String(prefs.saleEmail) },
-			});
-		}
-		catch (error) { handle(error, "Could not save that preference."); }
-	});
 
 	const savePassword = () => run("password", async () => {
 		if (passwords.newPassword !== passwords.newPasswordConfirm) {
@@ -225,8 +209,8 @@ export async function useSettings() {
 
 	return {
 		data, banner, busy, errors,
-		profile, slug, prefs, passwords, pendingDelete,
-		saveProfile, saveSlug, savePrefs, savePassword,
+		profile, slug, passwords, pendingDelete,
+		saveProfile, saveSlug, savePassword,
 		signOutOthers, gdpr, confirmDelete, exportData,
 		formatDate, formatWhen, describeAction,
 	};

@@ -50,26 +50,6 @@
 			</form>
 		</section>
 
-		<!-- Notifications ───────────────────────────────────────────────── -->
-		<section class="dashPanel">
-			<h2 class="dashPanel-title">Notifications</h2>
-
-			<label class="toggle">
-				<input v-model="prefs.saleInApp" type="checkbox" @change="savePrefs">
-				<span>Show me new sales in the dashboard</span>
-			</label>
-
-			<label class="toggle">
-				<input v-model="prefs.saleEmail" type="checkbox" @change="savePrefs">
-				<span>Email me about new sales</span>
-			</label>
-
-			<p class="dashPanel-note">
-				Email isn't switched on yet — we'll honour this setting from the day it is,
-				rather than opting you in automatically.
-			</p>
-		</section>
-
 		<!-- Security ────────────────────────────────────────────────────── -->
 		<section class="dashPanel">
 			<h2 class="dashPanel-title">Password</h2>
@@ -173,8 +153,8 @@ import { useSettings } from "~/assets/js/components/settings";
 
 const {
 	data, banner, busy, errors,
-	profile, slug, prefs, passwords, pendingDelete,
-	saveProfile, saveSlug, savePrefs, savePassword,
+	profile, slug, passwords, pendingDelete,
+	saveProfile, saveSlug, savePassword,
 	signOutOthers, gdpr, confirmDelete, exportData,
 	formatDate, formatWhen, describeAction,
 } = await useSettings();

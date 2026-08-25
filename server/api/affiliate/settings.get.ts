@@ -40,8 +40,6 @@ export default defineEventHandler(async (event) => {
 		? new Date(changedAt.getTime() + SLUG_COOLDOWN_DAYS * 24 * 60 * 60 * 1000)
 		: null;
 
-	const prefs = (affiliate.notification_prefs ?? {}) as Record<string, unknown>;
-
 	return {
 		profile: {
 			displayName: affiliate.display_name,
@@ -60,13 +58,6 @@ export default defineEventHandler(async (event) => {
 				? nextSlugChange.toISOString()
 				: null,
 			cooldownDays: SLUG_COOLDOWN_DAYS,
-		},
-
-		notificationPrefs: {
-			// In-app defaults on, email defaults off. Nobody should be opted into
-			// email by a schema default before delivery even exists.
-			saleInApp: prefs.saleInApp !== false,
-			saleEmail: prefs.saleEmail === true,
 		},
 
 		sessions: (sessions.data ?? []).map(row => ({

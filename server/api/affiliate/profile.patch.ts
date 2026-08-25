@@ -15,8 +15,6 @@ export default defineEventHandler(async (event) => {
 		displayName: optional(str({ min: 1, max: 80 })),
 		timezone: optional(str({ max: 64 })),
 		locale: optional(str({ max: 10 })),
-		saleInApp: optional(str({ max: 5 })),
-		saleEmail: optional(str({ max: 5 })),
 	}));
 
 	const update: Record<string, unknown> = {};
@@ -54,14 +52,6 @@ export default defineEventHandler(async (event) => {
 		update.locale = body.locale;
 	}
 
-	if (body.saleInApp !== null || body.saleEmail !== null) {
-		const current = (affiliate.notification_prefs ?? {}) as Record<string, unknown>;
-		update.notification_prefs = {
-			...current,
-			...(body.saleInApp !== null ? { saleInApp: body.saleInApp === "true" } : {}),
-			...(body.saleEmail !== null ? { saleEmail: body.saleEmail === "true" } : {}),
-		};
-	}
 
 	if (!Object.keys(update).length) {
 		return { updated: false };
