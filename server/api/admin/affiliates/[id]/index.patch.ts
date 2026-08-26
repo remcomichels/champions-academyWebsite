@@ -1,4 +1,4 @@
-import { object, optional, str, uuid } from "../../../../utils/validate";
+import { displayName, object, optional, str, uuid } from "../../../../utils/validate";
 
 /**
  * Edits an affiliate.
@@ -27,7 +27,7 @@ export default defineEventHandler(async (event) => {
 
 	const body = await readValidatedBody(event, object({
 		slug: optional(str({ min: 2, max: 32 })),
-		displayName: optional(str({ min: 1, max: 80 })),
+		displayName: optional(displayName({ min: 1, max: 80 })),
 		whopUsername: optional(str({ max: 60 })),
 		notes: optional(str({ max: 1000 })),
 	}));

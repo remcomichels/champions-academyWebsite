@@ -53,6 +53,38 @@ export const email = (): Check<string> => (value, field) => {
 export const password = (): Check<string> =>
 	str({ min: 12, max: 128, trim: false });
 
+/**
+ * A human name, safe to render anywhere.
+ *
+ * Nothing in this codebase puts a display name through `v-html` today — Vue
+ * escapes `{{ }}`, which is why a stored `<img src=x onerror=…>` was inert
+ * when the audit tried it. That is a property of the render layer, not of the
+ * data, and it is one `v-html` away from not being true. So the data is
+ * cleaned here instead: markup characters are rejected, and the control
+ * characters that let a name spoof a second line of UI are stripped.
+ *
+ * Rejected rather than silently stripped, because a name containing `<` is
+ * almost certainly an attack or a paste accident, and quietly saving a
+ * different name than the one typed is its own bug. Apostrophes, hyphens,
+ * accents and non-Latin scripts all pass — the point is markup, not ASCII.
+ */
+export const displayName = (opts: { min?: number; max?: number } = {}): Check<string> => (value, field) => {
+	// eslint-disable-next-line no-control-regex -- stripping them is the point
+	const s = str({ ...opts, trim: false })(value, field)
+		.replace(/[\u0000-\u001F\u007F\u200B-\u200F\u2028\u2029\uFEFF]/g, "")
+		// Collapse runs of whitespace so a name cannot be padded into a column
+		// of its own, then trim.
+		.replace(/\s+/g, " ")
+		.trim();
+
+	if (opts.min !== undefined && s.length < opts.min) {
+		throw bad(field, `must be at least ${opts.min} characters`);
+	}
+	if (/[<>]/.test(s)) throw bad(field, "cannot contain < or >");
+
+	return s;
+};
+
 export const uuid = (): Check<string> =>
 	str({ pattern: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i });
 

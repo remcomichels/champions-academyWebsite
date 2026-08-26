@@ -9,18 +9,24 @@ import { email as emailCheck, object, password as passwordCheck } from "../../ut
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);
 
+	// The IP bucket is charged before the body is even parsed. It used to sit
+	// after validation, which meant a malformed body returned 400 without
+	// costing the sender anything — not a credential oracle, since you cannot
+	// test a password with an invalid body, but it let one hammer the endpoint
+	// for free. The per-account bucket cannot move up with it: it is keyed on
+	// the email, which only exists once the body is parsed.
+	const ip = clientIp(event);
+	const ipBucket = loginIpBucket(ip);
+	await enforceRateLimit(event, ipBucket, RATE_LIMITS.loginIp);
+
 	const body = await readValidatedBody(event, object({
 		email: emailCheck(),
 		password: passwordCheck(),
 	}));
 
-	const ip = clientIp(event);
-	const ipBucket = loginIpBucket(ip);
+	// Still in front of the password verification, which is the part that
+	// matters — the throttle must never sit behind the credential check.
 	const userBucket = loginUserBucket(body.email);
-
-	// Both buckets are checked before any credential work: the throttle has to
-	// sit in front of the password verification, not behind it.
-	await enforceRateLimit(event, ipBucket, RATE_LIMITS.loginIp);
 	await enforceRateLimit(event, userBucket, RATE_LIMITS.loginUser);
 
 	const user = await verifyPassword(body.email, body.password);

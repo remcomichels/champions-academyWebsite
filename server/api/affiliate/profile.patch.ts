@@ -1,4 +1,4 @@
-import { object, optional, str } from "../../utils/validate";
+import { displayName, object, optional, str } from "../../utils/validate";
 
 /**
  * Profile and notification preferences.
@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 
 	const body = await readValidatedBody(event, object({
-		displayName: optional(str({ min: 1, max: 80 })),
+		displayName: optional(displayName({ min: 1, max: 80 })),
 		timezone: optional(str({ max: 64 })),
 		locale: optional(str({ max: 10 })),
 	}));

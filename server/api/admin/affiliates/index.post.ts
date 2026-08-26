@@ -1,4 +1,4 @@
-import { object, optional, str } from "../../../utils/validate";
+import { displayName, object, optional, str } from "../../../utils/validate";
 
 /**
  * Creates an affiliate.
@@ -14,7 +14,7 @@ export default defineEventHandler(async (event) => {
 
 	const body = await readValidatedBody(event, object({
 		slug: str({ min: 2, max: 32 }),
-		displayName: str({ min: 1, max: 80 }),
+		displayName: displayName({ min: 1, max: 80 }),
 		// Their Whop username, for commission attribution on Whop's side.
 		// Optional: an affiliate can be created before that is known.
 		whopUsername: optional(str({ max: 60 })),
