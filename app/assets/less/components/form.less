@@ -16,6 +16,13 @@
         color: var(--text-secondary);
     }
 
+    // Wraps the control so the reveal button can sit over it. Same shape the
+    // timezone combobox uses for its dropdown.
+    &-control {
+        position: relative;
+        display: flex;
+    }
+
     &-input {
         width: 100%;
         padding: @vw12 @vw14;
@@ -54,6 +61,52 @@
             box-shadow: 0 0 0 100vw var(--surface-raised) inset;
             -webkit-text-fill-color: var(--text) !important;
         }
+
+        // Clears the reveal button, so a long password runs behind the edge of
+        // the field rather than under the icon.
+        &--revealable {
+            padding-right: @vw44;
+        }
+
+        // Safari and Edge add their own reveal control to password inputs. Two
+        // eyes side by side, one of which does not match anything else here.
+        &::-ms-reveal,
+        &::-webkit-textfield-decoration-container {
+            display: none;
+        }
+    }
+
+    &-reveal {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        display: grid;
+        place-items: center;
+        width: @vw40;
+        padding: 0;
+        background: none;
+        border: none;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        .transition();
+        transition-property: color;
+
+        .icon { width: @vw18; height: @vw18; }
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { color: var(--text); }
+        }
+
+        // Inset, or the ring is clipped by the input's own rounded corner.
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: calc(@vw2 * -1);
+            border-radius: @vw8;
+            color: var(--text);
+        }
+
+        &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
 
     &-message {
@@ -85,6 +138,14 @@
             padding: @vw12-1080 @vw14-1080;
             font-size: max(1em, @vw16-1080);
             border-radius: @vw8-1080;
+
+            &--revealable { padding-right: @vw44-1080; }
+        }
+
+        &-reveal {
+            width: @vw40-1080;
+
+            .icon { width: @vw18-1080; height: @vw18-1080; }
         }
     }
 }
@@ -97,6 +158,14 @@
             padding: @vw12-580 @vw14-580;
             font-size: max(1em, @vw16-580);
             border-radius: @vw8-580;
+
+            &--revealable { padding-right: @vw44-580; }
+        }
+
+        &-reveal {
+            width: @vw40-580;
+
+            .icon { width: @vw18-580; height: @vw18-580; }
         }
     }
 }
