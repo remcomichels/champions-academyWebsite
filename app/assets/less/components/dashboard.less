@@ -2524,6 +2524,96 @@
     }
 }
 
+// ── Admin mode switch ────────────────────────────────────────────────────────
+// A checkbox styled as a switch. The input stays in the DOM and keeps its own
+// focus and checked state — the track and knob below are painted from it, so
+// none of that has to be reimplemented.
+.modeSwitch {
+    display: inline-flex;
+    align-items: center;
+    gap: @vw8;
+    padding: @vw6 @vw10;
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @vw20;
+    cursor: pointer;
+    user-select: none;
+    .transition();
+    transition-property: color, border-color, background-color;
+
+    @media (hover: hover) {
+        &:hover { border-color: var(--border-strong); }
+    }
+
+    &.is-on {
+        color: var(--accent);
+        border-color: var(--accent);
+        background-color: var(--accent-subtle);
+    }
+
+    // Clipped rather than `display: none` — a hidden input is not focusable,
+    // which would leave the switch unreachable by keyboard.
+    &-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        margin: -1px;
+        padding: 0;
+        border: 0;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+
+    &-input:focus-visible ~ &-track {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    &-label {
+        font-size: max(0.7em, @vw12);
+        font-weight: @semiBold;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: currentColor;
+    }
+
+    &-track {
+        position: relative;
+        flex: none;
+        width: @vw32;
+        height: @vw18;
+        border-radius: @vw20;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        .transition();
+        transition-property: background-color, border-color;
+    }
+
+    &.is-on &-track {
+        background-color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    &-knob {
+        position: absolute;
+        top: 50%;
+        left: @vw2;
+        width: @vw12;
+        height: @vw12;
+        border-radius: 50%;
+        background-color: var(--text-tertiary);
+        transform: translateY(-50%);
+        .transition();
+        transition-property: transform, background-color;
+    }
+
+    &.is-on &-knob {
+        background-color: var(--on-accent);
+        // Track width less the knob and both insets.
+        transform: translate(calc(@vw32 - @vw12 - @vw6), -50%);
+    }
+}
+
 // ── Modal ────────────────────────────────────────────────────────────────────
 // Styling for a native <dialog>. The browser owns the open/closed display, the
 // centring and the top layer; everything here is the look.
@@ -2943,6 +3033,14 @@
         &-item { padding: @vw10-1080 @vw14-1080; gap: @vw12-1080; }
         &-rule { margin: @vw10-1080 0; }
         &-mark { width: @vw32-1080; height: @vw32-1080; }
+    }
+
+    .modeSwitch {
+        padding: @vw6-1080 @vw10-1080;
+
+        &-track { width: @vw32-1080; height: @vw18-1080; }
+        &-knob { width: @vw12-1080; height: @vw12-1080; left: @vw2-1080; }
+        &.is-on .modeSwitch-knob { transform: translate(calc(@vw32-1080 - @vw12-1080 - @vw6-1080), -50%); }
     }
 
     .dashBar {

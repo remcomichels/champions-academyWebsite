@@ -35,6 +35,10 @@
 					<h1 class="sr-only">{{ pageTitle }}</h1>
 
 					<div class="dashBar-right">
+						<!-- Before the bell, so the two things that change what the
+						     page shows sit together and away from the avatar. -->
+						<NuxtDashboardModeSwitch v-if="isAdmin" />
+
 						<!-- Only mounted for accounts that actually have an affiliate:
 						     the stream and inbox routes both require one. -->
 						<NuxtDashboardInbox v-if="affiliate" />
@@ -62,7 +66,7 @@
 							This login isn't attached to an affiliate, so there are no referral
 							figures to show. That's expected for an admin account.
 						</p>
-						<NuxtLink v-if="isAdmin" to="/dashboard/admin" class="btn btn--primary">
+						<NuxtLink v-if="isAdmin" :to="ADMIN_HOME" class="btn btn--primary">
 							Go to the admin panel
 						</NuxtLink>
 					</section>
@@ -75,7 +79,7 @@
 </template>
 
 <script setup lang="ts">
-import { dashboardNav } from "~/composables/useDashboardNav";
+import { ADMIN_HOME, dashboardNav, isAdminRoute } from "~/composables/useDashboardNav";
 
 const { isAdmin, affiliate, fetchMe } = useAuth();
 const { collapsed, drawerOpen } = useDashboardNav();
@@ -129,8 +133,11 @@ const initials = computed(() => {
 	return (first + last).toUpperCase();
 });
 
+// An admin-only login has nothing to show on an affiliate page, but every
+// admin page is exactly what it is for — so the notice is suppressed across
+// the whole admin section rather than on one route.
 const showNoAffiliate = computed(() =>
-	!affiliate.value && route.path !== "/dashboard/admin");
+	!affiliate.value && !isAdminRoute(route.path));
 
 /**
  * Lock the page behind the mobile drawer. `_general.less` already defines
