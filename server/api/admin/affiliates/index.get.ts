@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
 
 	const query = await getValidatedQuery(event, object({
 		q: optional(str({ max: 80 })),
-		status: optional(oneOf("active", "paused", "revoked")),
+		status: optional(oneOf("active", "revoked")),
 	}));
 
 	let builder = db()

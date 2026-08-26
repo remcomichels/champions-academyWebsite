@@ -14,7 +14,7 @@ export interface AdminAffiliate {
 	id: string;
 	slug: string;
 	displayName: string;
-	status: "active" | "paused" | "revoked";
+	status: "active" | "revoked";
 	whopUsername: string | null;
 	hasWhopConfig: boolean;
 	hasVipLink: boolean;
@@ -169,7 +169,7 @@ export function useAdmin() {
 				variant: "success",
 				text: status === "active"
 					? `${affiliate.slug} reactivated.`
-					: `${affiliate.slug} ${status}. Their sessions were ended and their link stops swapping within 5 minutes.`,
+					: `${affiliate.slug} revoked. Their sessions were ended and their link stopped swapping.`,
 			};
 			await load();
 		}

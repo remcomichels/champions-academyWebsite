@@ -55,3 +55,46 @@ export const resolveAffiliateLinks = defineCachedFunction(lookup, {
 	// between visitors would serve one affiliate's links to another's traffic.
 	getKey: (slug: string) => slug,
 });
+
+/**
+ * Drops an affiliate's cached links so a status change lands immediately.
+ *
+ * Without this, revoking someone leaves their VIP link being served for up to
+ * the five-minute TTL — and `swr` means the first request after that still gets
+ * the stale value while it revalidates. The window is small and nobody's money
+ * moves through it (Whop owns payouts, and ingestPayment refuses a sale from a
+ * non-active affiliate anyway), but "revoked" should mean revoked.
+ *
+ * Matched by suffix rather than by rebuilding Nitro's key. That key is
+ * `base:group:name:key.json` with a default base and group this code does not
+ * set, and unstorage normalises the result again on the way in — reconstructing
+ * it means encoding two layers of someone else's internals, which break quietly
+ * on a minor upgrade. The suffix is just our own name and slug.
+ *
+ * Best-effort by design: a failure here leaves the TTL as the backstop, which
+ * is exactly where we were before, so it must never fail a status change.
+ */
+export async function invalidateAffiliateLinks(affiliateId: string, slug: string): Promise<void> {
+	try {
+		// Aliases resolve through the same cache under their own slug, so a
+		// renamed affiliate has more than one entry pointing at them.
+		const { data: aliases } = await db()
+			.from("affiliate_slug_aliases")
+			.select("slug")
+			.eq("affiliate_id", affiliateId);
+
+		const slugs = new Set([slug, ...(aliases ?? []).map(row => row.slug as string)]);
+
+		const storage = useStorage("cache");
+		const keys = await storage.getKeys();
+
+		await Promise.all(
+			keys
+				.filter(key => [...slugs].some(s => key.endsWith(`affiliateLinks:${s}.json`)))
+				.map(key => storage.removeItem(key)),
+		);
+	}
+	catch {
+		// Swallowed on purpose. See above.
+	}
+}

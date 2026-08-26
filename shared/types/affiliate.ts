@@ -18,7 +18,12 @@ export type LinkRole = "vip" | "lite" | "calendly";
 /** What a Storyblok CTA blok carries. Empty string means "not a swappable link". */
 export type LinkRoleField = LinkRole | "";
 
-export type AffiliateStatus = "active" | "paused" | "revoked";
+/**
+ * Access is binary. There was a `paused` value once; nothing ever read it, so
+ * a paused affiliate was revoked under a gentler name. See migration
+ * 20260826000009.
+ */
+export type AffiliateStatus = "active" | "revoked";
 
 /**
  * The referral payload that reaches the browser.

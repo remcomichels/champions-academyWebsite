@@ -166,9 +166,9 @@ const {
 
 await load();
 
-/** Revoking ends their sessions and stops their links — worth a confirm. */
+/** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {
-	const message = `Revoke ${affiliate.slug}? They'll be signed out immediately and their links stop swapping within 5 minutes. Their sales history is kept.`;
+	const message = `Revoke ${affiliate.slug}? They'll be signed out immediately and their links stop swapping. Their sales history is kept.`;
 	if (window.confirm(message)) setStatus(affiliate, status);
 }
 

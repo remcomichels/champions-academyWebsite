@@ -7,9 +7,10 @@ import { object, oneOf, uuid } from "../../../../utils/validate";
  * point of opaque server-side sessions: revocation takes effect on the very
  * next request rather than whenever a token happens to expire.
  *
- * Their link stops swapping within five minutes — resolveAffiliateLinks is
- * cached that long. Their conversions and visit history are untouched, because
- * losing access is not the same as never having sold anything.
+ * Their cached links are dropped at the same time, so the swap stops on the
+ * next request rather than whenever the five-minute TTL happens to lapse.
+ * Their conversions and visit history are untouched, because losing access is
+ * not the same as never having sold anything.
  */
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);
@@ -18,7 +19,7 @@ export default defineEventHandler(async (event) => {
 	const affiliateId = uuid()(getRouterParam(event, "id"), "id");
 
 	const body = await readValidatedBody(event, object({
-		status: oneOf("active", "paused", "revoked"),
+		status: oneOf("active", "revoked"),
 	}));
 
 	const { data, error } = await db()
@@ -34,6 +35,10 @@ export default defineEventHandler(async (event) => {
 	if (body.status !== "active" && data.user_id) {
 		await destroyAllSessions(data.user_id as string);
 	}
+
+	// Both directions: reactivating has the same staleness problem in reverse,
+	// where the cache still holds the miss from while they were revoked.
+	await invalidateAffiliateLinks(affiliateId, data.slug as string);
 
 	await audit(event, {
 		actorKind: "admin",
