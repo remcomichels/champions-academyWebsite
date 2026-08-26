@@ -39,6 +39,9 @@ const icons: Record<string, string[]> = {
 	// A clock wound anticlockwise — the standard "history" glyph. The arc stops
 	// short at the top left and the arrow head marks where it came from, which
 	// is what separates it from a plain clock face.
+	// Two strokes inset to 6–18, so the X reads at the same weight as the
+	// chevron rather than filling the box edge to edge.
+	close: ["M6 6l12 12", "M18 6 6 18"],
 	history: [
 		"M3.5 9.5A9 9 0 1 1 3 12",
 		"M3.5 4.5v5h5",

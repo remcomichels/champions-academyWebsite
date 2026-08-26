@@ -27,54 +27,6 @@
 			</button>
 		</section>
 
-		<!-- Editing is a panel rather than inline fields: the slug is a public
-		     URL and notes are a paragraph, neither of which fits a table cell. -->
-		<section v-if="editing" class="dashPanel">
-			<h2 class="dashPanel-title">Edit {{ editing.displayName }}</h2>
-			<form class="adminForm" novalidate @submit.prevent="saveEdit">
-				<div class="adminForm-fields">
-					<NuxtAuthField
-						v-model="editForm.slug"
-						label="Slug"
-						:error="editErrors.slug"
-						hint="Changing this keeps the old ?r= working for 90 days, so printed links survive."
-						required
-					/>
-					<NuxtAuthField
-						v-model="editForm.displayName"
-						label="Name"
-						:error="editErrors.displayName"
-						required
-					/>
-					<NuxtAuthField
-						v-model="editForm.whopUsername"
-						label="Whop username"
-						placeholder="optional"
-						:error="editErrors.whopUsername"
-						hint="Reference only — nothing is sent to Whop."
-					/>
-					<div class="field adminForm-wide">
-						<label class="field-label" for="affiliateNotes">Notes</label>
-						<textarea
-							id="affiliateNotes"
-							v-model="editForm.notes"
-							class="field-input adminForm-notes"
-							rows="3"
-							placeholder="Private to admins."
-						/>
-					</div>
-				</div>
-				<div class="adminForm-actions">
-					<button type="submit" class="btn btn--primary" :disabled="saving">
-						{{ saving ? "Saving…" : "Save changes" }}
-					</button>
-					<button type="button" class="btn btn--subtle" :disabled="saving" @click="cancelEdit">
-						Cancel
-					</button>
-				</div>
-			</form>
-		</section>
-
 		<section class="dashPanel">
 			<h2 class="dashPanel-title">Add an affiliate</h2>
 			<form class="adminForm" novalidate @submit.prevent="create">
@@ -247,10 +199,69 @@
 				</li>
 			</ul>
 		</section>
+
+		<!-- Native <dialog>, not a div with a high z-index: showModal() gives
+		     focus trapping, Escape, inert background and top-layer stacking that
+		     no sidebar or sticky header can paint over. It stays mounted while
+		     closed — there has to be an element to call showModal on. -->
+		<dialog ref="editDialog" class="modal" @close="onDialogClose" @click="onDialogClick">
+			<div class="modal-panel">
+				<header class="modal-head">
+					<h2 class="modal-title">Edit {{ editingName }}</h2>
+					<button type="button" class="modal-close" aria-label="Close" @click="cancelEdit">
+						<NuxtDashboardIcon name="close" />
+					</button>
+				</header>
+
+				<form class="adminForm" novalidate @submit.prevent="saveEdit">
+					<div class="adminForm-fields">
+						<NuxtAuthField
+							v-model="editForm.slug"
+							label="Slug"
+							:error="editErrors.slug"
+							hint="Changing this keeps the old ?r= working for 90 days, so printed links survive."
+							required
+						/>
+						<NuxtAuthField
+							v-model="editForm.displayName"
+							label="Name"
+							:error="editErrors.displayName"
+							required
+						/>
+						<NuxtAuthField
+							v-model="editForm.whopUsername"
+							label="Whop username"
+							placeholder="optional"
+							:error="editErrors.whopUsername"
+							hint="Reference only — nothing is sent to Whop."
+						/>
+						<div class="field adminForm-wide">
+							<label class="field-label" for="affiliateNotes">Notes</label>
+							<textarea
+								id="affiliateNotes"
+								v-model="editForm.notes"
+								class="field-input adminForm-notes"
+								rows="3"
+								placeholder="Private to admins."
+							/>
+						</div>
+					</div>
+					<div class="adminForm-actions">
+						<button type="submit" class="btn btn--primary" :disabled="saving">
+							{{ saving ? "Saving…" : "Save changes" }}
+						</button>
+						<button type="button" class="btn btn--subtle" :disabled="saving" @click="cancelEdit">
+							Cancel
+						</button>
+					</div>
+				</form>
+			</div>
+		</dialog>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { useTemplateRef, watch } from "vue";
 import { useAdmin, type AdminAffiliate, type AdminUser } from "~/assets/js/components/admin";
 
 definePageMeta({
@@ -266,7 +277,7 @@ useSeoMeta({
 const {
 	affiliates, search, loading, banner, busyId, issuedInvite,
 	createForm, createErrors, creating,
-	editing, editForm, editErrors, saving,
+	editing, editingName, editForm, editErrors, saving,
 	admins, adminEmail, adminError, grantingAdmin, busyAdminId,
 	load, loadAdmins, grantAdmin, revokeAdmin,
 	create, startEdit, cancelEdit, saveEdit,
@@ -274,6 +285,41 @@ const {
 } = useAdmin();
 
 await Promise.all([load(), loadAdmins()]);
+
+const editDialog = useTemplateRef<HTMLDialogElement>("editDialog");
+
+// `editing` stays the single source of truth and the dialog follows it, rather
+// than the two being opened and closed independently and drifting apart.
+watch(editing, async (affiliate) => {
+	const dialog = editDialog.value;
+	if (!dialog) return;
+
+	if (affiliate && !dialog.open) {
+		dialog.showModal();
+		// showModal focuses the first tabbable thing, which is the close button
+		// — so the dialog opens with the dismiss control highlighted rather than
+		// the field you came here to change. Wait a tick for the fields to be in
+		// the DOM before reaching for one.
+		await nextTick();
+		dialog.querySelector<HTMLInputElement>(".field-input")?.focus();
+	}
+	else if (!affiliate && dialog.open) {
+		dialog.close();
+	}
+});
+
+// Escape closes the dialog without going through cancelEdit, so the state has
+// to be caught up here. Guarded, or closing via Cancel would recurse: that path
+// nulls `editing` first, which closes the dialog, which fires this again.
+function onDialogClose() {
+	if (editing.value) cancelEdit();
+}
+
+// A click landing on the <dialog> itself is a click on the backdrop — anything
+// on the content hits .modal-panel and stops there.
+function onDialogClick(event: MouseEvent) {
+	if (event.target === editDialog.value) cancelEdit();
+}
 
 /** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {

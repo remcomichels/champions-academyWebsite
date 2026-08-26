@@ -62,8 +62,15 @@ export function useAdmin() {
 	const createErrors = ref<Record<string, string | undefined>>({});
 	const creating = ref(false);
 
-	/** The affiliate open in the edit panel, or null when it is closed. */
+	/** The affiliate open in the edit dialog, or null when it is closed. */
 	const editing = ref<AdminAffiliate | null>(null);
+	/**
+	 * Held separately from `editing` so the dialog's heading survives the close.
+	 * The dialog stays mounted — it has to, or there is no element to call
+	 * showModal on — so reading the name off `editing` blanked the title for the
+	 * length of the closing frame.
+	 */
+	const editingName = ref("");
 	const editForm = reactive({ slug: "", displayName: "", whopUsername: "", notes: "" });
 	const editErrors = ref<Record<string, string | undefined>>({});
 	const saving = ref(false);
@@ -198,6 +205,7 @@ export function useAdmin() {
 
 	function startEdit(affiliate: AdminAffiliate) {
 		editing.value = affiliate;
+		editingName.value = affiliate.displayName;
 		editErrors.value = {};
 		banner.value = null;
 		editForm.slug = affiliate.slug;
@@ -371,6 +379,7 @@ export function useAdmin() {
 		createErrors,
 		creating,
 		editing,
+		editingName,
 		editForm,
 		editErrors,
 		saving,
