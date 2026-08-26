@@ -36,6 +36,24 @@ export const RATE_LIMITS = {
 	 * attacker lock a specific affiliate out of their own code.
 	 */
 	otpGlobal: { limit: 100, windowSeconds: 3600, lockSeconds: 900 },
+	/**
+	 * Whop webhook deliveries from one IP.
+	 *
+	 * Sized against the *sender*, not against affiliate traffic — this endpoint
+	 * receives one request per Whop payment event, not one per visitor. 600 a
+	 * minute is 864,000 a day; a programme taking a thousand sales a day
+	 * averages well under one a minute, so this is roughly three orders of
+	 * magnitude of headroom and only bites on a flood.
+	 *
+	 * A minute rather than an hour because a flood is a per-second problem: an
+	 * hourly ceiling either blocks a legitimate catch-up burst or is far too
+	 * loose to blunt anything.
+	 *
+	 * Tripping it is safe. We answer 429, which is not a 2xx, so Whop retries
+	 * with backoff and the event is delayed rather than lost — and the admin
+	 * backfill reconciles anything that burns its retry budget.
+	 */
+	webhookIp: { limit: 600, windowSeconds: 60, lockSeconds: 60 },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Hashes identifying values into bucket keys so the table holds no PII. */
@@ -46,6 +64,10 @@ function bucketKey(prefix: string, value: string): string {
 export const loginIpBucket = (ip: string) => bucketKey("login:ip", ip);
 export const loginUserBucket = (email: string) => bucketKey("login:user", email);
 export const otpIpBucket = (ip: string) => bucketKey("otp:ip", ip);
+// Hashed like the rest. Whop's sending IP is not a visitor's, but this table
+// is meant to hold no raw addresses at all and one exception is how that stops
+// being true.
+export const webhookIpBucket = (ip: string) => bucketKey("whop:ip", ip);
 export const OTP_GLOBAL_BUCKET = "otp:global";
 
 /**

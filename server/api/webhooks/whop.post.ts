@@ -21,8 +21,35 @@ const whopsdk = new Whop({
 	webhookKey: btoa(process.env.WHOP_WEBHOOK_SECRET || ""),
 });
 
+/**
+ * Payload ceiling. A Whop payment event is a few kilobytes; this is around a
+ * hundred times that, so it can only ever reject something that is not one.
+ */
+const MAX_BODY_BYTES = 512 * 1024;
+
 export default defineEventHandler(async (event) => {
+	// Cheapest check first, and free: one header read, no database, no crypto.
+	// Signature verification runs HMAC over whatever arrives, so an unbounded
+	// body is unbounded work on the one endpoint that has no caller to trust.
+	const declaredLength = Number(getRequestHeader(event, "content-length") ?? 0);
+	if (declaredLength > MAX_BODY_BYTES) {
+		throw createError({ statusCode: 413, statusMessage: "Payload too large" });
+	}
+
+	// Then the ceiling. This is the only unauthenticated write in the system and
+	// was the only one without one. It costs a database round trip per delivery,
+	// which is worth it at Whop's volume — see RATE_LIMITS.webhookIp for why the
+	// number is where it is, and why tripping it loses nothing.
+	await enforceRateLimit(event, webhookIpBucket(clientIp(event)), RATE_LIMITS.webhookIp);
+
 	const requestBodyText = (await readRawBody(event)) ?? "";
+
+	// A chunked request declares no content-length, so the cap is applied again
+	// against what actually arrived.
+	if (Buffer.byteLength(requestBodyText, "utf8") > MAX_BODY_BYTES) {
+		throw createError({ statusCode: 413, statusMessage: "Payload too large" });
+	}
+
 	const rawHeaders = getHeaders(event);
 
 	const headers: Record<string, string> = Object.fromEntries(
