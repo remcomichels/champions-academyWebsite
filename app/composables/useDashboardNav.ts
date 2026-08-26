@@ -39,6 +39,7 @@ export const affiliateNav: DashboardNavItem[] = [
 
 /** Everything that reaches across affiliates rather than describing one. */
 export const adminNav: DashboardNavItem[] = [
+	{ to: "/dashboard/admin/analytics", label: "Analytics", icon: "chart" },
 	{ to: "/dashboard/admin/affiliates", label: "Affiliates", icon: "shield" },
 	{ to: "/dashboard/admin/activity", label: "Activity", icon: "history" },
 ];
