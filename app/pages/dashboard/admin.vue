@@ -27,6 +27,52 @@
 			</button>
 		</section>
 
+		<!-- Editing is a panel rather than inline fields: the slug is a public
+		     URL and notes are a paragraph, neither of which fits a table cell. -->
+		<section v-if="editing" class="dashPanel">
+			<h2 class="dashPanel-title">Edit {{ editing.displayName }}</h2>
+			<form class="adminForm" novalidate @submit.prevent="saveEdit">
+				<NuxtAuthField
+					v-model="editForm.slug"
+					label="Slug"
+					:error="editErrors.slug"
+					hint="Changing this keeps the old ?r= working for 90 days, so printed links survive."
+					required
+				/>
+				<NuxtAuthField
+					v-model="editForm.displayName"
+					label="Name"
+					:error="editErrors.displayName"
+					required
+				/>
+				<NuxtAuthField
+					v-model="editForm.whopUsername"
+					label="Whop username"
+					placeholder="optional"
+					:error="editErrors.whopUsername"
+					hint="Reference only — nothing is sent to Whop."
+				/>
+				<div class="field adminForm-wide">
+					<label class="field-label" for="affiliateNotes">Notes</label>
+					<textarea
+						id="affiliateNotes"
+						v-model="editForm.notes"
+						class="field-input adminForm-notes"
+						rows="3"
+						placeholder="Private to admins."
+					/>
+				</div>
+				<div class="adminForm-actions">
+					<button type="submit" class="btn btn--primary" :disabled="saving">
+						{{ saving ? "Saving…" : "Save changes" }}
+					</button>
+					<button type="button" class="btn btn--subtle" :disabled="saving" @click="cancelEdit">
+						Cancel
+					</button>
+				</div>
+			</form>
+		</section>
+
 		<section class="dashPanel">
 			<h2 class="dashPanel-title">Add an affiliate</h2>
 			<form class="adminForm" novalidate @submit.prevent="create">
@@ -50,7 +96,7 @@
 					label="Whop username"
 					placeholder="optional"
 					:error="createErrors.whopUsername"
-					hint="Needed by Whop to pay their commission."
+					hint="Reference only — nothing is sent to Whop."
 				/>
 				<button type="submit" class="btn btn--primary adminForm-submit" :disabled="creating">
 					{{ creating ? "Adding…" : "Add affiliate" }}
@@ -100,6 +146,12 @@
 							<td>{{ affiliate.sales }}</td>
 							<td>
 								<div class="adminActions">
+									<button
+										type="button"
+										:disabled="busyId === affiliate.id"
+										@click="startEdit(affiliate)"
+									>Edit</button>
+
 									<button
 										v-if="!affiliate.hasWhopConfig"
 										type="button"
@@ -161,7 +213,9 @@ useSeoMeta({
 const {
 	affiliates, search, loading, banner, busyId, issuedInvite,
 	createForm, createErrors, creating,
-	load, create, issueInvite, revokeInvite, setStatus, whopOnboard,
+	editing, editForm, editErrors, saving,
+	load, create, startEdit, cancelEdit, saveEdit,
+	issueInvite, revokeInvite, setStatus, whopOnboard,
 } = useAdmin();
 
 await load();

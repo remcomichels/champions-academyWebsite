@@ -17,9 +17,6 @@ import type { H3Event } from "h3";
  * affiliate's links and serves them to everyone else.
  */
 
-/** Keep in sync with the `slug` CHECK constraint on public.affiliates. */
-const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,30}[a-z0-9]$/;
-
 export const REF_COOKIE = "__Host-ca_ref";
 
 const REF_COOKIE_OPTIONS = {

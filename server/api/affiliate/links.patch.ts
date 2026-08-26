@@ -51,6 +51,8 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 400, statusMessage: "Could not save those links" });
 	}
 
+	await invalidateAffiliateLinks(affiliate.id, affiliate.slug);
+
 	await audit(event, {
 		actorKind: "affiliate",
 		action: "links.updated",
@@ -61,13 +63,13 @@ export default defineEventHandler(async (event) => {
 		},
 	});
 
-	// The referral middleware caches resolved links for five minutes, so a
-	// change here takes up to that long to show on the marketing site.
 	return {
 		links: {
 			lite: body.liteTelegramUrl,
 			calendly: body.calendlyUrl,
 		},
-		propagationSeconds: 300,
+		// The cached entry was just dropped, so the marketing site picks these
+		// up on its next request rather than whenever the TTL lapses.
+		propagationSeconds: 0,
 	};
 });

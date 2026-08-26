@@ -1,13 +1,7 @@
 import { object, str } from "../../utils/validate";
 
-/** Matches the CHECK constraint on affiliates.slug. */
-const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,30}[a-z0-9]$/;
-
-/** One change a month. */
+/** One change a month. This is the only rule here the admin path does not share. */
 const COOLDOWN_DAYS = 30;
-
-/** How long the old slug keeps working afterwards. */
-const ALIAS_GRACE_DAYS = 90;
 
 /**
  * Changes the affiliate's public `?r=` slug.
@@ -32,7 +26,7 @@ export default defineEventHandler(async (event) => {
 		slug: str({ min: 2, max: 32 }),
 	}));
 
-	const slug = body.slug.toLowerCase().trim();
+	const slug = normalizeSlug(body.slug);
 
 	const reject = (message: string) =>
 		createError({ statusCode: 400, statusMessage: message, data: { field: "slug", message } });
@@ -53,43 +47,12 @@ export default defineEventHandler(async (event) => {
 		}
 	}
 
-	// Taken by another affiliate, or by a reserved slug seeded as revoked.
-	const { data: clash } = await db()
-		.from("affiliates")
-		.select("id")
-		.eq("slug", slug)
-		.maybeSingle();
-
-	if (clash) throw reject("That link is already taken");
-
-	// Or still held by somebody else's alias inside its grace period.
-	const { data: aliasClash } = await db()
-		.from("affiliate_slug_aliases")
-		.select("affiliate_id")
-		.eq("slug", slug)
-		.gt("expires_at", new Date().toISOString())
-		.maybeSingle();
-
-	if (aliasClash && aliasClash.affiliate_id !== affiliate.id) {
-		throw reject("That link is already taken");
-	}
+	// Taken by another affiliate, by a reserved slug seeded as revoked, or by
+	// somebody else's alias still inside its grace period.
+	await assertSlugAvailable(slug, affiliate.id);
 
 	const previous = affiliate.slug;
-	const expiresAt = new Date(Date.now() + ALIAS_GRACE_DAYS * 24 * 60 * 60 * 1000).toISOString();
-
-	// Alias first. If this succeeds and the rename fails, the affiliate keeps
-	// their current slug and gains a redundant alias pointing at themselves —
-	// harmless. The other order would briefly orphan every existing link.
-	const { error: aliasError } = await db()
-		.from("affiliate_slug_aliases")
-		.upsert(
-			{ slug: previous, affiliate_id: affiliate.id, expires_at: expiresAt },
-			{ onConflict: "slug" },
-		);
-
-	if (aliasError) {
-		throw createError({ statusCode: 500, statusMessage: "Could not reserve your old link" });
-	}
+	const expiresAt = await reserveSlugAlias(previous, affiliate.id);
 
 	const { error } = await db()
 		.from("affiliates")
@@ -99,6 +62,11 @@ export default defineEventHandler(async (event) => {
 	if (error) {
 		throw reject("That link is already taken");
 	}
+
+	// Under both names: the old one now resolves to a rename that has already
+	// happened, and the new one may hold a miss from someone who tried it early.
+	await invalidateAffiliateLinks(affiliate.id, previous);
+	await invalidateAffiliateLinks(affiliate.id, slug);
 
 	await audit(event, {
 		actorKind: "affiliate",
@@ -111,9 +79,9 @@ export default defineEventHandler(async (event) => {
 		slug,
 		previousSlug: previous,
 		previousWorksUntil: expiresAt,
-		// The referral middleware caches slug lookups, so the new one is not
-		// instantaneous. Saying so beats an affiliate testing it immediately and
-		// concluding it is broken.
-		propagationSeconds: 300,
+		// Zero because the cached entries for both slugs were just dropped. It
+		// used to be 300 — the TTL — which meant an affiliate who tested their
+		// new link straight away got the old answer and concluded it was broken.
+		propagationSeconds: 0,
 	};
 });

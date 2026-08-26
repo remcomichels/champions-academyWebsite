@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
 			id, slug, display_name, status,
 			whop_username, whop_checkout_configuration_id, vip_checkout_url,
 			lite_telegram_url, calendly_url,
-			user_id, created_at
+			user_id, notes, created_at
 		`)
 		.order("created_at", { ascending: false });
 
@@ -86,6 +86,9 @@ export default defineEventHandler(async (event) => {
 				displayName: row.display_name as string,
 				status: row.status as string,
 				whopUsername: row.whop_username as string | null,
+				// For the edit form to prefill. Admin-only route, and notes are
+				// written by admins about affiliates in the first place.
+				notes: row.notes as string | null,
 				// Booleans rather than the URLs themselves: the table only needs to
 				// show what is set up, and there is no reason to spray every
 				// affiliate's links across an admin list.

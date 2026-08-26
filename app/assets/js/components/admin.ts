@@ -16,6 +16,7 @@ export interface AdminAffiliate {
 	displayName: string;
 	status: "active" | "revoked";
 	whopUsername: string | null;
+	notes: string | null;
 	hasWhopConfig: boolean;
 	hasVipLink: boolean;
 	hasTelegram: boolean;
@@ -51,6 +52,12 @@ export function useAdmin() {
 	const createForm = reactive({ slug: "", displayName: "", whopUsername: "" });
 	const createErrors = ref<Record<string, string | undefined>>({});
 	const creating = ref(false);
+
+	/** The affiliate open in the edit panel, or null when it is closed. */
+	const editing = ref<AdminAffiliate | null>(null);
+	const editForm = reactive({ slug: "", displayName: "", whopUsername: "", notes: "" });
+	const editErrors = ref<Record<string, string | undefined>>({});
+	const saving = ref(false);
 
 	/** Per-affiliate spinner, so one slow action doesn't disable the whole table. */
 	const busyId = ref<string | null>(null);
@@ -113,6 +120,75 @@ export function useAdmin() {
 		}
 		finally {
 			creating.value = false;
+		}
+	}
+
+	function startEdit(affiliate: AdminAffiliate) {
+		editing.value = affiliate;
+		editErrors.value = {};
+		banner.value = null;
+		editForm.slug = affiliate.slug;
+		editForm.displayName = affiliate.displayName;
+		editForm.whopUsername = affiliate.whopUsername ?? "";
+		editForm.notes = affiliate.notes ?? "";
+	}
+
+	function cancelEdit() {
+		editing.value = null;
+		editErrors.value = {};
+	}
+
+	async function saveEdit() {
+		const affiliate = editing.value;
+		if (!affiliate || saving.value) return;
+
+		editErrors.value = {};
+		banner.value = null;
+		saving.value = true;
+
+		try {
+			const data = await $fetch<{
+				changed: boolean;
+				slug?: string;
+				previousSlug?: string;
+				previousWorksUntil?: string;
+			}>(`/api/admin/affiliates/${affiliate.id}`, {
+				method: "PATCH",
+				body: {
+					slug: editForm.slug,
+					displayName: editForm.displayName,
+					// Empty string clears a nullable field; the server maps it to null.
+					whopUsername: editForm.whopUsername,
+					notes: editForm.notes,
+				},
+			});
+
+			banner.value = {
+				variant: "success",
+				text: !data.changed
+					? "Nothing to save."
+					: data.previousSlug
+						// The rename is the part with a consequence outside this page,
+						// so it is the part the confirmation talks about.
+						? `Saved. ?r=${data.previousSlug} keeps working until ${
+							new Date(data.previousWorksUntil!).toLocaleDateString("en-GB", {
+								day: "numeric", month: "short", year: "numeric",
+							})
+						}.`
+						: `${affiliate.displayName} updated.`,
+			};
+
+			editing.value = null;
+			await load();
+		}
+		catch (error) {
+			const data = (error as { data?: { data?: { field?: string; message?: string }; statusMessage?: string } })?.data;
+			const field = data?.data?.field;
+			if (field) editErrors.value[field] = data?.data?.message ?? data?.statusMessage;
+			else banner.value = { variant: "error", text: errorMessage(error, "Could not save those changes.") };
+		}
+		finally {
+			saving.value = false;
 		}
 	}
 
@@ -221,8 +297,15 @@ export function useAdmin() {
 		createForm,
 		createErrors,
 		creating,
+		editing,
+		editForm,
+		editErrors,
+		saving,
 		load,
 		create,
+		startEdit,
+		cancelEdit,
+		saveEdit,
 		issueInvite,
 		revokeInvite,
 		setStatus,

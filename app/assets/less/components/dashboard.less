@@ -2460,6 +2460,30 @@
     &-submit {
         white-space: nowrap;
     }
+
+    // Notes are a paragraph about a person, not a value beside two other
+    // values, so it takes the row rather than sharing it.
+    &-wide {
+        grid-column: 1 / -1;
+    }
+
+    &-notes {
+        // The reset gives an un-rowed textarea a 10em floor; `rows` sets the
+        // height here, so what is left to say is that dragging it taller is
+        // fine and dragging it wider breaks the grid.
+        resize: vertical;
+        min-height: 0;
+        line-height: 1.45;
+    }
+
+    // Save and Cancel belong together on their own row — `align-items: end`
+    // would otherwise leave Cancel floating beside whichever field ended last.
+    &-actions {
+        grid-column: 1 / -1;
+        display: flex;
+        flex-wrap: wrap;
+        gap: @vw12;
+    }
 }
 
 .adminSearch {

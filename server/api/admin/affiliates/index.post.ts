@@ -1,8 +1,5 @@
 import { object, optional, str } from "../../../utils/validate";
 
-/** Same pattern the database enforces on affiliates.slug. */
-const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,30}[a-z0-9]$/;
-
 /**
  * Creates an affiliate.
  *
@@ -24,7 +21,7 @@ export default defineEventHandler(async (event) => {
 		notes: optional(str({ max: 1000 })),
 	}));
 
-	const slug = body.slug.toLowerCase().trim();
+	const slug = normalizeSlug(body.slug);
 
 	if (!SLUG_RE.test(slug)) {
 		throw createError({
