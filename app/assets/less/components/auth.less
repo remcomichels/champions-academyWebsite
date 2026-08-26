@@ -3,19 +3,46 @@
 // Themed with the dashboard custom properties so signing in and landing in the
 // dashboard are visibly the same product. The green sun is gone from this
 // surface for the same reason — it belongs to the marketing site.
+//
+// This page does not scroll. It is one centred card, and a document that
+// scrolls by fifty pixels is just a card that missed the viewport.
+//
+// Locking the document is the easy half. The hard half is that the card has to
+// actually fit, and the reason it did not is that every value here is a `vw`:
+// at 1920 wide the card renders 1.33x its design size, on a viewport that is
+// nowhere near 1.33x taller. So each *vertical* value is capped against the
+// height as well — `min(@vwN, (N/8)vh)`, the 8 being the 1440x800 reference the
+// design is drawn at. At that size the caps are inert and nothing moves; on a
+// wide, short window they are what keeps the card on screen. Horizontal values
+// are left alone — width was never the problem.
+
+// The scroll lock. `overflow` rather than a height, so it cannot get into a
+// fight with `html.lenis { height: auto }` in _general.less, and so the
+// `min-height: 100vh` _reset.less puts on body stays harmless on mobile, where
+// 100vh is taller than the part of the page you can actually see.
+html[data-screen='auth'],
+html[data-screen='auth'] body {
+    overflow: hidden;
+}
 
 .authLayout {
     position: relative;
-    min-height: 100vh;
+    // dvh, not vh: on iOS 100vh includes the strip behind the URL bar, so the
+    // card would be centred on a box whose bottom you cannot see.
+    height: 100dvh;
+    overflow: hidden;
     background-color: var(--background);
 
     &-main {
         display: flex;
         align-items: center;
         justify-content: center;
-        flex: 1;
-        padding: @vw64 @vw32;
-        min-height: 100vh;
+        height: 100%;
+        // A floor, not a frame. The card is centred, so this only does anything
+        // once the card is tall enough to reach the edges — and held at @vw64
+        // it was the single biggest reason the page scrolled, spending 170px at
+        // 1920 wide on empty space above and below a card that needed it.
+        padding: min(@vw40, 5vh) @vw32;
     }
 
     // The same accent wash as the dashboard, anchored to the top of the
@@ -38,31 +65,51 @@
 .auth {
     width: 100%;
     max-width: calc(@vw300 + @vw160);
+    // Flex, and a percentage max-height, so the card below can be a scroll
+    // container: a percentage max-height needs an ancestor with a definite
+    // height, and `-main` — a flex container at `height: 100%` — is the nearest
+    // one. Without this the card resolves `max-height: 100%` to `none` and
+    // overflows the locked document instead of scrolling inside itself.
+    max-height: 100%;
+    display: flex;
 
     &-card {
+        flex: 1;
+        min-width: 0;
         display: flex;
         flex-direction: column;
-        gap: @vw24;
-        padding: @vw40 @vw36;
+        gap: min(@vw24, 3vh);
+        padding: min(@vw40, 5vh) @vw36;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
         border-radius: @vw16;
         box-shadow: var(--shadow-pop);
+        // Last resort, not a layout. With the caps above, sign-in clears every
+        // desktop and portrait-phone size with room to spare and never reaches
+        // this. What does reach it is the six-field redeem form, which is a
+        // taller thing than this card was drawn for and is left alone
+        // deliberately — so this is what keeps locking the document from
+        // costing someone a field they cannot scroll to. `contain` stops that
+        // scroll chaining back out to a page that is not allowed to move.
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
     &-head {
         display: flex;
         flex-direction: column;
-        gap: @vw8;
+        gap: min(@vw8, 1vh);
     }
 
     &-mark {
         align-self: flex-start;
         display: grid;
         place-items: center;
-        width: @vw40;
-        height: @vw40;
-        margin-bottom: @vw8;
+        // Capped on both axes, or it stops being a square.
+        width: min(@vw40, 5vh);
+        height: min(@vw40, 5vh);
+        flex: none;
+        margin-bottom: min(@vw8, 1vh);
         border-radius: @vw10;
         background-color: var(--accent);
         color: var(--on-accent);
@@ -83,7 +130,7 @@
         // to the body face; matching that keeps the dashboard in the same
         // visual system as the marketing pages.
         font-family: @body;
-        font-size: @vw28;
+        font-size: min(@vw28, 3.5vh);
         font-weight: @bold;
         line-height: 1.15;
         letter-spacing: -0.01em;
@@ -100,15 +147,25 @@
     &-form {
         display: flex;
         flex-direction: column;
-        gap: @vw20;
+        gap: min(@vw20, 2.5vh);
+    }
+
+    // The fields carry their own rhythm from form.less, which the dashboard
+    // shares — capping it there would drag the dashboard along, so the override
+    // is scoped to this form. An input is the tallest thing in the card that is
+    // not text, so at 1920 wide this is most of the headroom sign-in gains.
+    &-form .field {
+        gap: min(@vw8, 1vh);
+
+        &-input { padding: min(@vw12, 1.5vh) @vw14; }
     }
 
     &-submit {
-        margin-top: @vw8;
+        margin-top: min(@vw8, 1vh);
         width: 100%;
         // A form's primary action reads as a full-width commit rather than the
         // text-sized pill the shared .btn padding gives it.
-        padding: @vw15 @vw24;
+        padding: min(@vw15, 1.875vh) @vw24;
         font-size: max(0.85em, @vw15);
 
         &:disabled { cursor: wait; }
@@ -117,8 +174,8 @@
     &-foot {
         display: flex;
         flex-direction: column;
-        gap: @vw8;
-        padding-top: @vw20;
+        gap: min(@vw8, 1vh);
+        padding-top: min(@vw20, 2.5vh);
         border-top: max(1px, @vw1) solid var(--border);
     }
 
@@ -156,36 +213,56 @@
 
 @media (max-width: 1080px) {
     .authLayout {
-        &-main { padding: @vw64-1080 @vw32-1080; }
+        &-main { padding: min(@vw40-1080, 5vh) @vw32-1080; }
         &::before { height: calc(@vw300-1080 + @vw200-1080); }
     }
 
     .auth {
         max-width: calc(@vw300-1080 + @vw160-1080);
 
-        &-card { gap: @vw24-1080; padding: @vw40-1080 @vw36-1080; }
-        &-title { font-size: @vw28-1080; }
-        &-mark { width: @vw40-1080; height: @vw40-1080; }
-        &-form { gap: @vw20-1080; }
-        &-submit { padding: @vw15-1080 @vw24-1080; }
-        &-foot { padding-top: @vw20-1080; }
+        &-card { gap: min(@vw24-1080, 3vh); padding: min(@vw40-1080, 5vh) @vw36-1080; }
+        &-head { gap: min(@vw8-1080, 1vh); }
+        &-title { font-size: min(@vw28-1080, 3.5vh); }
+        &-mark {
+            width: min(@vw40-1080, 5vh);
+            height: min(@vw40-1080, 5vh);
+            margin-bottom: min(@vw8-1080, 1vh);
+        }
+        &-form { gap: min(@vw20-1080, 2.5vh); }
+        &-form .field {
+            gap: min(@vw8-1080, 1vh);
+
+            &-input { padding: min(@vw12-1080, 1.5vh) @vw14-1080; }
+        }
+        &-submit { margin-top: min(@vw8-1080, 1vh); padding: min(@vw15-1080, 1.875vh) @vw24-1080; }
+        &-foot { gap: min(@vw8-1080, 1vh); padding-top: min(@vw20-1080, 2.5vh); }
     }
 }
 
 @media (max-width: 600px) {
     .authLayout {
-        &-main { padding: @vw40-580 @vw20-580; }
+        &-main { padding: min(@vw40-580, 5vh) @vw20-580; }
         &::before { height: calc(@vw300-580 + @vw100-580); }
     }
 
     .auth {
         max-width: 100%;
 
-        &-card { gap: @vw20-580; padding: @vw32-580 @vw20-580; }
-        &-title { font-size: @vw28-580; }
-        &-mark { width: @vw40-580; height: @vw40-580; }
-        &-form { gap: @vw16-580; }
-        &-submit { padding: @vw15-580 @vw24-580; }
-        &-foot { padding-top: @vw16-580; }
+        &-card { gap: min(@vw20-580, 2.5vh); padding: min(@vw32-580, 4vh) @vw20-580; }
+        &-head { gap: min(@vw8-580, 1vh); }
+        &-title { font-size: min(@vw28-580, 3.5vh); }
+        &-mark {
+            width: min(@vw40-580, 5vh);
+            height: min(@vw40-580, 5vh);
+            margin-bottom: min(@vw8-580, 1vh);
+        }
+        &-form { gap: min(@vw16-580, 2vh); }
+        &-form .field {
+            gap: min(@vw8-580, 1vh);
+
+            &-input { padding: min(@vw12-580, 1.5vh) @vw14-580; }
+        }
+        &-submit { margin-top: min(@vw8-580, 1vh); padding: min(@vw15-580, 1.875vh) @vw24-580; }
+        &-foot { gap: min(@vw8-580, 1vh); padding-top: min(@vw16-580, 2vh); }
     }
 }

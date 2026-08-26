@@ -21,5 +21,11 @@ const { theme } = useTheme();
 
 // Same reasoning as the dashboard layout: /login is `no-store`, so markup that
 // varies by the theme cookie is never cached.
-useHead({ htmlAttrs: { "data-theme": theme } });
+//
+// `data-screen` is what auth.less hangs the scroll lock off. It has to be on
+// <html> because that is the element that scrolls, and it cannot be `data-theme`
+// — the dashboard sets that too, and the dashboard is supposed to scroll. An
+// attribute rather than a class so it cannot collide with the `lenis` classes
+// Lenis writes straight onto documentElement.
+useHead({ htmlAttrs: { "data-theme": theme, "data-screen": "auth" } });
 </script>
