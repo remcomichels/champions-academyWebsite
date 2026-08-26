@@ -36,6 +36,14 @@ const icons: Record<string, string[]> = {
 		"M8.5 4v16",
 	],
 	home: ["M3 10.6 12 3l9 7.6", "M5.5 9.6V20a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1V9.6"],
+	// A clock wound anticlockwise — the standard "history" glyph. The arc stops
+	// short at the top left and the arrow head marks where it came from, which
+	// is what separates it from a plain clock face.
+	history: [
+		"M3.5 9.5A9 9 0 1 1 3 12",
+		"M3.5 4.5v5h5",
+		"M12 7.5V12l3.5 2",
+	],
 	chart: ["M4.5 20.5v-5.5", "M12 20.5V4.5", "M19.5 20.5v-9"],
 	tag: ["M3.5 3.5h6.4l10.6 10.6-6.4 6.4L3.5 9.9V3.5Z", "M7.2 7.3v.01"],
 	link: [

@@ -31,6 +31,7 @@ export const dashboardNav: DashboardNavItem[] = [
 	{ to: "/dashboard/settings", label: "Settings", icon: "cog", group: true },
 	{ to: "/dashboard/support", label: "Support", icon: "help" },
 	{ to: "/dashboard/admin", label: "Admin", icon: "shield", admin: true },
+	{ to: "/dashboard/audit", label: "Activity", icon: "history", admin: true },
 ];
 
 const COOKIE = "ca_nav";
