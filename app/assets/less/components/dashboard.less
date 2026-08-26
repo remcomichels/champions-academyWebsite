@@ -2486,6 +2486,56 @@
     }
 }
 
+// The admin access list. A short list of people rather than a data table, so
+// rows rather than columns — there is nothing here to sort or compare.
+.adminList {
+    display: flex;
+    flex-direction: column;
+    margin-top: @vw20;
+    border-top: max(1px, @vw1) solid var(--border);
+
+    &-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw16;
+        padding: @vw12 0;
+        border-bottom: max(1px, @vw1) solid var(--border);
+    }
+
+    &-who {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        // Long addresses ellipsize rather than shoving the button off the row.
+        min-width: 0;
+    }
+
+    &-email {
+        font-size: max(0.8em, @vw14);
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-meta {
+        font-size: max(0.7em, @vw12);
+        color: var(--text-tertiary);
+    }
+
+    // Not a disabled button: a control that can never be used is better not
+    // drawn as a control at all.
+    &-self {
+        flex: none;
+        font-size: max(0.7em, @vw12);
+        font-weight: @semiBold;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+    }
+}
+
 .adminSearch {
     width: auto;
     min-width: @vw200;
@@ -2559,7 +2609,13 @@
     flex-direction: column;
     align-items: flex-start;
     gap: @vw6;
+}
 
+// The small outlined button used in both admin lists. Two selectors rather
+// than nesting it under .adminActions: the admin-access list needs the same
+// button without inheriting that column layout.
+.adminActions,
+.adminList-row {
     button {
         background: none;
         border: max(1px, @vw1) solid var(--border);
@@ -2595,6 +2651,10 @@
         }
     }
 }
+
+// In the access list the button sits beside a name that may be long, so it
+// must not be the thing that gives way.
+.adminList-row button { flex: none; }
 
 // ── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1080px) {

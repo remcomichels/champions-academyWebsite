@@ -194,11 +194,54 @@
 				</table>
 			</div>
 		</section>
+
+		<section class="dashPanel">
+			<h2 class="dashPanel-title">Admin access</h2>
+			<p class="dashPanel-note">
+				Admins can see and change every affiliate here. Granting it needs an
+				account that already exists — people get one by redeeming an invite.
+			</p>
+
+			<form class="adminForm" novalidate @submit.prevent="grantAdmin">
+				<NuxtAuthField
+					v-model="adminEmail"
+					label="Email"
+					type="email"
+					inputmode="email"
+					autocomplete="off"
+					:error="adminError"
+					required
+				/>
+				<button type="submit" class="btn btn--primary adminForm-submit" :disabled="grantingAdmin">
+					{{ grantingAdmin ? "Granting…" : "Grant admin" }}
+				</button>
+			</form>
+
+			<ul class="adminList">
+				<li v-for="user in admins" :key="user.userId" class="adminList-row">
+					<span class="adminList-who">
+						<span class="adminList-email">{{ user.email ?? user.userId }}</span>
+						<span v-if="user.displayName" class="adminList-meta">{{ user.displayName }} · ?r={{ user.affiliateSlug }}</span>
+					</span>
+
+					<!-- No Remove on your own row. The endpoint refuses it too; this
+					     just avoids offering a button that always fails. -->
+					<span v-if="user.isSelf" class="adminList-self">You</span>
+					<button
+						v-else
+						type="button"
+						class="is-danger"
+						:disabled="busyAdminId === user.userId"
+						@click="confirmRevokeAdmin(user)"
+					>Remove</button>
+				</li>
+			</ul>
+		</section>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { useAdmin, type AdminAffiliate } from "~/assets/js/components/admin";
+import { useAdmin, type AdminAffiliate, type AdminUser } from "~/assets/js/components/admin";
 
 definePageMeta({
 	layout: "dashboard",
@@ -214,16 +257,26 @@ const {
 	affiliates, search, loading, banner, busyId, issuedInvite,
 	createForm, createErrors, creating,
 	editing, editForm, editErrors, saving,
-	load, create, startEdit, cancelEdit, saveEdit,
+	admins, adminEmail, adminError, grantingAdmin, busyAdminId,
+	load, loadAdmins, grantAdmin, revokeAdmin,
+	create, startEdit, cancelEdit, saveEdit,
 	issueInvite, revokeInvite, setStatus, whopOnboard,
 } = useAdmin();
 
-await load();
+await Promise.all([load(), loadAdmins()]);
 
 /** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {
 	const message = `Revoke ${affiliate.slug}? They'll be signed out immediately and their links stop swapping. Their sales history is kept.`;
 	if (window.confirm(message)) setStatus(affiliate, status);
+}
+
+/** Handing someone the keys is worth a confirm; taking them back is too. */
+function confirmRevokeAdmin(user: AdminUser) {
+	const who = user.email ?? "this account";
+	if (window.confirm(`Remove admin access for ${who}? Their affiliate account, if they have one, is untouched.`)) {
+		revokeAdmin(user);
+	}
 }
 
 const formatDate = (iso: string) =>

@@ -28,6 +28,15 @@ export interface AdminAffiliate {
 	liveInvite: { prefix: string; expiresAt: string } | null;
 }
 
+export interface AdminUser {
+	userId: string;
+	email: string | null;
+	isSelf: boolean;
+	affiliateSlug: string | null;
+	displayName: string | null;
+	createdAt: string;
+}
+
 export interface IssuedInvite {
 	slug: string;
 	displayName: string;
@@ -62,6 +71,12 @@ export function useAdmin() {
 	/** Per-affiliate spinner, so one slow action doesn't disable the whole table. */
 	const busyId = ref<string | null>(null);
 
+	const admins = ref<AdminUser[]>([]);
+	const adminEmail = ref("");
+	const adminError = ref<string | null>(null);
+	const grantingAdmin = ref(false);
+	const busyAdminId = ref<string | null>(null);
+
 	const filtered = computed(() => {
 		const term = search.value.trim().toLowerCase();
 		if (!term) return affiliates.value;
@@ -86,6 +101,64 @@ export function useAdmin() {
 		}
 		finally {
 			loading.value = false;
+		}
+	}
+
+	async function loadAdmins() {
+		try {
+			const data = await $fetch<{ admins: AdminUser[] }>("/api/admin/admins", {
+				headers: import.meta.server ? useRequestHeaders(["cookie"]) : undefined,
+			});
+			admins.value = data.admins;
+		}
+		catch (error) {
+			banner.value = { variant: "error", text: errorMessage(error, "Could not load admins.") };
+		}
+	}
+
+	async function grantAdmin() {
+		if (grantingAdmin.value) return;
+
+		adminError.value = null;
+		banner.value = null;
+		grantingAdmin.value = true;
+
+		try {
+			const data = await $fetch<{ email: string }>("/api/admin/admins", {
+				method: "POST",
+				body: { email: adminEmail.value },
+			});
+
+			adminEmail.value = "";
+			banner.value = { variant: "success", text: `${data.email} can now open the admin panel.` };
+			await loadAdmins();
+		}
+		catch (error) {
+			const data = (error as { data?: { data?: { message?: string }; statusMessage?: string } })?.data;
+			adminError.value = data?.data?.message ?? data?.statusMessage ?? "Could not grant admin access.";
+		}
+		finally {
+			grantingAdmin.value = false;
+		}
+	}
+
+	async function revokeAdmin(user: AdminUser) {
+		busyAdminId.value = user.userId;
+		banner.value = null;
+
+		try {
+			await $fetch(`/api/admin/admins/${user.userId}`, { method: "DELETE" });
+			banner.value = {
+				variant: "success",
+				text: `${user.email ?? "That account"} no longer has admin access.`,
+			};
+			await loadAdmins();
+		}
+		catch (error) {
+			banner.value = { variant: "error", text: errorMessage(error, "Could not remove admin access.") };
+		}
+		finally {
+			busyAdminId.value = null;
 		}
 	}
 
@@ -301,7 +374,15 @@ export function useAdmin() {
 		editForm,
 		editErrors,
 		saving,
+		admins,
+		adminEmail,
+		adminError,
+		grantingAdmin,
+		busyAdminId,
 		load,
+		loadAdmins,
+		grantAdmin,
+		revokeAdmin,
 		create,
 		startEdit,
 		cancelEdit,

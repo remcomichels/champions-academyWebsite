@@ -126,3 +126,32 @@ export async function requireAffiliate(event: H3Event): Promise<AffiliateRow> {
 
 	return affiliate;
 }
+
+/**
+ * Finds a user by email address.
+ *
+ * Supabase's admin API has no lookup by email — `listUsers` takes a page and a
+ * size and nothing else — so this pages until it finds one. That is fine at the
+ * scale this system runs at (users here are affiliates and admins, not
+ * customers) and the cap stops it walking forever if that ever stops being
+ * true. Returns null rather than throwing, so callers decide what a miss means.
+ */
+export async function findUserByEmail(email: string): Promise<{ id: string; email: string } | null> {
+	const target = email.toLowerCase().trim();
+	const perPage = 200;
+	const maxPages = 25;
+
+	for (let page = 1; page <= maxPages; page++) {
+		const { data, error } = await db().auth.admin.listUsers({ page, perPage });
+
+		if (error) throw createError({ statusCode: 500, statusMessage: "Could not search accounts" });
+
+		const users = data?.users ?? [];
+		const match = users.find(user => user.email?.toLowerCase() === target);
+
+		if (match?.email) return { id: match.id, email: match.email };
+		if (users.length < perPage) return null;
+	}
+
+	return null;
+}
