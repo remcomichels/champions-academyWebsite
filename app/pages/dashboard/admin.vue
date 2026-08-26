@@ -32,35 +32,37 @@
 		<section v-if="editing" class="dashPanel">
 			<h2 class="dashPanel-title">Edit {{ editing.displayName }}</h2>
 			<form class="adminForm" novalidate @submit.prevent="saveEdit">
-				<NuxtAuthField
-					v-model="editForm.slug"
-					label="Slug"
-					:error="editErrors.slug"
-					hint="Changing this keeps the old ?r= working for 90 days, so printed links survive."
-					required
-				/>
-				<NuxtAuthField
-					v-model="editForm.displayName"
-					label="Name"
-					:error="editErrors.displayName"
-					required
-				/>
-				<NuxtAuthField
-					v-model="editForm.whopUsername"
-					label="Whop username"
-					placeholder="optional"
-					:error="editErrors.whopUsername"
-					hint="Reference only — nothing is sent to Whop."
-				/>
-				<div class="field adminForm-wide">
-					<label class="field-label" for="affiliateNotes">Notes</label>
-					<textarea
-						id="affiliateNotes"
-						v-model="editForm.notes"
-						class="field-input adminForm-notes"
-						rows="3"
-						placeholder="Private to admins."
+				<div class="adminForm-fields">
+					<NuxtAuthField
+						v-model="editForm.slug"
+						label="Slug"
+						:error="editErrors.slug"
+						hint="Changing this keeps the old ?r= working for 90 days, so printed links survive."
+						required
 					/>
+					<NuxtAuthField
+						v-model="editForm.displayName"
+						label="Name"
+						:error="editErrors.displayName"
+						required
+					/>
+					<NuxtAuthField
+						v-model="editForm.whopUsername"
+						label="Whop username"
+						placeholder="optional"
+						:error="editErrors.whopUsername"
+						hint="Reference only — nothing is sent to Whop."
+					/>
+					<div class="field adminForm-wide">
+						<label class="field-label" for="affiliateNotes">Notes</label>
+						<textarea
+							id="affiliateNotes"
+							v-model="editForm.notes"
+							class="field-input adminForm-notes"
+							rows="3"
+							placeholder="Private to admins."
+						/>
+					</div>
 				</div>
 				<div class="adminForm-actions">
 					<button type="submit" class="btn btn--primary" :disabled="saving">
@@ -76,31 +78,35 @@
 		<section class="dashPanel">
 			<h2 class="dashPanel-title">Add an affiliate</h2>
 			<form class="adminForm" novalidate @submit.prevent="create">
-				<NuxtAuthField
-					v-model="createForm.slug"
-					label="Slug"
-					placeholder="remco"
-					:error="createErrors.slug"
-					hint="Their ?r= value. Lowercase letters, numbers and dashes."
-					required
-				/>
-				<NuxtAuthField
-					v-model="createForm.displayName"
-					label="Name"
-					placeholder="Remco Michels"
-					:error="createErrors.displayName"
-					required
-				/>
-				<NuxtAuthField
-					v-model="createForm.whopUsername"
-					label="Whop username"
-					placeholder="optional"
-					:error="createErrors.whopUsername"
-					hint="Reference only — nothing is sent to Whop."
-				/>
-				<button type="submit" class="btn btn--primary adminForm-submit" :disabled="creating">
-					{{ creating ? "Adding…" : "Add affiliate" }}
-				</button>
+				<div class="adminForm-fields">
+					<NuxtAuthField
+						v-model="createForm.slug"
+						label="Slug"
+						placeholder="remco"
+						:error="createErrors.slug"
+						hint="Their ?r= value. Lowercase letters, numbers and dashes."
+						required
+					/>
+					<NuxtAuthField
+						v-model="createForm.displayName"
+						label="Name"
+						placeholder="Remco Michels"
+						:error="createErrors.displayName"
+						required
+					/>
+					<NuxtAuthField
+						v-model="createForm.whopUsername"
+						label="Whop username"
+						placeholder="optional"
+						:error="createErrors.whopUsername"
+						hint="Reference only — nothing is sent to Whop."
+					/>
+				</div>
+				<div class="adminForm-actions">
+					<button type="submit" class="btn btn--primary adminForm-submit" :disabled="creating">
+						{{ creating ? "Adding…" : "Add affiliate" }}
+					</button>
+				</div>
 			</form>
 		</section>
 
@@ -203,18 +209,22 @@
 			</p>
 
 			<form class="adminForm" novalidate @submit.prevent="grantAdmin">
-				<NuxtAuthField
-					v-model="adminEmail"
-					label="Email"
-					type="email"
-					inputmode="email"
-					autocomplete="off"
-					:error="adminError"
-					required
-				/>
-				<button type="submit" class="btn btn--primary adminForm-submit" :disabled="grantingAdmin">
-					{{ grantingAdmin ? "Granting…" : "Grant admin" }}
-				</button>
+				<div class="adminForm-fields">
+					<NuxtAuthField
+						v-model="adminEmail"
+						label="Email"
+						type="email"
+						inputmode="email"
+						autocomplete="off"
+						:error="adminError"
+						required
+					/>
+				</div>
+				<div class="adminForm-actions">
+					<button type="submit" class="btn btn--primary adminForm-submit" :disabled="grantingAdmin">
+						{{ grantingAdmin ? "Granting…" : "Grant admin" }}
+					</button>
+				</div>
 			</form>
 
 			<ul class="adminList">

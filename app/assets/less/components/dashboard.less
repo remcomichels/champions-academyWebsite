@@ -2452,19 +2452,59 @@
 }
 
 .adminForm {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(@vw200, 1fr));
-    align-items: end;
+    // The form itself is just a stack: the field grid, then the buttons. The
+    // buttons deliberately sit *outside* that grid — as an item spanning
+    // `1 / -1` they occupied every track, which stops `auto-fit` collapsing the
+    // empty ones, and the fields were pinned to their minimum width with the
+    // rest of the panel left blank.
+    display: flex;
+    flex-direction: column;
     gap: @vw16;
+
+    &-fields {
+        display: grid;
+
+        // Capped rather than `1fr`: a slug does not want half a panel. Tracks
+        // grow to a comfortable field and stop, empty ones collapse, and
+        // `justify-content` keeps what is left against the edge instead of
+        // centring three fields in a sea of nothing.
+        grid-template-columns: repeat(auto-fit, minmax(@vw200, @vw300));
+        justify-content: start;
+
+        // Three rows, because that is what a .field is: a label, a control, and
+        // an optional hint or error. Declaring them here lets every field opt
+        // into the same three via subgrid, so the inputs sit on one line
+        // whether or not the field beside them carries a hint.
+        //
+        // This replaces `align-items: end`, which aligned the *bottoms*: a
+        // field with no hint hung its input a hint's height below its
+        // neighbours', and a hint wrapping to two lines pushed its own column
+        // out of step again.
+        grid-template-rows: auto auto auto;
+        column-gap: @vw16;
+        row-gap: @vw8;
+
+        .field {
+            display: grid;
+            grid-template-rows: subgrid;
+            grid-row: span 3;
+        }
+    }
 
     &-submit {
         white-space: nowrap;
     }
 
     // Notes are a paragraph about a person, not a value beside two other
-    // values, so it takes the row rather than sharing it.
+    // values, so it takes the row rather than sharing it. Its own rows, too:
+    // spanning the shared three would stretch the textarea to whatever height
+    // the tallest hint in the band happened to need.
     &-wide {
         grid-column: 1 / -1;
+        // Opts out of the shared three rows: spanning them would stretch the
+        // textarea to whatever height the tallest hint in the band needed.
+        grid-template-rows: none;
+        grid-row: auto;
     }
 
     &-notes {
@@ -2476,12 +2516,10 @@
         line-height: 1.45;
     }
 
-    // Save and Cancel belong together on their own row — `align-items: end`
-    // would otherwise leave Cancel floating beside whichever field ended last.
     &-actions {
-        grid-column: 1 / -1;
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: @vw12;
     }
 }
@@ -3066,5 +3104,5 @@
     .supportSearch,
     .adminSearch { width: 100%; min-width: 0; }
 
-    .adminForm { grid-template-columns: 1fr; }
+    .adminForm-fields { grid-template-columns: 1fr; }
 }
