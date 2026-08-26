@@ -150,7 +150,7 @@ interface TrafficResponse {
 		sources: { host: string | null; visits: number }[];
 	};
 	sources: { host: string | null; visits: number }[];
-	countries: { country: string; visits: number }[];
+	countries: { country: string | null; visits: number }[];
 	clicks: { role: string; clicks: number }[];
 	heatmap: { dow: number; hour: number; visits: number }[];
 }
@@ -231,7 +231,13 @@ const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 
 const countries = computed(() =>
 	(traffic.value?.countries ?? []).map((row) => {
-		let label = row.country;
+		// A null country is a visit whose location could not be resolved — a
+		// VPN, a stripped header, a privacy browser. It used to be dropped, so
+		// the list quietly summed to less than the visit total. Named, the same
+		// way a null referrer is named "Direct".
+		if (!row.country) return { label: "Unknown", visits: row.visits };
+
+		let label: string = row.country;
 		// Vercel sends ISO codes; an unrecognised one must not throw.
 		try {
 			label = regionNames.of(row.country) ?? row.country;

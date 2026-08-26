@@ -10,7 +10,7 @@ interface ProgramAnalytics {
 	affiliates_selling: number;
 	by_day: { day: string; visits: number; clicks: number; sales: number }[];
 	sources: { host: string | null; visits: number }[];
-	countries: { country: string; visits: number }[];
+	countries: { country: string | null; visits: number }[];
 	clicks_by_role: { role: string; clicks: number }[];
 	leaderboard: {
 		id: string; slug: string; displayName: string; status: string;

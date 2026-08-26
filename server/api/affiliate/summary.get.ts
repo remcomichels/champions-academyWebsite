@@ -10,14 +10,6 @@ import type { LinkRole } from "#shared/types/affiliate";
 export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 
-	const dayOffset = (days: number) =>
-		new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-
-	const today = dayOffset(0);
-	const yesterday = dayOffset(1);
-	const thirtyDaysAgo = dayOffset(30);
-	const sixtyDaysAgo = dayOffset(60);
-
 	// The heatmap and breakdowns behind the Overview highlights come from the
 	// same RPC the Analytics tab uses, over a fixed 30-day window. Reused rather
 	// than reimplemented here: PostgREST cannot group, so doing it in this
@@ -26,38 +18,24 @@ export default defineEventHandler(async (event) => {
 	const HIGHLIGHT_DAYS = 30;
 	const timezone = canonicalTimezone(affiliate.timezone) ?? "UTC";
 
-	const [
-		todayVisits, yesterdayVisits,
-		recentVisits, priorVisits,
-		totalVisits, firstVisit, byDay,
-		traffic,
-	] = await Promise.all([
-		db().from("referral_visits").select("*", { count: "exact", head: true })
-			.eq("affiliate_id", affiliate.id).eq("day", today),
-
-		// The comparison windows behind the trend under each figure. Counts, not
-		// rows, so they are unaffected by the row cap that limits `byDay`.
-		db().from("referral_visits").select("*", { count: "exact", head: true })
-			.eq("affiliate_id", affiliate.id).eq("day", yesterday),
-
-		db().from("referral_visits").select("*", { count: "exact", head: true })
-			.eq("affiliate_id", affiliate.id).gte("day", thirtyDaysAgo),
-
-		// The 30 days before that, so "vs last month" compares like with like.
-		db().from("referral_visits").select("*", { count: "exact", head: true })
-			.eq("affiliate_id", affiliate.id)
-			.gte("day", sixtyDaysAgo).lt("day", thirtyDaysAgo),
-
-		db().from("referral_visits").select("*", { count: "exact", head: true })
-			.eq("affiliate_id", affiliate.id),
+	const [counts, firstVisit, traffic] = await Promise.all([
+		// Every counter on this page, bucketed on the affiliate's own local day.
+		//
+		// These used to be six PostgREST queries filtering `referral_visits.day`,
+		// which the referral middleware writes as a *UTC* date — so the Overview
+		// and the Analytics tab disagreed about what day it was for anyone not on
+		// UTC. At +14 it put most of "Today" into yesterday. The series was also
+		// counted row-by-row in this handler, which `db_max_rows` caps.
+		db().rpc("affiliate_day_counts", {
+			p_affiliate_id: affiliate.id,
+			p_timezone: timezone,
+			p_days: HIGHLIGHT_DAYS,
+		}),
 
 		db().from("referral_visits").select("occurred_at")
 			.eq("affiliate_id", affiliate.id)
 			.order("occurred_at", { ascending: true })
 			.limit(1).maybeSingle(),
-
-		db().from("referral_visits").select("day")
-			.eq("affiliate_id", affiliate.id).gte("day", thirtyDaysAgo),
 
 		db().rpc("affiliate_traffic", {
 			p_affiliate_id: affiliate.id,
@@ -67,13 +45,10 @@ export default defineEventHandler(async (event) => {
 		}),
 	]);
 
-	// Counted in memory rather than with a group-by: PostgREST has no grouping,
-	// and 30 days of unique daily visits for one affiliate is a small set.
-	const dailyCounts = new Map<string, number>();
-	for (const row of byDay.data ?? []) {
-		const day = row.day as string;
-		dailyCounts.set(day, (dailyCounts.get(day) ?? 0) + 1);
-	}
+	const day = (counts.data ?? {}) as {
+		today?: number; yesterday?: number; recent?: number; prior?: number;
+		total?: number; by_day?: { day: string; count: number }[];
+	};
 
 	const highlights = summarise(traffic.data);
 
@@ -116,14 +91,14 @@ export default defineEventHandler(async (event) => {
 		vipLinkPending: !affiliate.vip_checkout_url,
 
 		visits: {
-			today: todayVisits.count ?? 0,
-			yesterday: yesterdayVisits.count ?? 0,
-			last30d: recentVisits.count ?? 0,
-			previous30d: priorVisits.count ?? 0,
-			total: totalVisits.count ?? 0,
-			byDay: [...dailyCounts.entries()]
-				.map(([day, count]) => ({ day, count }))
-				.sort((a, b) => a.day.localeCompare(b.day)),
+			today: day.today ?? 0,
+			yesterday: day.yesterday ?? 0,
+			last30d: day.recent ?? 0,
+			previous30d: day.prior ?? 0,
+			total: day.total ?? 0,
+			// Already ordered, and already gap-filled: a quiet day is a zero
+			// rather than a missing point the chart would join across.
+			byDay: day.by_day ?? [],
 		},
 
 		onboarding: { steps, completed, total: Object.keys(steps).length },

@@ -29,7 +29,7 @@ export interface ProgramAnalyticsResponse {
 	trends: { visits: Trend | null; clicks: Trend | null; sales: Trend | null; active: Trend | null };
 	byDay: { day: string; visits: number; clicks: number; sales: number }[];
 	sources: { label: string; visits: number; previousVisits: number }[];
-	countries: { country: string; visits: number }[];
+	countries: { country: string | null; visits: number }[];
 	clicksByRole: { role: string; clicks: number }[];
 	leaderboard: LeaderRow[];
 	funnel: { label: string; value: number }[];
@@ -146,8 +146,13 @@ export function useAdminAnalytics() {
 		}));
 	});
 
+	// Null is "we could not resolve it", not a country. Named rather than
+	// dropped, so the breakdown adds up to the visits figure above it.
 	const countries = computed(() =>
-		(data.value?.countries ?? []).map(row => ({ label: row.country, visits: row.visits })));
+		(data.value?.countries ?? []).map(row => ({
+			label: row.country ?? "Unknown",
+			visits: row.visits,
+		})));
 
 	const periodLabel = computed(() => `vs previous ${days.value} days`);
 

@@ -170,15 +170,12 @@ export default defineNuxtConfig({
 		// it. Leave unset in production to use https://api.whop.com/api/v1.
 		whopBaseUrl: process.env.WHOP_BASE_URL || "",
 
-		// PostHog. The personal key can read every visitor event in the project,
-		// so it never leaves the server and is only used by a route that injects
-		// the affiliate filter itself.
-		posthogPersonalApiKey: process.env.POSTHOG_PERSONAL_API_KEY || "",
-		posthogProjectId: process.env.POSTHOG_PROJECT_ID || "",
-		// Queries go to the app host, not the ingestion host: us.i.posthog.com
-		// ingests events, us.posthog.com answers queries. Derived from
-		// POSTHOG_HOST when not set explicitly.
-		posthogApiHost: process.env.POSTHOG_API_HOST || "",
+		// No PostHog *query* credentials here on purpose. Collection still runs
+		// in the browser with the write-only project key below; nothing reads
+		// back. The personal API key that used to sit here could read every
+		// visitor event in the project, and the only route using it had already
+		// been replaced by first-party counting. See the note in the deletion
+		// commit for how to restore it if the Query API is ever wanted again.
 
 		public: {
 			// Write-only project key — safe in the browser, which is the whole
