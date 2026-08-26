@@ -1,5 +1,6 @@
 import type { H3Event } from "h3";
 import type { AffiliateStatus } from "#shared/types/affiliate";
+import type { SessionUser } from "./session";
 
 /**
  * Authentication and authorisation guards.
@@ -16,6 +17,11 @@ import type { AffiliateStatus } from "#shared/types/affiliate";
  * uuid from a query parameter, route parameter, or request body. There is a
  * grep in CI for exactly this. If you find yourself wanting to pass an id in,
  * the answer is no — that is the IDOR this design exists to prevent.
+ *
+ * Admin view-as does not change that. An admin looking at someone else's
+ * dashboard is still `requireAffiliate()` returning a row the *session* points
+ * at; the id lives on the session record, not in the request, so the affiliate
+ * routes carry on knowing nothing about it and the grep still holds.
  * ─────────────────────────────────────────────────────────────────────────
  */
 
@@ -52,8 +58,14 @@ const AFFILIATE_COLUMNS = `
 const unauthorized = () =>
 	createError({ statusCode: 401, statusMessage: "Not signed in" });
 
-/** The signed-in user, or throws 401. */
-export async function requireUser(event: H3Event): Promise<{ userId: string; sessionId: string }> {
+/**
+ * The signed-in user, or throws 401.
+ *
+ * Returns the whole SessionUser rather than a narrowed shape: the view-as
+ * target lives on it, and a hand-written return type here silently dropped it
+ * from every caller.
+ */
+export async function requireUser(event: H3Event): Promise<SessionUser> {
 	const session = await getAuthSession(event);
 	if (!session) throw unauthorized();
 	return session;
@@ -76,7 +88,7 @@ export async function isAdmin(userId: string): Promise<boolean> {
  * Admin status lives in its own table rather than user metadata, because
  * metadata is writable by the user it describes.
  */
-export async function requireAdmin(event: H3Event): Promise<{ userId: string; sessionId: string }> {
+export async function requireAdmin(event: H3Event): Promise<SessionUser> {
 	const session = await requireUser(event);
 
 	if (!(await isAdmin(session.userId))) {
@@ -89,16 +101,31 @@ export async function requireAdmin(event: H3Event): Promise<{ userId: string; se
 }
 
 /**
- * Requires an active affiliate session and returns their row.
+ * Resolves the affiliate a session is currently acting as, or null.
  *
- * The returned `id` is the only affiliate identifier any affiliate-scoped
- * query may use.
+ * Two ways in. Normally it is the affiliate attached to the signed-in user. If
+ * the session is in view-as, and the user is *still* an admin, it is the
+ * affiliate the session points at instead — re-checked on every request rather
+ * than trusted from when it was set, so an admin who loses access mid-session
+ * drops straight back to their own account.
  *
- * A paused or revoked affiliate is refused here rather than filtered later, so
- * revocation takes effect on the very next request.
+ * Returns the row without judging its status; callers decide what a non-active
+ * one means, and that answer differs depending on who is asking.
  */
-export async function requireAffiliate(event: H3Event): Promise<AffiliateRow> {
-	const session = await requireUser(event);
+export async function resolveSessionAffiliate(
+	session: { userId: string; impersonatingAffiliateId: string | null },
+): Promise<{ affiliate: AffiliateRow | null; viewingAs: boolean }> {
+	if (session.impersonatingAffiliateId && await isAdmin(session.userId)) {
+		const { data } = await db()
+			.from("affiliates")
+			.select(AFFILIATE_COLUMNS)
+			.eq("id", session.impersonatingAffiliateId)
+			.maybeSingle();
+
+		if (data) return { affiliate: data as unknown as AffiliateRow, viewingAs: true };
+		// The affiliate was deleted while being viewed. Falling through to their
+		// own account beats a dead dashboard.
+	}
 
 	const { data, error } = await db()
 		.from("affiliates")
@@ -110,12 +137,46 @@ export async function requireAffiliate(event: H3Event): Promise<AffiliateRow> {
 		throw createError({ statusCode: 500, statusMessage: "Could not load affiliate" });
 	}
 
-	if (!data) {
+	return { affiliate: (data as unknown as AffiliateRow) ?? null, viewingAs: false };
+}
+
+/**
+ * Requires an active affiliate session and returns their row.
+ *
+ * The returned `id` is the only affiliate identifier any affiliate-scoped
+ * query may use.
+ *
+ * A revoked affiliate is refused here rather than filtered later, so revocation
+ * takes effect on the very next request.
+ */
+export async function requireAffiliate(event: H3Event): Promise<AffiliateRow> {
+	const session = await requireUser(event);
+	const { affiliate, viewingAs } = await resolveSessionAffiliate(session);
+
+	if (!affiliate) {
 		// Authenticated, but no affiliate attached — an admin-only account.
 		throw createError({ statusCode: 403, statusMessage: "No affiliate account" });
 	}
 
-	const affiliate = data as unknown as AffiliateRow;
+	if (viewingAs) {
+		// Read-only, enforced at the boundary rather than route by route, so a
+		// route added later is covered without anyone remembering to.
+		//
+		// Without this an admin could change someone's password, rewrite their
+		// links or request deletion of their data from inside their account, and
+		// the audit trail would record the affiliate doing it.
+		if (event.method !== "GET") {
+			throw createError({
+				statusCode: 403,
+				statusMessage: "You're viewing this affiliate's dashboard — stop viewing to make changes",
+			});
+		}
+
+		// Status is deliberately not checked. A revoked affiliate's dashboard is
+		// one of the things an admin most needs to be able to open, and the
+		// admin's own access is what authorises this, not the affiliate's.
+		return affiliate;
+	}
 
 	if (affiliate.status !== "active") {
 		// Destroy the session too: leaving it alive means every subsequent

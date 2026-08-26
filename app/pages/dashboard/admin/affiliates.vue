@@ -111,6 +111,12 @@
 									>Edit</button>
 
 									<button
+										type="button"
+										:disabled="busyId === affiliate.id"
+										@click="viewAs(affiliate)"
+									>View as</button>
+
+									<button
 										v-if="!affiliate.hasWhopConfig"
 										type="button"
 										:disabled="busyId === affiliate.id"
@@ -281,7 +287,7 @@ const {
 	admins, adminEmail, adminError, grantingAdmin, busyAdminId,
 	load, loadAdmins, grantAdmin, revokeAdmin,
 	create, startEdit, cancelEdit, saveEdit,
-	issueInvite, revokeInvite, setStatus, whopOnboard,
+	issueInvite, revokeInvite, setStatus, viewAs, whopOnboard,
 } = useAdmin();
 
 await Promise.all([load(), loadAdmins()]);

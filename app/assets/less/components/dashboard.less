@@ -2524,6 +2524,68 @@
     }
 }
 
+// ── Viewing-as banner ────────────────────────────────────────────────────────
+// Deliberately loud. This is the one state where every figure on the screen
+// belongs to somebody else, and the failure mode is an admin forgetting and
+// reading another affiliate's numbers as their own.
+.viewingAs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: @vw12;
+    margin-bottom: @vw16;
+    padding: @vw10 @vw16;
+    border: max(1px, @vw1) solid var(--warning);
+    border-radius: @vw10;
+    background-color: var(--warning-subtle);
+
+    &-text {
+        font-size: max(0.75em, @vw13);
+        line-height: 1.4;
+        color: var(--text);
+    }
+
+    &-slug {
+        margin-left: @vw6;
+        font-size: max(0.7em, @vw12);
+        color: var(--text-secondary);
+    }
+
+    &-flag {
+        margin-left: @vw6;
+        font-size: max(0.6em, @vw11);
+        font-weight: @semiBold;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--error);
+    }
+
+    &-exit {
+        flex: none;
+        padding: @vw6 @vw12;
+        background: none;
+        border: max(1px, @vw1) solid var(--warning);
+        border-radius: @vw6;
+        font-family: @body;
+        font-size: max(0.7em, @vw12);
+        font-weight: @semiBold;
+        color: var(--text);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--on-accent); background-color: var(--warning); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+}
+
 // ── Admin mode switch ────────────────────────────────────────────────────────
 // A checkbox styled as a switch. The input stays in the DOM and keeps its own
 // focus and checked state — the track and knob below are painted from it, so
@@ -3033,6 +3095,13 @@
         &-item { padding: @vw10-1080 @vw14-1080; gap: @vw12-1080; }
         &-rule { margin: @vw10-1080 0; }
         &-mark { width: @vw32-1080; height: @vw32-1080; }
+    }
+
+    .viewingAs {
+        margin-bottom: @vw16-1080;
+        padding: @vw10-1080 @vw16-1080;
+
+        &-exit { padding: @vw6-1080 @vw12-1080; }
     }
 
     .modeSwitch {

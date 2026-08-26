@@ -338,6 +338,27 @@ export function useAdmin() {
 		}
 	}
 
+	async function viewAs(affiliate: AdminAffiliate) {
+		busyId.value = affiliate.id;
+		banner.value = null;
+
+		try {
+			await $fetch("/api/admin/view-as", {
+				method: "POST",
+				body: { affiliateId: affiliate.id },
+			});
+
+			// Hard navigation, not navigateTo: every composable in the dashboard
+			// holds data fetched as the admin, and the whole shell has to come
+			// back as the affiliate being viewed.
+			window.location.href = "/dashboard";
+		}
+		catch (error) {
+			banner.value = { variant: "error", text: errorMessage(error, "Could not open that dashboard.") };
+			busyId.value = null;
+		}
+	}
+
 	async function whopOnboard(affiliate: AdminAffiliate) {
 		busyId.value = affiliate.id;
 		banner.value = null;
@@ -399,6 +420,7 @@ export function useAdmin() {
 		issueInvite,
 		revokeInvite,
 		setStatus,
+		viewAs,
 		whopOnboard,
 	};
 }

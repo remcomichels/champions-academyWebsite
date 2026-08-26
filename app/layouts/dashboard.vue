@@ -15,6 +15,21 @@
 			<!-- NuxtPage, not <slot />: app.vue renders a bare <NuxtLayout />, so
 			     the layout mounts the page itself. A slot renders an empty main. -->
 			<main id="main" tabindex="-1" class="dashLayout-main">
+				<!-- Persistent, above everything, and impossible to dismiss without
+				     leaving. A session left in this state is one where an admin
+				     later reads someone else's figures as their own. -->
+				<div v-if="viewingAs" class="viewingAs">
+					<span class="viewingAs-text">
+						Viewing <strong>{{ viewingAs.displayName }}</strong>
+						<span class="viewingAs-slug">?r={{ viewingAs.slug }}</span>
+						<span v-if="viewingAs.status !== 'active'" class="viewingAs-flag">revoked</span>
+						— read only.
+					</span>
+					<button type="button" class="viewingAs-exit" @click="stopViewingAs">
+						Stop viewing
+					</button>
+				</div>
+
 				<!-- The row scrolls with the page rather than holding the top of
 				     the screen. It is inside `main` for that reason; as a sibling
 				     it sat outside the scrolling area and stayed put. -->
@@ -40,8 +55,14 @@
 						<NuxtDashboardModeSwitch v-if="isAdmin" />
 
 						<!-- Only mounted for accounts that actually have an affiliate:
-						     the stream and inbox routes both require one. -->
-						<NuxtDashboardInbox v-if="affiliate" />
+						     the stream and inbox routes both require one.
+
+						     Hidden while viewing someone else. It opens an SSE stream
+						     and marks notifications read, which is a write — so it
+						     would 403 against the read-only rule on every open, and
+						     an admin has no business clearing another affiliate's
+						     unread badge by looking at it. -->
+						<NuxtDashboardInbox v-if="affiliate && !viewingAs" />
 
 						<NuxtLink
 							v-if="affiliate"
@@ -81,7 +102,7 @@
 <script setup lang="ts">
 import { ADMIN_HOME, dashboardNav, isAdminRoute } from "~/composables/useDashboardNav";
 
-const { isAdmin, affiliate, fetchMe } = useAuth();
+const { isAdmin, affiliate, viewingAs, stopViewingAs, fetchMe } = useAuth();
 const { collapsed, drawerOpen } = useDashboardNav();
 const { theme } = useTheme();
 

@@ -15,20 +15,20 @@ export default defineEventHandler(async (event) => {
 		return { user: null, affiliate: null };
 	}
 
-	const [admin, affiliateResult] = await Promise.all([
+	// Through the same resolver requireAffiliate uses, so the shell and the data
+	// under it can never disagree about whose dashboard this is.
+	const [admin, resolved] = await Promise.all([
 		isAdmin(session.userId),
-		db()
-			.from("affiliates")
-			.select("slug, display_name, status, avatar_path, timezone, locale")
-			.eq("user_id", session.userId)
-			.maybeSingle(),
+		resolveSessionAffiliate(session),
 	]);
 
-	const affiliate = affiliateResult.data;
+	const { affiliate, viewingAs } = resolved;
 
-	// A suspended or revoked affiliate reads as signed out to the UI, so the
-	// dashboard redirects instead of rendering an empty shell.
-	if (affiliate && affiliate.status !== "active") {
+	// A revoked affiliate reads as signed out to the UI, so the dashboard
+	// redirects instead of rendering an empty shell. Not while an admin is
+	// viewing them, though — that is a legitimate thing to be looking at, and
+	// signing the admin out of their own session for it would be absurd.
+	if (affiliate && !viewingAs && affiliate.status !== "active") {
 		return { user: null, affiliate: null };
 	}
 
@@ -36,12 +36,16 @@ export default defineEventHandler(async (event) => {
 		user: { isAdmin: admin },
 		affiliate: affiliate
 			? {
-					slug: affiliate.slug as string,
-					displayName: affiliate.display_name as string,
-					avatarPath: affiliate.avatar_path as string | null,
-					timezone: affiliate.timezone as string,
-					locale: affiliate.locale as string,
+					slug: affiliate.slug,
+					displayName: affiliate.display_name,
+					avatarPath: affiliate.avatar_path,
+					timezone: affiliate.timezone,
+					locale: affiliate.locale,
 				}
+			: null,
+		// Drives the banner. Null for everyone not currently viewing someone.
+		viewingAs: viewingAs && affiliate
+			? { slug: affiliate.slug, displayName: affiliate.display_name, status: affiliate.status }
 			: null,
 	};
 });

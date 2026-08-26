@@ -7,6 +7,8 @@ export interface MeResponse {
 		timezone: string;
 		locale: string;
 	} | null;
+	/** Set while an admin is viewing this affiliate rather than being them. */
+	viewingAs: { slug: string; displayName: string; status: string } | null;
 }
 
 /**
@@ -33,7 +35,7 @@ export function useAuth() {
 
 	const logout = async () => {
 		await $fetch("/api/auth/logout", { method: "POST" });
-		me.value = { user: null, affiliate: null };
+		me.value = { user: null, affiliate: null, viewingAs: null };
 		await navigateTo("/login");
 	};
 
@@ -44,5 +46,16 @@ export function useAuth() {
 		isSignedIn: computed(() => Boolean(me.value?.user)),
 		isAdmin: computed(() => Boolean(me.value?.user?.isAdmin)),
 		affiliate: computed(() => me.value?.affiliate ?? null),
+		viewingAs: computed(() => me.value?.viewingAs ?? null),
+
+		/**
+		 * Leaves view-as and reloads. A full reload rather than a refetch: every
+		 * page in the dashboard has already fetched its data as the affiliate
+		 * being viewed, and there is no cheap way to invalidate all of it.
+		 */
+		stopViewingAs: async () => {
+			await $fetch("/api/admin/view-as", { method: "DELETE" });
+			await navigateTo("/dashboard/admin/affiliates", { external: true });
+		},
 	};
 }

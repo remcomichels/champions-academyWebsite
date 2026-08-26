@@ -31,6 +31,12 @@ const TOUCH_INTERVAL_MS = 5 * 60 * 1000;
 export interface SessionUser {
 	userId: string;
 	sessionId: string;
+	/**
+	 * Set while an admin is viewing an affiliate's dashboard. Server-side state
+	 * on the session row, never anything the request carried — see the migration
+	 * 20260826000010 and the boundary note in auth.ts.
+	 */
+	impersonatingAffiliateId: string | null;
 }
 
 const hashToken = (token: string) => createHash("sha256").update(token).digest("hex");
@@ -91,7 +97,7 @@ export async function getAuthSession(event: H3Event): Promise<SessionUser | null
 
 	const { data, error } = await db()
 		.from("sessions")
-		.select("id, user_id, last_seen_at")
+		.select("id, user_id, last_seen_at, impersonating_affiliate_id")
 		.eq("token_hash", hashToken(token))
 		.is("revoked_at", null)
 		.gt("absolute_expires_at", nowIso)
@@ -109,7 +115,27 @@ export async function getAuthSession(event: H3Event): Promise<SessionUser | null
 			.eq("id", data.id);
 	}
 
-	return { userId: data.user_id as string, sessionId: data.id as string };
+	return {
+		userId: data.user_id as string,
+		sessionId: data.id as string,
+		impersonatingAffiliateId: data.impersonating_affiliate_id as string | null,
+	};
+}
+
+/**
+ * Starts or stops viewing an affiliate on this session.
+ *
+ * Scoped to the one session rather than the user: an admin who opens someone
+ * else's dashboard on a laptop has not put their phone into that state too.
+ */
+export async function setImpersonation(sessionId: string, affiliateId: string | null): Promise<void> {
+	await db()
+		.from("sessions")
+		.update({
+			impersonating_affiliate_id: affiliateId,
+			impersonation_started_at: affiliateId ? new Date().toISOString() : null,
+		})
+		.eq("id", sessionId);
 }
 
 /** Ends the current session and clears the cookie. */

@@ -132,6 +132,9 @@
     --error: @error;
     --success: @success;
     --warning: @warning;
+    // Same 12% tint as --accent-subtle, so a warning panel sits at the same
+    // weight as an accented one rather than shouting louder by accident.
+    --warning-subtle: rgba(243, 156, 18, 0.12);
 }
 
 // `_general.less` pins `color-scheme: light !important` on both `:root` and
