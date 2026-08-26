@@ -30,7 +30,10 @@ export const dashboardNav: DashboardNavItem[] = [
 	// actual work, these are the things you visit once and leave again.
 	{ to: "/dashboard/settings", label: "Settings", icon: "cog", group: true },
 	{ to: "/dashboard/support", label: "Support", icon: "help" },
-	{ to: "/dashboard/admin", label: "Admin", icon: "shield", admin: true },
+	// `group` rather than a rule in the template: both entries below are
+	// admin-only, so when they are filtered out the divider goes with them and
+	// an affiliate never sees a line with nothing under it.
+	{ to: "/dashboard/admin", label: "Admin", icon: "shield", admin: true, group: true },
 	{ to: "/dashboard/audit", label: "Activity", icon: "history", admin: true },
 ];
 
