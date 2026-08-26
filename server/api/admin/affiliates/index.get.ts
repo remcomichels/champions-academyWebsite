@@ -46,6 +46,14 @@ export default defineEventHandler(async (event) => {
 				.in("affiliate_id", ids)
 				.is("redeemed_at", null)
 				.is("revoked_at", null)
+				// Expiry counts as gone. Without this an unredeemed code that
+				// lapsed still reported as outstanding, which hid "Issue code"
+				// behind "Revoke code" in the panel — so missing the window meant
+				// having to revoke a already-dead code before issuing a live one.
+				// The row itself stays put for the audit trail; invite.post.ts
+				// revokes whatever is outstanding before inserting, expired
+				// included, so the one-live-invite index is never at risk.
+				.gt("expires_at", new Date().toISOString())
 			: { data: [] },
 	]);
 

@@ -93,7 +93,7 @@
 									<li :class="{ 'is-done': affiliate.hasCalendly }">Calendly</li>
 								</ul>
 								<span v-if="affiliate.liveInvite" class="adminTable-invite">
-									code {{ affiliate.liveInvite.prefix }}… outstanding
+									code {{ affiliate.liveInvite.prefix }}… until {{ formatDate(affiliate.liveInvite.expiresAt) }}
 								</span>
 							</td>
 							<td>{{ affiliate.visits }}</td>
