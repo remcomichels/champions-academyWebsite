@@ -1,5 +1,5 @@
 <template>
-	<div class="feedback">
+	<div ref="root" class="feedback">
 		<!-- A word rather than a glyph. A speech bubble beside a bell and a
 		     question mark was three icons competing to be understood, and this
 		     is the one of the three nobody would guess. -->
@@ -7,75 +7,70 @@
 			type="button"
 			class="dashBar-text tip"
 			data-tip="Report an issue or share an idea"
-			@click="openDialog"
+			:aria-expanded="open"
+			aria-haspopup="dialog"
+			@click="toggle"
 		>
 			Feedback
 		</button>
 
-		<dialog ref="dialog" class="modal" @close="reset" @click="onBackdrop">
-			<div class="modal-panel feedback-panel">
-				<header class="modal-head">
-					<h2 class="modal-title">
-						{{ kind ? (kind === "issue" ? "Report an issue" : "Share an idea") : "What would you like to share?" }}
-					</h2>
-					<button type="button" class="modal-close" aria-label="Close" @click="closeDialog">
-						<NuxtDashboardIcon name="close" />
-					</button>
-				</header>
+		<!-- A panel under the button, matching the account menu, rather than a
+		     modal over the page. Sending feedback is a small aside — dimming
+		     the dashboard and trapping focus for it framed a two-click errand
+		     as an interruption. -->
+		<div v-if="open" class="feedbackPanel" role="dialog" :aria-label="heading">
+			<p class="feedbackPanel-title">{{ heading }}</p>
 
-				<!-- Step one. Two buttons rather than a select: there are exactly
-				     two answers and picking one is also the thing that advances
-				     the form, so a dropdown plus a Next would be two clicks for
-				     what is genuinely one decision. -->
-				<div v-if="!kind" class="feedback-choices">
-					<button type="button" class="feedback-choice" @click="choose('issue')">
-						<span class="feedback-choiceTitle">Issue</span>
-						<span class="feedback-choiceNote">Something is broken, wrong, or confusing.</span>
-					</button>
+			<!-- Step one: two targets, and picking one is also what advances the
+			     form — so a select plus a Next would be two actions for what is
+			     genuinely one decision. -->
+			<div v-if="!kind" class="feedbackPanel-choices">
+				<button
+					v-for="option in options"
+					:key="option.value"
+					type="button"
+					class="feedbackCard"
+					:class="`is-${option.value}`"
+					@click="choose(option.value)"
+				>
+					<Icon :name="option.icon" class="feedbackCard-icon" />
+					<span class="feedbackCard-label">{{ option.label }}</span>
+					<span class="feedbackCard-note">{{ option.note }}</span>
+				</button>
+			</div>
 
-					<button type="button" class="feedback-choice" @click="choose('idea')">
-						<span class="feedback-choiceTitle">Idea</span>
-						<span class="feedback-choiceNote">Something you'd like the dashboard to do.</span>
+			<!-- Step two: same panel, swapped contents. -->
+			<form v-else class="feedbackPanel-form" novalidate @submit.prevent="submit">
+				<textarea
+					id="feedback-body"
+					ref="body"
+					v-model="text"
+					class="field-input feedbackPanel-text"
+					rows="5"
+					:maxlength="MAX"
+					:placeholder="kind === 'issue'
+						? 'What were you doing, and what happened instead?'
+						: 'What would you like to be able to do?'"
+				/>
+
+				<p class="feedbackPanel-meta">
+					<span :class="{ 'is-over': remaining < 0 }">{{ remaining }}</span> left
+				</p>
+
+				<NuxtAlertBanner v-if="error" variant="error">{{ error }}</NuxtAlertBanner>
+
+				<div class="feedbackPanel-actions">
+					<button type="button" class="btn btn--ghost" @click="kind = null">Back</button>
+					<button type="submit" class="btn btn--primary" :disabled="!canSend">
+						{{ busy ? "Sending…" : "Send" }}
 					</button>
 				</div>
+			</form>
 
-				<!-- Step two. Same dialog, swapped contents. -->
-				<form v-else class="feedback-form" novalidate @submit.prevent="submit">
-					<label class="field-label" for="feedback-body">
-						{{ kind === "issue" ? "What went wrong?" : "What's the idea?" }}
-					</label>
-
-					<textarea
-						id="feedback-body"
-						ref="body"
-						v-model="text"
-						class="field-input feedback-text"
-						rows="6"
-						:maxlength="MAX"
-						:placeholder="kind === 'issue'
-							? 'What were you doing, and what happened instead?'
-							: 'What would you like to be able to do?'"
-					/>
-
-					<p class="feedback-meta">
-						<span :class="{ 'is-over': remaining < 0 }">{{ remaining }}</span> characters left
-					</p>
-
-					<NuxtAlertBanner v-if="error" variant="error">{{ error }}</NuxtAlertBanner>
-
-					<div class="feedback-actions">
-						<button type="button" class="btn btn--ghost" @click="kind = null">Back</button>
-						<button type="submit" class="btn btn--primary" :disabled="!canSend">
-							{{ busy ? "Sending…" : "Send" }}
-						</button>
-					</div>
-				</form>
-
-				<p v-if="sent" class="feedback-sent" role="status">
-					Thanks — that's with us. We read everything, but we won't reply here.
-				</p>
-			</div>
-		</dialog>
+			<p v-if="sent" class="feedbackPanel-sent" role="status">
+				Thanks — that's with us. We read everything, but we won't reply here.
+			</p>
+		</div>
 	</div>
 </template>
 
@@ -86,32 +81,47 @@
  * Deliberately one-way. There is no thread, no status and no reply — this is a
  * suggestion box that lands in the admin dashboard for reading, and saying so
  * on send is what stops it being mistaken for support. Support is its own page,
- * and it is linked from the rail.
+ * and it is linked from the rail beside this.
  */
 type Kind = "issue" | "idea";
 
 const MAX = 2000;
 
-const dialog = ref<HTMLDialogElement | null>(null);
+const options = [
+	{
+		value: "issue" as const,
+		label: "Issue",
+		note: "with my account",
+		icon: "material-symbols-light:warning-outline-rounded",
+	},
+	{
+		value: "idea" as const,
+		label: "Idea",
+		note: "to improve the dashboard",
+		icon: "material-symbols-light:lightbulb-2-outline-rounded",
+	},
+];
+
+const root = ref<HTMLElement | null>(null);
 const body = ref<HTMLTextAreaElement | null>(null);
 
+const open = ref(false);
 const kind = ref<Kind | null>(null);
 const text = ref("");
 const busy = ref(false);
 const sent = ref(false);
 const error = ref<string | null>(null);
 
+const heading = computed(() => {
+	if (sent.value) return "Thanks";
+	if (!kind.value) return "What would you like to share?";
+	return kind.value === "issue" ? "Report an issue" : "Share an idea";
+});
+
 const remaining = computed(() => MAX - text.value.length);
 
 const canSend = computed(() =>
 	!busy.value && text.value.trim().length >= 3 && remaining.value >= 0);
-
-const openDialog = () => {
-	reset();
-	dialog.value?.showModal();
-};
-
-const closeDialog = () => dialog.value?.close();
 
 const reset = () => {
 	kind.value = null;
@@ -121,19 +131,19 @@ const reset = () => {
 	error.value = null;
 };
 
+const close = () => { open.value = false; };
+
+const toggle = () => {
+	if (open.value) { close(); return; }
+
+	reset();
+	open.value = true;
+};
+
 const choose = async (next: Kind) => {
 	kind.value = next;
 	await nextTick();
 	body.value?.focus();
-};
-
-/**
- * A click that lands on the dialog element itself came from the backdrop — the
- * visible card is `-panel`, so anything inside it hits that instead. Same trick
- * the admin edit dialog uses.
- */
-const onBackdrop = (event: MouseEvent) => {
-	if (event.target === dialog.value) closeDialog();
 };
 
 const submit = async () => {
@@ -153,7 +163,7 @@ const submit = async () => {
 		text.value = "";
 
 		// Long enough to read the confirmation, short enough not to feel stuck.
-		setTimeout(() => { if (sent.value) closeDialog(); }, 2200);
+		setTimeout(() => { if (sent.value) close(); }, 2200);
 	}
 	catch (cause) {
 		const status = (cause as { statusCode?: number }).statusCode;
@@ -165,4 +175,39 @@ const submit = async () => {
 		busy.value = false;
 	}
 };
+
+// Click-outside and Escape, bound only while open — the same handling the
+// account menu uses, so the two panels behave identically.
+watch(open, (isOpen) => {
+	if (!import.meta.client) return;
+
+	const onPointer = (event: PointerEvent) => {
+		if (!root.value?.contains(event.target as Node)) close();
+	};
+
+	const onKey = (event: KeyboardEvent) => {
+		if (event.key === "Escape") close();
+	};
+
+	if (isOpen) {
+		document.addEventListener("pointerdown", onPointer);
+		document.addEventListener("keydown", onKey);
+		cleanup = () => {
+			document.removeEventListener("pointerdown", onPointer);
+			document.removeEventListener("keydown", onKey);
+		};
+	}
+	else {
+		cleanup?.();
+		cleanup = null;
+	}
+});
+
+let cleanup: (() => void) | null = null;
+
+// Navigating away from under an open panel leaves it open over the new page.
+const route = useRoute();
+watch(() => route.fullPath, close);
+
+onUnmounted(() => cleanup?.());
 </script>
