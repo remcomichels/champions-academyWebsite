@@ -221,6 +221,30 @@
 
 
 
+// ── Panel tail ───────────────────────────────────────────────────────────────
+// A rotated square with two borders showing, so it takes the panel's outline on
+// the two edges actually exposed and its fill on the rest. Sits half outside
+// the panel, which is what makes it read as a point rather than a notch.
+//
+// A mixin rather than a class: both panels want identical geometry and differ
+// only in where along the top edge they anchor it, which is a property of the
+// button each hangs from.
+.dashTail(@surface: var(--surface)) {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    width: @vw10;
+    height: @vw10;
+    // Half its own height below its top edge, so the visible half is the part
+    // above the panel.
+    margin-bottom: -@vw5;
+    transform: rotate(45deg);
+    background-color: @surface;
+    border-left: max(1px, @vw1) solid var(--border);
+    border-top: max(1px, @vw1) solid var(--border);
+    border-top-left-radius: max(2px, @vw2);
+}
+
 // ── Tooltip ──────────────────────────────────────────────────────────────────
 // A balloon under whatever carries `data-tip`, in place of the browser's own.
 //
@@ -239,10 +263,12 @@
     &::after {
         content: attr(data-tip);
         position: absolute;
-        top: calc(100% + @vw10);
+        top: calc(100% + @vw6);
         left: 50%;
         transform: translateX(-50%);
-        z-index: 80;
+        // Above the account panel, which opens directly beneath this and would
+        // otherwise swallow the balloon belonging to the button that opened it.
+        z-index: 90;
         padding: @vw4 @vw8;
         border-radius: @dashRadiusInner;
         background-color: var(--surface-raised);
@@ -263,10 +289,10 @@
     &::before {
         content: '';
         position: absolute;
-        top: calc(100% + @vw6);
+        top: calc(100% + @vw2);
         left: 50%;
         transform: translateX(-50%) rotate(45deg);
-        z-index: 81;
+        z-index: 91;
         width: @vw8;
         height: @vw8;
         background-color: var(--surface-raised);
@@ -3657,7 +3683,10 @@
         position: fixed;
         // Minus, not plus: the card tucks up under the bar's bottom edge
         // rather than floating clear of it.
-        top: calc(var(--alert-bar) + var(--top-bar) - @vw4);
+        // Clear of the bar now rather than tucked under its edge — the tail
+        // needs somewhere to point from, and the gap is what lets the trigger's
+        // own tooltip sit between the two instead of landing inside the panel.
+        top: calc(var(--alert-bar) + var(--top-bar) + @vw8);
         // The bar's own horizontal padding, so the panel's right edge lines up
         // with the avatar's rather than stopping a few pixels short of it.
         right: @vw12;
@@ -3671,6 +3700,15 @@
         // A menu genuinely floats over the page, so this is one of the few
         // places a shadow is still earned.
         box-shadow: var(--shadow-pop);
+
+        // Anchored to the avatar's centre. The panel's right edge is flush with
+        // the avatar's, and the avatar is @vw30 across, so half of it in from
+        // that edge is exactly the middle of the button — less half the tail's
+        // own width to centre the tail on that point.
+        &::before {
+            .dashTail();
+            right: @vw10;
+        }
     }
 
     &-identity {
@@ -4074,14 +4112,35 @@
     position: relative;
     display: flex;
     flex: none;
+
+    // The tail belongs to the wrapper, not the panel.
+    //
+    // The panel is right-aligned to the button and much wider than it, so a
+    // tail at 50% *of the panel* would point at empty bar. The wrapper is
+    // exactly the button, so 50% of it is the button's middle — which is the
+    // one place the tail should ever point.
+    //
+    // Positioned to straddle the panel's top edge: the panel opens @vw8 below
+    // the wrapper and the tail is @vw10 tall, so @vw3 puts its centre on that
+    // edge. z-index clears the panel so its fill covers the border it crosses.
+    &.is-open::after {
+        .dashTail();
+        top: calc(100% + @vw3);
+        bottom: auto;
+        margin-bottom: 0;
+        left: 50%;
+        margin-left: -@vw5;
+        z-index: 61;
+    }
 }
 
 .feedbackPanel {
     position: absolute;
-    top: calc(100% + @vw10);
-    // Aligned to the button's right edge rather than centred under it: the
-    // panel is wider than the word it hangs from, and centring would push it
-    // toward the viewport edge for no gain.
+    top: calc(100% + @vw8);
+    // Aligned to the button's right edge. Centred on the button it overflowed
+    // the viewport — the panel is around 374 wide and the button sits nearer
+    // the right of the bar than that. The tail still points at the button's
+    // middle; it is drawn on the wrapper instead, where 50% means the button.
     right: 0;
     z-index: 60;
     width: max-content;

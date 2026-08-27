@@ -1,5 +1,5 @@
 <template>
-	<div ref="root" class="feedback">
+	<div ref="root" class="feedback" :class="{ 'is-open': open }">
 		<!-- A word rather than a glyph. A speech bubble beside a bell and a
 		     question mark was three icons competing to be understood, and this
 		     is the one of the three nobody would guess. -->
