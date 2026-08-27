@@ -1,5 +1,11 @@
 <template>
-	<div ref="root" class="tzMenu" :class="{ 'is-open': open }">
+	<div
+		ref="root"
+		class="tzMenu"
+		:class="{ 'is-open': open }"
+		@pointerenter="onEnter"
+		@pointerleave="onLeave"
+	>
 		<button
 			type="button"
 			class="profileMenu-item tzMenu-trigger"
@@ -8,14 +14,19 @@
 			@click="toggle"
 		>
 			<NuxtDashboardIcon name="globe" />
-			<span class="tzMenu-current">{{ currentLabel }}</span>
-			<NuxtDashboardIcon name="chevronLeft" class="tzMenu-caret" />
+
+			<span class="tzMenu-stack">
+				<span class="tzMenu-heading">Timezone</span>
+				<span class="tzMenu-current">{{ currentLabel }}</span>
+			</span>
+
+			<NuxtDashboardIcon name="chevronRight" class="tzMenu-caret" />
 		</button>
 
 		<!-- Opens to the left. The menu it lives in is already pinned to the
 		     right edge of the viewport, so a panel hanging right would be off
 		     screen; there is nothing but page to the left of it. -->
-		<div v-if="open" class="tzMenu-panel">
+		<div v-if="open" class="tzMenu-panel" @pointerenter="cancelClose">
 			<div class="tzMenu-search">
 				<NuxtDashboardIcon name="search" />
 				<input
@@ -31,9 +42,9 @@
 				>
 			</div>
 
-			<button type="button" class="tzMenu-detect" @click="useDetected">
-				Use my current timezone
-				<span v-if="detected" class="tzMenu-detected">{{ detectedLabel }}</span>
+			<button v-if="detected" type="button" class="tzMenu-detect" @click="useDetected">
+				<span class="tzMenu-heading">Auto detect</span>
+				<span class="tzMenu-detected">{{ detectedLabel }}</span>
 			</button>
 
 			<ul class="tzMenu-list" role="listbox" aria-label="Timezones">
@@ -127,14 +138,53 @@ const matches = computed(() => {
 
 const close = () => { open.value = false; };
 
-const toggle = async () => {
-	open.value = !open.value;
-	if (!open.value) return;
+const show = async ({ focus = true } = {}) => {
+	if (open.value) return;
 
+	open.value = true;
 	query.value = "";
+	if (!focus) return;
+
 	// After the panel exists, or there is nothing to focus yet.
 	await nextTick();
 	input.value?.focus();
+};
+
+const toggle = () => (open.value ? close() : show());
+
+/**
+ * Opens on hover as well as on click.
+ *
+ * The close is delayed because the panel sits beside the row rather than under
+ * it, and the pointer crosses a few pixels of the gap between them on the way
+ * over. Without the grace period that gap reads as a `pointerleave` and the
+ * panel shuts just as you reach for it.
+ *
+ * Focus is *not* taken on hover. Moving a mouse across a menu should not steal
+ * the caret out from under a keyboard user who is part-way through the list; a
+ * deliberate click still focuses the search field.
+ */
+const HOVER_CLOSE_MS = 180;
+let closeTimer: ReturnType<typeof setTimeout> | null = null;
+
+const cancelClose = () => {
+	if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+};
+
+const onEnter = (event: PointerEvent) => {
+	// Touch fires pointerenter on tap, which would open and then immediately be
+	// toggled shut again by the click behind it.
+	if (event.pointerType === "touch") return;
+
+	cancelClose();
+	show({ focus: false });
+};
+
+const onLeave = (event: PointerEvent) => {
+	if (event.pointerType === "touch") return;
+
+	cancelClose();
+	closeTimer = setTimeout(close, HOVER_CLOSE_MS);
 };
 
 const pick = (zone: string) => {
@@ -166,5 +216,9 @@ watch(open, (isOpen) => {
 });
 
 let cleanup: (() => void) | null = null;
-onUnmounted(() => cleanup?.());
+
+onUnmounted(() => {
+	cleanup?.();
+	cancelClose();
+});
 </script>

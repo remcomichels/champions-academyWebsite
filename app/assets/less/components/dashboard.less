@@ -3442,16 +3442,26 @@
         cursor: pointer;
     }
 
-    // Anchored to the trigger's right edge, because the trigger is already
-    // against the viewport's. Hung below the bar rather than overlapping it.
+    // Fixed to the viewport rather than absolute to the avatar.
+    //
+    // Two reasons. It right-aligns to the *screen* instead of to the trigger,
+    // which sits inside the bar's own padding and so left the card floating
+    // short of the edge. And its top is measured from the chrome, so it clears
+    // the bar by a known amount whether or not the warning bar is up — hung off
+    // the avatar it was offset from a button that is itself vertically centred,
+    // which is two guesses stacked on each other.
+    //
+    // `position: fixed` inside `.dashBar`, which is also fixed, still resolves
+    // against the viewport: only a transform, filter or will-change on an
+    // ancestor would make it a containing block, and the bar has none.
     &-panel {
-        position: absolute;
-        top: calc(100% + @vw10);
-        right: 0;
+        position: fixed;
+        top: calc(var(--alert-bar) + var(--top-bar) + @vw4);
+        right: @vw16;
         z-index: 60;
-        width: @vw280;
-        max-width: calc(100vw - @vw32);
-        padding: @vw8;
+        width: @vw248;
+        max-width: calc(100vw - @vw24);
+        padding: @vw6;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadius;
@@ -3463,8 +3473,8 @@
     &-identity {
         display: flex;
         flex-direction: column;
-        gap: @vw2;
-        padding: @vw8 @vw10 @vw10;
+        gap: @vw1;
+        padding: @vw6 @vw8 @vw8;
         min-width: 0;
     }
 
@@ -3478,7 +3488,7 @@
     }
 
     &-email {
-        font-size: max(0.68em, @vw12);
+        font-size: max(0.62em, @vw11);
         color: var(--text-tertiary);
         overflow: hidden;
         text-overflow: ellipsis;
@@ -3489,7 +3499,7 @@
     // than a line drawn between two of its items.
     &-rule {
         height: 0;
-        margin: @vw6 (-@vw8);
+        margin: @vw4 (-@vw6);
         border: 0;
         border-top: max(1px, @vw1) solid var(--border);
     }
@@ -3497,14 +3507,14 @@
     &-item {
         display: flex;
         align-items: center;
-        gap: @vw10;
+        gap: @vw8;
         width: 100%;
-        padding: @vw8 @vw10;
+        padding: @vw5 @vw8;
         border: none;
         border-radius: @dashRadius;
         background: none;
         font-family: @body;
-        font-size: max(0.80em, @vw14);
+        font-size: max(0.68em, @vw12);
         font-weight: @medium;
         text-align: left;
         color: var(--text-secondary);
@@ -3514,7 +3524,7 @@
 
         .icon {
             flex: none;
-            font-size: max(0.90em, @vw16);
+            font-size: max(0.80em, @vw14);
             color: var(--text-tertiary);
         }
 
@@ -3548,12 +3558,12 @@
     }
 
     // "Theme" — a heading for the group under it, not a row you can press.
+    // Sentence case: the uppercase-plus-tracking treatment marks a caption over
+    // a *figure*, and borrowing it here made a two-item menu heading shout.
     &-groupLabel {
-        padding: @vw8 @vw10 @vw4;
+        padding: @vw6 @vw8 @vw2;
         font-size: max(0.62em, @vw11);
         font-weight: @medium;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
         color: var(--text-tertiary);
     }
 
@@ -3567,8 +3577,8 @@
     // colour-only difference is not a difference for everyone.
     &-dot {
         flex: none;
-        width: @vw16;
-        height: @vw16;
+        width: @vw14;
+        height: @vw14;
         border-radius: @dashRadiusPill;
         border: max(1px, @vw1) solid var(--border-strong);
         background: none;
@@ -3593,36 +3603,69 @@
         // Same row shape as every other item in the menu; the caret is what
         // marks it as opening something rather than going somewhere.
         justify-content: flex-start;
+        align-items: center;
+    }
+
+    // Label over value. The zone name is long and changes; the word that says
+    // what the row *is* should not have to compete with it for the first
+    // glance, so it goes above at full contrast and the value sits under it,
+    // smaller and quieter.
+    &-stack {
+        display: flex;
+        flex-direction: column;
+        gap: @vw1;
+        flex: 1;
+        min-width: 0;
+        text-align: left;
+    }
+
+    &-heading {
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: inherit;
     }
 
     &-current {
-        flex: 1;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        font-size: max(0.58em, @vw10);
         font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
     }
 
     &-caret {
         flex: none;
-        font-size: max(0.80em, @vw14);
+        font-size: max(0.68em, @vw12);
         color: var(--text-tertiary);
     }
 
     // Opens leftward. The menu this sits in is already pinned to the right edge
     // of the viewport, so a panel hanging right would open off screen; there is
     // nothing but page to the left.
+    // Bottom-anchored, and this is what fixes the list refusing to scroll.
+    //
+    // It used to hang *down* from a row that sits near the foot of the account
+    // menu, so on anything but a tall window the panel ran off the bottom of
+    // the viewport: the list scrolled perfectly well, but the part of it you
+    // would have scrolled — and its scrollbar — were below the fold with no way
+    // to reach them. Growing upward from the row keeps the whole panel between
+    // the top bar and the row, whatever the window height.
+    //
+    // The `min()` is the belt to that braces: on a genuinely short viewport the
+    // panel gives up its preferred height rather than sliding under the bar.
     &-panel {
         position: absolute;
-        top: -@vw8;
-        right: calc(100% + @vw8);
+        bottom: -@vw6;
+        top: auto;
+        right: calc(100% + @vw6);
         z-index: 61;
         display: flex;
         flex-direction: column;
-        width: @vw300;
-        max-height: @vw300;
-        padding: @vw8;
+        width: @vw280;
+        max-height: ~"min(@{vw280}, calc(100vh - var(--chrome) - @{vw40}))";
+        padding: @vw6;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadius;
@@ -3632,9 +3675,9 @@
     &-search {
         display: flex;
         align-items: center;
-        gap: @vw8;
+        gap: @vw6;
         flex: none;
-        padding: @vw6 @vw10;
+        padding: @vw4 @vw8;
         border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadius;
         background-color: var(--surface-raised);
@@ -3654,7 +3697,7 @@
         border: none;
         background: none;
         font-family: @body;
-        font-size: max(0.80em, @vw14);
+        font-size: max(0.68em, @vw12);
         color: var(--text);
 
         &:focus { outline: none; }
@@ -3664,17 +3707,16 @@
     &-detect {
         flex: none;
         display: flex;
-        align-items: baseline;
-        gap: @vw8;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: @vw1;
         width: 100%;
-        margin-top: @vw6;
-        padding: @vw8 @vw10;
+        margin-top: @vw4;
+        padding: @vw5 @vw8;
         border: none;
         border-radius: @dashRadius;
         background: none;
         font-family: @body;
-        font-size: max(0.68em, @vw12);
-        font-weight: @medium;
         text-align: left;
         color: var(--accent);
         cursor: pointer;
@@ -3690,8 +3732,9 @@
     }
 
     &-detected {
-        margin-left: auto;
+        max-width: 100%;
         color: var(--text-tertiary);
+        font-size: max(0.58em, @vw10);
         font-weight: @regular;
         font-variant-numeric: tabular-nums;
         overflow: hidden;
@@ -3702,25 +3745,33 @@
     &-list {
         flex: 1;
         min-height: 0;
-        margin-top: @vw6;
+        margin-top: @vw4;
         overflow-y: auto;
         list-style: none;
-        // Four hundred-odd rows: without this the browser lays out every one of
-        // them on open, which is a visible pause on a slower machine.
-        content-visibility: auto;
+        // Stops a wheel that reaches the end of this list carrying on into the
+        // page behind it, which in a floating panel reads as the menu sliding
+        // away under the pointer.
+        overscroll-behavior: contain;
+
+        // `content-visibility: auto` used to be here to skip laying out four
+        // hundred rows on open. Dropped — measured against a browser it changed
+        // neither scrollHeight nor scroll behaviour, so it was buying an
+        // optimisation nobody could observe while adding a rendering mode to
+        // reason about. The panel being off-screen was the actual reason this
+        // would not scroll; see the note above.
     }
 
     &-option {
         display: flex;
         align-items: center;
-        gap: @vw10;
+        gap: @vw8;
         width: 100%;
-        padding: @vw6 @vw10;
+        padding: @vw4 @vw8;
         border: none;
         border-radius: @dashRadius;
         background: none;
         font-family: @body;
-        font-size: max(0.68em, @vw12);
+        font-size: max(0.62em, @vw11);
         text-align: left;
         color: var(--text-secondary);
         cursor: pointer;
@@ -3754,8 +3805,8 @@
     }
 
     &-empty {
-        padding: @vw12 @vw10;
-        font-size: max(0.68em, @vw12);
+        padding: @vw10 @vw8;
+        font-size: max(0.62em, @vw11);
         white-space: normal;
         color: var(--text-tertiary);
     }
