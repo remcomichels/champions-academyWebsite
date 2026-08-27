@@ -17,9 +17,15 @@ export default defineEventHandler(async (event) => {
 
 	// Through the same resolver requireAffiliate uses, so the shell and the data
 	// under it can never disagree about whose dashboard this is.
-	const [admin, resolved] = await Promise.all([
+	//
+	// The email comes along because the profile menu in the top bar prints it
+	// under the name, and that menu is layout furniture on every dashboard
+	// page — fetching the whole Settings payload to render one line of it would
+	// be a second round trip on every navigation.
+	const [admin, resolved, account] = await Promise.all([
 		isAdmin(session.userId),
 		resolveSessionAffiliate(session),
+		db().auth.admin.getUserById(session.userId),
 	]);
 
 	const { affiliate, viewingAs } = resolved;
@@ -41,6 +47,9 @@ export default defineEventHandler(async (event) => {
 					avatarPath: affiliate.avatar_path,
 					timezone: affiliate.timezone,
 					locale: affiliate.locale,
+					// Held in auth, not on the affiliate row — read, never
+					// written from here.
+					email: account.data.user?.email ?? null,
 				}
 			: null,
 		// Drives the banner. Null for everyone not currently viewing someone.

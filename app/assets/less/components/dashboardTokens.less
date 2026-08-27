@@ -16,7 +16,51 @@
 // which are `no-store`, so the varying markup is never cached.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Dark ─────────────────────────────────────────────────────────────────────
+// Lifted off black. The previous values started the page at #0A0A0C with panels
+// at #131316 — a 9-point gap between the page and the thing sitting on it, at
+// the bottom of the range where displays and eyes both separate tones worst.
+// Panel edges disappeared on anything but a good monitor, and long stretches of
+// secondary text sat under it.
+//
+// Everything moves up together so the *relationships* survive: the page is a
+// dark grey rather than near-black, surfaces keep a readable step above it, and
+// the borders and muted text gain a few points of alpha since a lighter ground
+// gives white less to push against. The old values are still here, exactly, as
+// `classic` below.
 [data-theme="dark"] {
+    --background: #16161A;
+    --surface: #1E1E23;
+    --surface-raised: #2A2A31;
+    --surface-hover: #27272E;
+
+    --border: rgba(255, 255, 255, 0.11);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    --text: #F4F4F6;
+    --text-secondary: rgba(255, 255, 255, 0.66);
+    --text-tertiary: rgba(255, 255, 255, 0.46);
+    --text-disabled: rgba(255, 255, 255, 0.28);
+
+    --chart-bar: rgba(255, 255, 255, 0.20);
+    --chart-bar-hover: rgba(255, 255, 255, 0.32);
+    --chart-grid: rgba(255, 255, 255, 0.08);
+
+    // Categorical slots — see the note under the light theme's copy.
+    --series-2: #199E70;
+    --series-3: #D95926;
+    --series-4: #3987E5;
+    --series-5: #D55181;
+
+    // Only overlays cast a shadow — see the note under the light theme's copy.
+    --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+// ── Classic dark ─────────────────────────────────────────────────────────────
+// The near-black the dashboard shipped with, kept as a choice for anyone who
+// prefers it. Byte-for-byte the old `dark` block — if the two ever need to
+// diverge further, this is the one that stays still.
+[data-theme="classic"] {
     --background: #0A0A0C;
     --surface: #131316;
     --surface-raised: #1C1C20;
@@ -34,13 +78,11 @@
     --chart-bar-hover: rgba(255, 255, 255, 0.28);
     --chart-grid: rgba(255, 255, 255, 0.06);
 
-    // Categorical slots — see the note under the light theme's copy.
     --series-2: #199E70;
     --series-3: #D95926;
     --series-4: #3987E5;
     --series-5: #D55181;
 
-    // Only overlays cast a shadow — see the note under the light theme's copy.
     --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
@@ -155,7 +197,8 @@
 // form controls render light against a near-black page. `html[data-theme]`
 // is (0,1,1), which outranks both `:root` (0,1,0) and `html` (0,0,1), so this
 // wins the !important tie on specificity.
-html[data-theme="dark"] {
+html[data-theme="dark"],
+html[data-theme="classic"] {
     color-scheme: dark !important;
 }
 

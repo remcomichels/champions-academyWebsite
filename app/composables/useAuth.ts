@@ -6,6 +6,8 @@ export interface MeResponse {
 		avatarPath: string | null;
 		timezone: string;
 		locale: string;
+		/** Shown under the name in the profile menu. Not editable here. */
+		email: string | null;
 	} | null;
 	/** Set while an admin is viewing this affiliate rather than being them. */
 	viewingAs: { slug: string; displayName: string; status: string } | null;

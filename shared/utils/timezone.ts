@@ -119,3 +119,75 @@ export function canonicalTimezone(value: string | null | undefined): string | nu
 export function isTimezone(value: string | null | undefined): boolean {
 	return canonicalTimezone(value) !== null;
 }
+
+/**
+ * The zone's current UTC offset, formatted as the picker shows it.
+ *
+ * ── Why this is computed and not looked up ──────────────────────────────────
+ * A zone does not *have* an offset; it has an offset right now. Amsterdam is
+ * +01:00 in January and +02:00 in July, and roughly half the world's zones do
+ * something like that. Any table of offsets written down in a file is therefore
+ * wrong for part of every year — which is why the shipped `timezone.md`, whose
+ * entries read "(UTC-08:00) Pacific Standard Time", is not the source here.
+ *
+ * `Intl.DateTimeFormat` resolves against an actual instant, so passing it `now`
+ * gets today's answer including whatever DST rule is in force. Pass a date in
+ * six months' time and it would say something different, correctly.
+ *
+ * `longOffset` yields "GMT+02:00" (and bare "GMT" at zero), which is restated
+ * as "UTC+02:00" / "UTC" — the wording the design asked for, and the one people
+ * recognise from other dashboards.
+ */
+export function timezoneOffsetLabel(zone: string, now: Date = new Date()): string {
+	try {
+		const parts = new Intl.DateTimeFormat("en-GB", {
+			timeZone: zone,
+			timeZoneName: "longOffset",
+		}).formatToParts(now);
+
+		const raw = parts.find(part => part.type === "timeZoneName")?.value ?? "";
+
+		// "GMT" alone is the zero offset; everything else is "GMT±HH:MM".
+		if (raw === "GMT" || raw === "UTC" || raw === "") return "UTC";
+		return raw.replace(/^(GMT|UTC)/, "UTC");
+	}
+	catch {
+		// An unknown zone should not take the whole picker down with it.
+		return "UTC";
+	}
+}
+
+/** "(UTC+02:00) Europe/Amsterdam" — the picker's one display format. */
+export function timezoneLabel(zone: string, now: Date = new Date()): string {
+	return `(${timezoneOffsetLabel(zone, now)}) ${zone}`;
+}
+
+/**
+ * Sort key placing zones west-to-east, so the list reads like a map rather than
+ * an alphabet. Minutes from UTC, parsed back out of the label so there is only
+ * one place that knows how an offset is worked out.
+ */
+export function timezoneOffsetMinutes(zone: string, now: Date = new Date()): number {
+	const label = timezoneOffsetLabel(zone, now);
+	const match = /^UTC([+-])(\d{2}):(\d{2})$/.exec(label);
+	if (!match) return 0;
+
+	const sign = match[1] === "-" ? -1 : 1;
+	return sign * (Number(match[2]) * 60 + Number(match[3]));
+}
+
+/**
+ * The zone the browser is in, or null.
+ *
+ * Passed through `canonicalTimezone` because `resolvedOptions()` can answer with
+ * a spelling the picker does not list, and an auto-detect that fills the field
+ * with something the list cannot show is worse than one that declines.
+ */
+export function detectTimezone(): string | null {
+	try {
+		return canonicalTimezone(Intl.DateTimeFormat().resolvedOptions().timeZone);
+	}
+	catch {
+		return null;
+	}
+}

@@ -31,6 +31,12 @@ export const RATE_LIMITS = {
 	/** Invite redemption attempts from one IP. */
 	otpIp: { limit: 10, windowSeconds: 900, lockSeconds: 3600 },
 	/**
+	 * Feedback from one affiliate. Generous, because sending three things in a
+	 * row after finding three problems is the behaviour this feature wants —
+	 * it exists to stop a script filling the table, not to ration opinions.
+	 */
+	feedback: { limit: 12, windowSeconds: 3600, lockSeconds: 900 },
+	/**
 	 * Global ceiling on redemption attempts. A per-code bucket is impossible —
 	 * a hash miss does not say which invite was targeted — and would let an
 	 * attacker lock a specific affiliate out of their own code.
@@ -64,6 +70,10 @@ function bucketKey(prefix: string, value: string): string {
 export const loginIpBucket = (ip: string) => bucketKey("login:ip", ip);
 export const loginUserBucket = (email: string) => bucketKey("login:user", email);
 export const otpIpBucket = (ip: string) => bucketKey("otp:ip", ip);
+// Keyed on the affiliate rather than an address: the route requires a session,
+// so this is the identity that actually matters, and an IP bucket would put a
+// whole office behind one person's throttle.
+export const feedbackBucket = (affiliateId: string) => bucketKey("feedback:aff", affiliateId);
 // Hashed like the rest. Whop's sending IP is not a visitor's, but this table
 // is meant to hold no raw addresses at all and one exception is how that stops
 // being true.

@@ -51,34 +51,11 @@
 			</template>
 		</nav>
 
-		<div class="dashNav-foot">
-			<button
-				type="button"
-				class="dashNav-item dashNav-action"
-				:title="collapsed ? nextThemeLabel : undefined"
-				@click="toggle"
-			>
-				<NuxtDashboardIcon :name="theme === 'dark' ? 'sun' : 'moon'" />
-				<span class="dashNav-label">{{ nextThemeLabel }}</span>
-			</button>
-
-			<button
-				type="button"
-				class="dashNav-item dashNav-action"
-				:title="collapsed ? 'Log out' : undefined"
-				@click="logout"
-			>
-				<NuxtDashboardIcon name="logout" />
-				<span class="dashNav-label">Log out</span>
-			</button>
-		</div>
 	</aside>
 </template>
 
 <script setup lang="ts">
 const { items, collapsed, toggleCollapsed, drawerOpen } = useDashboardNav();
-const { theme, toggle } = useTheme();
-const { logout } = useAuth();
 
 const route = useRoute();
 
@@ -90,7 +67,6 @@ const route = useRoute();
 const isActive = (to: string) =>
 	to === "/dashboard" ? route.path === "/dashboard" : route.path.startsWith(to);
 
-const nextThemeLabel = computed(() => (theme.value === "dark" ? "Light mode" : "Dark mode"));
 
 // On mobile the same button closes the drawer; on desktop it collapses the rail.
 const onCollapseClick = () => {

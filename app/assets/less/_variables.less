@@ -8,14 +8,15 @@
 @heading:       'Anton', sans-serif;
 @body:          'Plus Jakarta Sans', sans-serif;
 @handWritten:   "Alex Brush", cursive;
-// Dashboard page titles only. Anton is a condensed poster face — right on the
-// marketing site, far too loud over a table of figures — and setting the titles
-// in @body left them as bold body copy with nothing to mark them as titles.
-// Instrument Serif is high-contrast enough to read as a different voice at
-// 28px and has a true italic, which the name in "Welcome back, —" uses.
-// @nuxt/fonts resolves and self-hosts it from this reference alone; swapping
-// the family here is the only change a different serif needs.
-@serif:         'Instrument Serif', Georgia, serif;
+// The affiliate's own name on Overview, and nothing else on the dashboard.
+//
+// Newsreader rather than Instrument Serif, which ships Regular and Italic and
+// no more: asking it for bold got a browser-synthesised smear, and in italic at
+// display size that is very visible. Newsreader is variable 200-800 with a
+// drawn italic at every weight, so the name can carry real weight against the
+// sans beside it. @nuxt/fonts resolves and self-hosts it from this reference
+// alone; a different serif is a one-line change here.
+@serif:         'Newsreader', Georgia, serif;
 
 // Font weights
 @light:         300;

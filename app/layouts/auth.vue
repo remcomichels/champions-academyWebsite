@@ -17,7 +17,7 @@
 // the last page of the marketing site, and arriving on a green-on-black form
 // before landing in a neutral dashboard reads as two different products. The
 // accent wash in auth.less takes its place.
-const { theme } = useTheme();
+const { resolved: theme } = useTheme();
 
 // Same reasoning as the dashboard layout: /login is `no-store`, so markup that
 // varies by the theme cookie is never cached.

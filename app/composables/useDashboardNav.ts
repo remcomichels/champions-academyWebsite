@@ -33,8 +33,10 @@ export const affiliateNav: DashboardNavItem[] = [
 	{ to: "/dashboard/analytics", label: "Analytics", icon: "chart" },
 	{ to: "/dashboard/sales", label: "Sales", icon: "tag" },
 	{ to: "/dashboard/links", label: "Links & Assets", icon: "link" },
-	{ to: "/dashboard/settings", label: "Settings", icon: "cog", group: true },
-	{ to: "/dashboard/support", label: "Support", icon: "help" },
+	// Account and Settings used to sit here. Both moved into the profile menu
+	// in the top bar, which is where someone looks for their own account rather
+	// than in a rail of places to work.
+	{ to: "/dashboard/support", label: "Support", icon: "help", group: true },
 ];
 
 /** Everything that reaches across affiliates rather than describing one. */
@@ -42,6 +44,8 @@ export const adminNav: DashboardNavItem[] = [
 	{ to: "/dashboard/admin/analytics", label: "Analytics", icon: "chart" },
 	{ to: "/dashboard/admin/affiliates", label: "Affiliates", icon: "shield" },
 	{ to: "/dashboard/admin/activity", label: "Activity", icon: "history" },
+	{ to: "/dashboard/admin/feedback", label: "Feedback", icon: "feedback" },
+	{ to: "/dashboard/admin/changelog", label: "Changelog", icon: "changelog" },
 ];
 
 /** Where the switch lands you. First entry, so reordering the rail moves it. */

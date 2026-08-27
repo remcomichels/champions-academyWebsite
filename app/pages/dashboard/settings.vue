@@ -1,5 +1,5 @@
 <template>
-	<NuxtDashboardSettings />
+	<NuxtDashboardSettings section="preferences" />
 </template>
 
 <script setup lang="ts">

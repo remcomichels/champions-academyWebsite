@@ -9,7 +9,7 @@
 		</NuxtAlertBanner>
 
 		<!-- Profile ─────────────────────────────────────────────────────── -->
-		<section class="dashPanel">
+		<section v-if="isAccount" class="dashPanel">
 			<h2 class="dashPanel-title">Profile</h2>
 			<form class="dashForm" novalidate @submit.prevent="saveProfile">
 				<NuxtAuthField v-model="profile.displayName" label="Name" :error="errors.displayName" required />
@@ -34,7 +34,7 @@
 		</section>
 
 		<!-- Your link ───────────────────────────────────────────────────── -->
-		<section class="dashPanel">
+		<section v-if="isPreferences" class="dashPanel">
 			<h2 class="dashPanel-title">Your link</h2>
 			<p class="dashPanel-note">
 				Changing this changes your <code>?r=</code> link. Your old one keeps working
@@ -55,7 +55,7 @@
 		</section>
 
 		<!-- Security ────────────────────────────────────────────────────── -->
-		<section class="dashPanel">
+		<section v-if="isAccount" class="dashPanel">
 			<h2 class="dashPanel-title">Password</h2>
 			<form class="dashForm" novalidate @submit.prevent="savePassword">
 				<NuxtAuthField
@@ -87,7 +87,7 @@
 			<p class="dashPanel-note">Changing your password signs you out everywhere else.</p>
 		</section>
 
-		<section class="dashPanel">
+		<section v-if="isAccount" class="dashPanel">
 			<div class="dashPanel-head">
 				<h2 class="dashPanel-title">Where you're signed in</h2>
 				<button
@@ -110,7 +110,7 @@
 			</ul>
 		</section>
 
-		<section class="dashPanel">
+		<section v-if="isAccount" class="dashPanel">
 			<h2 class="dashPanel-title">Recent account activity</h2>
 			<ul v-if="data.recentActivity.length" class="activity">
 				<li v-for="(row, i) in data.recentActivity" :key="i" class="activity-row">
@@ -122,7 +122,7 @@
 		</section>
 
 		<!-- Privacy ─────────────────────────────────────────────────────── -->
-		<section class="dashPanel">
+		<section v-if="isAccount" class="dashPanel">
 			<h2 class="dashPanel-title">Your data</h2>
 			<p class="dashPanel-note">
 				Download everything we hold about you, or ask us to delete the account.
@@ -154,6 +154,27 @@
 
 <script setup lang="ts">
 import { useSettings } from "~/assets/js/components/settings";
+
+/**
+ * One component, two pages.
+ *
+ * Account and Settings were a single page until the profile menu split them.
+ * They are still rendered from here rather than from two components, because
+ * every panel below shares one fetch, one banner, one `busy` flag and one error
+ * bag — duplicating that plumbing to separate six sections would be a great deal
+ * of surface for no gain, and two copies of `useSettings()` would mean two
+ * requests and two independent notions of what the account currently says.
+ *
+ * `account` is identity and security: who you are, your password, where you are
+ * signed in, and your data. `preferences` is what you can freely change about
+ * how the thing works.
+ */
+const props = withDefaults(defineProps<{
+	section?: "account" | "preferences";
+}>(), { section: "account" });
+
+const isAccount = computed(() => props.section === "account");
+const isPreferences = computed(() => props.section === "preferences");
 
 const {
 	data, banner, busy, errors,

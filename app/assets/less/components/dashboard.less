@@ -117,6 +117,13 @@
     // all three have to agree on the number. Everything below reads this
     // unconditionally and gets 0 when no bar is up.
     --alert-bar: 0px;
+    // The top bar, which is fixed now rather than scrolling with the page.
+    --top-bar: @vw56;
+    // What everything out of flow has to clear: the warning bar, when there is
+    // one, plus the top bar under it. Named once because the rail, the column
+    // and the bar itself all have to agree, and three copies of a calc is three
+    // chances to change two of them.
+    --chrome: calc(var(--alert-bar) + var(--top-bar));
 
     position: relative;
     display: flex;
@@ -127,7 +134,7 @@
     min-height: 100vh;
     // `border-box` from _reset.less, so the padding comes out of the 100vh
     // rather than adding to it — no bar means no scrollbar either way.
-    padding-top: var(--alert-bar);
+    padding-top: var(--chrome);
     background-color: var(--background);
 
     &.has-alertBar { --alert-bar: @vw36; }
@@ -145,7 +152,7 @@
         min-width: 0;
         display: flex;
         flex-direction: column;
-        min-height: calc(100vh - var(--alert-bar));
+        min-height: calc(100vh - var(--chrome));
     }
 
     &-main {
@@ -282,15 +289,15 @@
     // keeps a constant offset — so nothing in the page moves at all.
     position: fixed;
     left: 0;
-    // Starts below the warning bar rather than under it. The rail is fixed, so
-    // the layout's padding cannot move it — it has to read the height itself.
-    top: var(--alert-bar);
+    // Starts below the chrome rather than under it. The rail is fixed, so the
+    // layout's padding cannot move it — it has to read the height itself.
+    top: var(--chrome);
     z-index: 50;
     flex: none;
     display: flex;
     flex-direction: column;
     width: var(--rail-open);
-    height: calc(100vh - var(--alert-bar));
+    height: calc(100vh - var(--chrome));
     padding: @vw16 @vw12;
     background-color: var(--surface);
     border-right: max(1px, @vw1) solid var(--border);
@@ -549,17 +556,74 @@
 // No bar, really — just the row the controls sit in. No background, no rule
 // under it, and not sticky: transparent and pinned, page content would scroll
 // underneath the circles and collide with them.
+// ── Top bar ──────────────────────────────────────────────────────────────────
+// Fixed across the full width of the viewport, over the rail rather than beside
+// it — so the logo sits in the corner and the rail begins underneath.
+//
+// z-index 52 clears the rail at 50. It does not need to go higher: this element
+// opens a stacking context, so the inbox dropdown and the account menu inside it
+// paint within this layer and land above the rail as a consequence, whatever
+// their own z-index says. Native <dialog> is in the top layer and beats all of
+// it, which is what the feedback modal relies on.
+//
+// It has a real background, unlike before. While it scrolled with the page it
+// could be transparent; fixed over content that slides underneath, it cannot.
 .dashBar {
-    position: relative;
-    z-index: 3;
+    position: fixed;
+    top: var(--alert-bar);
+    left: 0;
+    right: 0;
+    z-index: 52;
     display: flex;
     align-items: center;
-    gap: @vw12;
-    // Only a gap below it. The horizontal and top insets come from `main`,
-    // which now wraps this row — repeating them here would double them.
-    padding: 0 0 @vw20;
-    background: none;
-    border-bottom: none;
+    gap: @vw16;
+    height: var(--top-bar);
+    padding: 0 @vw24;
+    background-color: var(--surface);
+    border-bottom: max(1px, @vw1) solid var(--border);
+
+    &-brand {
+        display: flex;
+        align-items: center;
+        flex: none;
+    }
+
+    &-logo {
+        display: block;
+        width: auto;
+        height: @vw26;
+    }
+
+    // The ? and the speech bubble. Same shape as the bell beside them so the
+    // group reads as one row of controls rather than three unrelated buttons.
+    &-action {
+        display: grid;
+        place-items: center;
+        flex: none;
+        width: @vw34;
+        height: @vw34;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: @dashRadiusPill;
+        font-size: max(0.90em, @vw16);
+        color: var(--text-secondary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--text);
+                background-color: var(--surface-hover);
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
 
     &-menu {
         // Desktop navigates from the sidebar; this is the drawer trigger and
@@ -791,17 +855,22 @@
     }
 
     // The affiliate's own name, and the only serif on the dashboard — "Welcome
-    // back," stays in the sans it shares with every other heading, so the
-    // change of voice lands on the one word that is personally theirs.
+    // back," stays in the sans it shares with every other heading, so the change
+    // of voice lands on the one word that is personally theirs.
     //
-    // Its own weight and tracking because it is a different family mid-sentence:
-    // Instrument Serif ships one weight, so the @bold around it would be
-    // synthesised, and the sans's -0.02em is a correction this face does not
-    // want.
+    // Bold, and a real 700 rather than a synthesised one: this is why the face
+    // changed from Instrument Serif, which has no weight above 400. Set a shade
+    // larger than the sans around it too, because a serif at matched point size
+    // reads smaller — the two together are what make it jump without leaving
+    // the line looking mismatched.
+    //
+    // Its own tracking because it is a different family mid-sentence: the -0.02em
+    // on the sans is a correction for that face and this one does not want it.
     &-name {
         font-family: @serif;
         font-style: italic;
-        font-weight: @regular;
+        font-weight: @bold;
+        font-size: 1.08em;
         letter-spacing: 0;
     }
 
@@ -3359,6 +3428,538 @@
 // must not be the thing that gives way.
 .adminList-row button { flex: none; }
 
+// ── Account menu ─────────────────────────────────────────────────────────────
+// Hung off the avatar at the right end of the top bar. Everything in it is
+// about the person rather than the work — which is exactly why none of it is in
+// the rail any more.
+.profileMenu {
+    position: relative;
+    flex: none;
+
+    &-trigger {
+        // Inherits `.dashBar-avatar` for its look; only the cursor differs, the
+        // element having gone from a link to a button.
+        cursor: pointer;
+    }
+
+    // Anchored to the trigger's right edge, because the trigger is already
+    // against the viewport's. Hung below the bar rather than overlapping it.
+    &-panel {
+        position: absolute;
+        top: calc(100% + @vw10);
+        right: 0;
+        z-index: 60;
+        width: @vw280;
+        max-width: calc(100vw - @vw32);
+        padding: @vw8;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        // A menu genuinely floats over the page, so this is one of the few
+        // places a shadow is still earned.
+        box-shadow: var(--shadow-pop);
+    }
+
+    &-identity {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        padding: @vw8 @vw10 @vw10;
+        min-width: 0;
+    }
+
+    &-name {
+        font-size: max(0.80em, @vw14);
+        font-weight: @bold;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-email {
+        font-size: max(0.68em, @vw12);
+        color: var(--text-tertiary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // Full width of the panel, so it reads as a division of the menu rather
+    // than a line drawn between two of its items.
+    &-rule {
+        height: 0;
+        margin: @vw6 (-@vw8);
+        border: 0;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    &-item {
+        display: flex;
+        align-items: center;
+        gap: @vw10;
+        width: 100%;
+        padding: @vw8 @vw10;
+        border: none;
+        border-radius: @dashRadius;
+        background: none;
+        font-family: @body;
+        font-size: max(0.80em, @vw14);
+        font-weight: @medium;
+        text-align: left;
+        color: var(--text-secondary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        .icon {
+            flex: none;
+            font-size: max(0.90em, @vw16);
+            color: var(--text-tertiary);
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--text);
+                background-color: var(--surface-hover);
+
+                .icon { color: var(--text-secondary); }
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+
+        // Log out. Red on hover only — a permanently red row at the foot of a
+        // menu reads as a warning about the menu rather than a description of
+        // one item in it.
+        &--danger {
+            @media (hover: hover) {
+                &:hover {
+                    color: var(--error);
+                    background-color: var(--surface-hover);
+
+                    .icon { color: var(--error); }
+                }
+            }
+        }
+    }
+
+    // "Theme" — a heading for the group under it, not a row you can press.
+    &-groupLabel {
+        padding: @vw8 @vw10 @vw4;
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+    }
+
+    &-choices {
+        display: flex;
+        flex-direction: column;
+    }
+
+    // The dot is the whole indication of which theme is on, so it has to carry
+    // it alone: it grows and fills rather than only changing colour, because a
+    // colour-only difference is not a difference for everyone.
+    &-dot {
+        flex: none;
+        width: @vw16;
+        height: @vw16;
+        border-radius: @dashRadiusPill;
+        border: max(1px, @vw1) solid var(--border-strong);
+        background: none;
+        .transition();
+        transition-property: border-color, background-color, box-shadow;
+
+        &.is-on {
+            border-color: var(--accent);
+            // Inset rather than a child element: one box, and the ring stays
+            // crisp at any size.
+            background-color: var(--accent);
+            box-shadow: inset 0 0 0 max(2px, @vw3) var(--surface);
+        }
+    }
+}
+
+// ── Timezone submenu ─────────────────────────────────────────────────────────
+.tzMenu {
+    position: relative;
+
+    &-trigger {
+        // Same row shape as every other item in the menu; the caret is what
+        // marks it as opening something rather than going somewhere.
+        justify-content: flex-start;
+    }
+
+    &-current {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+    }
+
+    &-caret {
+        flex: none;
+        font-size: max(0.80em, @vw14);
+        color: var(--text-tertiary);
+    }
+
+    // Opens leftward. The menu this sits in is already pinned to the right edge
+    // of the viewport, so a panel hanging right would open off screen; there is
+    // nothing but page to the left.
+    &-panel {
+        position: absolute;
+        top: -@vw8;
+        right: calc(100% + @vw8);
+        z-index: 61;
+        display: flex;
+        flex-direction: column;
+        width: @vw300;
+        max-height: @vw300;
+        padding: @vw8;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        box-shadow: var(--shadow-pop);
+    }
+
+    &-search {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        flex: none;
+        padding: @vw6 @vw10;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        background-color: var(--surface-raised);
+        color: var(--text-tertiary);
+
+        &:focus-within {
+            border-color: var(--accent);
+        }
+
+        .icon { flex: none; font-size: max(0.80em, @vw14); }
+    }
+
+    &-input {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        border: none;
+        background: none;
+        font-family: @body;
+        font-size: max(0.80em, @vw14);
+        color: var(--text);
+
+        &:focus { outline: none; }
+        &::placeholder { color: var(--text-tertiary); }
+    }
+
+    &-detect {
+        flex: none;
+        display: flex;
+        align-items: baseline;
+        gap: @vw8;
+        width: 100%;
+        margin-top: @vw6;
+        padding: @vw8 @vw10;
+        border: none;
+        border-radius: @dashRadius;
+        background: none;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        text-align: left;
+        color: var(--accent);
+        cursor: pointer;
+
+        @media (hover: hover) {
+            &:hover { background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+    }
+
+    &-detected {
+        margin-left: auto;
+        color: var(--text-tertiary);
+        font-weight: @regular;
+        font-variant-numeric: tabular-nums;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-list {
+        flex: 1;
+        min-height: 0;
+        margin-top: @vw6;
+        overflow-y: auto;
+        list-style: none;
+        // Four hundred-odd rows: without this the browser lays out every one of
+        // them on open, which is a visible pause on a slower machine.
+        content-visibility: auto;
+    }
+
+    &-option {
+        display: flex;
+        align-items: center;
+        gap: @vw10;
+        width: 100%;
+        padding: @vw6 @vw10;
+        border: none;
+        border-radius: @dashRadius;
+        background: none;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        text-align: left;
+        color: var(--text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+
+        &.is-selected { color: var(--text); }
+    }
+
+    &-dot {
+        flex: none;
+        width: @vw12;
+        height: @vw12;
+        border-radius: @dashRadiusPill;
+        border: max(1px, @vw1) solid var(--border-strong);
+
+        &.is-on {
+            border-color: var(--accent);
+            background-color: var(--accent);
+            box-shadow: inset 0 0 0 max(2px, @vw2) var(--surface);
+        }
+    }
+
+    &-empty {
+        padding: @vw12 @vw10;
+        font-size: max(0.68em, @vw12);
+        white-space: normal;
+        color: var(--text-tertiary);
+    }
+}
+
+// ── Feedback ─────────────────────────────────────────────────────────────────
+.feedback {
+    display: flex;
+    flex: none;
+
+    &-panel {
+        width: calc(@vw300 + @vw140);
+        max-width: calc(100vw - @vw40);
+    }
+
+    // Step one: two targets, sized so the choice is obviously the point of the
+    // dialog rather than a preamble to a form.
+    &-choices {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: @vw12;
+    }
+
+    &-choice {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: @vw4;
+        padding: @vw16;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        background-color: var(--surface-raised);
+        text-align: left;
+        cursor: pointer;
+        .transition();
+        transition-property: border-color, background-color;
+
+        @media (hover: hover) {
+            &:hover { border-color: var(--border-strong); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+
+    &-choiceTitle {
+        font-family: @body;
+        font-size: max(0.90em, @vw16);
+        font-weight: @bold;
+        color: var(--text);
+    }
+
+    &-choiceNote {
+        font-size: max(0.68em, @vw12);
+        line-height: 1.4;
+        white-space: normal;
+        color: var(--text-tertiary);
+    }
+
+    &-form {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+    }
+
+    &-text {
+        resize: vertical;
+        min-height: @vw120;
+        line-height: 1.5;
+    }
+
+    &-meta {
+        align-self: flex-end;
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+
+        .is-over { color: var(--error); font-weight: @medium; }
+    }
+
+    &-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: @vw8;
+        margin-top: @vw4;
+    }
+
+    &-sent {
+        padding: @vw12 0 @vw4;
+        font-size: max(0.80em, @vw14);
+        white-space: normal;
+        color: var(--success);
+    }
+}
+
+// ── Feedback inbox (admin) ───────────────────────────────────────────────────
+// Divider rows in one column rather than a card per entry: it is a list to be
+// read down, and outlining each note would make ten of them look like ten
+// separate objects.
+.feedbackList {
+    list-style: none;
+    border-top: max(1px, @vw1) solid var(--border);
+
+    &-entry {
+        display: flex;
+        flex-direction: column;
+        gap: @vw6;
+        padding: @vw16 0;
+        border-bottom: max(1px, @vw1) solid var(--border);
+    }
+
+    &-head {
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+        gap: @vw10;
+    }
+
+    &-kind {
+        flex: none;
+        padding: @vw2 @vw8;
+        border-radius: @dashRadiusPill;
+        background-color: var(--surface-raised);
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        text-transform: capitalize;
+        color: var(--text-secondary);
+
+        // The only colour in this list, and only on the half of it that is a
+        // report of something wrong.
+        &.is-issue { color: var(--warning); }
+    }
+
+    &-who {
+        font-size: max(0.80em, @vw14);
+        font-weight: @medium;
+        color: var(--text);
+    }
+
+    &-when {
+        margin-left: auto;
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+    }
+
+    &-body {
+        font-size: max(0.80em, @vw14);
+        line-height: 1.5;
+        // Feedback is typed into a textarea, so its line breaks are meaningful
+        // — this is the one place on the dashboard that wants `pre-line`.
+        white-space: pre-line;
+        color: var(--text-secondary);
+    }
+}
+
+// ── Changelog ────────────────────────────────────────────────────────────────
+.changelog {
+    list-style: none;
+
+    &-entry {
+        display: grid;
+        // Date column, then the note. The dates line up down the left so the
+        // page scans as a timeline rather than a stack of headings.
+        grid-template-columns: calc(@vw120 + @vw20) minmax(0, 1fr);
+        gap: @vw24;
+        padding: @vw24 0;
+        border-bottom: max(1px, @vw1) solid var(--border);
+
+        &:last-child { border-bottom: none; }
+    }
+
+    &-when {
+        font-size: max(0.68em, @vw12);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+    }
+
+    &-copy {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+        min-width: 0;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: max(0.90em, @vw16);
+        font-weight: @bold;
+        color: var(--text);
+    }
+
+    &-body {
+        font-size: max(0.80em, @vw14);
+        line-height: 1.55;
+        // Written in a textarea, same as feedback: the breaks are the author's.
+        white-space: pre-line;
+        color: var(--text-secondary);
+    }
+}
+
+
 // ── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1080px) {
     .modal-panel { gap: @vw20-1080; padding: @vw28-1080; }
@@ -3373,6 +3974,23 @@
     // Below the baseline the viewport is already narrower than the cap, so the
     // cap only ever costs width here — released.
     .dashLayout-main { padding: @vw24-1080 @vw32-1080 @vw80-1080; max-width: none; }
+
+    // The bar's height is a custom property for the same reason the warning
+    // bar's is: the rail and the column both read it, and a vw unit pinned to
+    // 1440 would shrink it out from under its own contents.
+    .dashLayout { --top-bar: @vw56-1080; }
+    .dashLayout.has-alertBar { --alert-bar: @vw36-1080; }
+
+    .dashBar {
+        gap: @vw12-1080;
+        padding: 0 @vw20-1080;
+
+        &-logo { height: @vw24-1080; }
+        &-action { width: @vw32-1080; height: @vw32-1080; }
+    }
+
+    .profileMenu-panel { width: @vw260-1080; }
+    .tzMenu-panel { width: @vw280-1080; max-height: @vw280-1080; }
 
     .dashLayout {
         --rail-open: @vw240-1080;
@@ -3537,6 +4155,39 @@
 
 @media (max-width: 600px) {
     .dashLayout-main { padding: @vw20-580 @vw20-580 @vw64-580; }
+
+    .dashLayout { --top-bar: @vw52-580; }
+    .dashLayout.has-alertBar { --alert-bar: @vw56-580; }
+
+    .dashBar {
+        gap: @vw10-580;
+        padding: 0 @vw14-580;
+
+        &-logo { height: @vw22-580; }
+        &-action { width: @vw30-580; height: @vw30-580; }
+    }
+
+    // No room to the left of the account menu on a phone, so the timezone list
+    // stops trying to open sideways and drops under its own row instead.
+    .tzMenu-panel {
+        position: static;
+        width: 100%;
+        max-height: @vw240-580;
+        margin-top: @vw6-580;
+        box-shadow: none;
+    }
+
+    // Two side-by-side targets do not fit at 320, and squeezing them makes the
+    // descriptions unreadable — they stack.
+    .feedback-choices { grid-template-columns: 1fr; }
+
+    .changelog-entry {
+        grid-template-columns: minmax(0, 1fr);
+        gap: @vw8-580;
+        padding: @vw20-580 0;
+    }
+
+    .feedbackList-when { margin-left: 0; }
 
     .dashBar {
         gap: @vw10-580;

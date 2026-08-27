@@ -71,6 +71,36 @@ const icons: Record<string, string[]> = {
 		"M4.5 8h15l-1.2 11a2 2 0 0 1-2 1.8H7.7a2 2 0 0 1-2-1.8L4.5 8Z",
 		"M8.8 8V6.4a3.2 3.2 0 0 1 6.4 0V8",
 	],
+	// A head and shoulders — "your account", as distinct from `cog`, which is
+	// how the product behaves rather than who is using it.
+	user: [
+		"M12 12.2a3.9 3.9 0 1 0 0-7.8 3.9 3.9 0 0 0 0 7.8Z",
+		"M4.8 20.4a7.8 7.8 0 0 1 14.4 0",
+	],
+	// Release notes: a document with three ruled lines, the top one short so it
+	// reads as a heading over entries.
+	changelog: [
+		"M6 3h9l4 4v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z",
+		"M14.6 3.2V7.4h4.2",
+		"M8.5 12.5h7",
+		"M8.5 16.5h4.5",
+	],
+	// A globe for the timezone row: outline, equator, and one meridian bowed to
+	// read as a sphere rather than a target.
+	globe: [
+		"M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z",
+		"M3.2 12h17.6",
+		"M12 3a13.5 13.5 0 0 1 0 18 13.5 13.5 0 0 1 0-18Z",
+	],
+	// Speech bubble with a tail, for the feedback button in the top bar.
+	feedback: [
+		"M20.5 15.2a2 2 0 0 1-2 2h-9L5 20.8V6.2a2 2 0 0 1 2-2h11.5a2 2 0 0 1 2 2v9Z",
+	],
+	// A plain magnifier for the timezone search field.
+	search: [
+		"M11 18.2a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z",
+		"M20.5 20.5l-4.4-4.4",
+	],
 	link: [
 		"M10.4 13.6a3.8 3.8 0 0 0 5.4 0l2.8-2.8a3.8 3.8 0 1 0-5.4-5.4l-1.3 1.3",
 		"M13.6 10.4a3.8 3.8 0 0 0-5.4 0l-2.8 2.8a3.8 3.8 0 1 0 5.4 5.4l1.3-1.3",

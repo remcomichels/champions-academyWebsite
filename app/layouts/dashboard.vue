@@ -15,6 +15,65 @@
 			</p>
 		</div>
 
+		<!-- A sibling of `main`, not a child of it.
+		
+		     The bar is fixed across the top of the viewport and has to paint above
+		     the rail. `.dashLayout-main` sets `z-index: 1`, which opens a stacking
+		     context — anything inside it is confined to that layer however high its
+		     own z-index goes, so from in there the bar could never clear a rail at
+		     50. Out here it can. It is also the more honest markup: a banner is not
+		     part of the main content it sits above. -->
+		<header class="dashBar">
+			<button
+				type="button"
+				class="dashBar-menu"
+				aria-label="Open navigation"
+				@click="drawerOpen = true"
+			>
+				<NuxtDashboardIcon name="menu" />
+			</button>
+
+			<NuxtLink :to="AFFILIATE_HOME" class="dashBar-brand" aria-label="Champions Academy — Overview">
+				<NuxtAppImage
+					src="/images/logo.svg"
+					alt=""
+					class="dashBar-logo"
+					:width="120"
+					:height="34"
+				/>
+			</NuxtLink>
+
+			<!-- The title is hidden rather than deleted. It was the only h1
+			     on every tab, and a page with no h1 loses its place in the
+			     heading outline that screen readers navigate by. Visually
+			     the tab is already named by the active item in the sidebar. -->
+			<h1 class="sr-only">{{ pageTitle }}</h1>
+
+			<div class="dashBar-right">
+				<!-- Before the bell, so the two things that change what the
+				     page shows sit together and away from the avatar. -->
+				<NuxtDashboardModeSwitch v-if="isAdmin" />
+
+				<NuxtDashboardFeedback v-if="affiliate && !viewingAs" />
+
+				<NuxtLink to="/dashboard/support" class="dashBar-action" aria-label="Help and FAQ">
+					<NuxtDashboardIcon name="help" />
+				</NuxtLink>
+
+				<!-- Only mounted for accounts that actually have an affiliate:
+				     the stream and inbox routes both require one.
+
+				     Hidden while viewing someone else. It opens an SSE stream
+				     and marks notifications read, which is a write — so it
+				     would 403 against the read-only rule on every open, and
+				     an admin has no business clearing another affiliate's
+				     unread badge by looking at it. -->
+				<NuxtDashboardInbox v-if="affiliate && !viewingAs" />
+
+				<NuxtDashboardProfileMenu v-if="affiliate" />
+			</div>
+		</header>
+
 		<NuxtDashboardSidebar />
 
 		<!-- Mobile only: closes the drawer on a tap outside it. Not focusable —
@@ -45,50 +104,6 @@
 					</button>
 				</div>
 
-				<!-- The row scrolls with the page rather than holding the top of
-				     the screen. It is inside `main` for that reason; as a sibling
-				     it sat outside the scrolling area and stayed put. -->
-				<header class="dashBar">
-					<button
-						type="button"
-						class="dashBar-menu"
-						aria-label="Open navigation"
-						@click="drawerOpen = true"
-					>
-						<NuxtDashboardIcon name="menu" />
-					</button>
-
-					<!-- The title is hidden rather than deleted. It was the only h1
-					     on every tab, and a page with no h1 loses its place in the
-					     heading outline that screen readers navigate by. Visually
-					     the tab is already named by the active item in the sidebar. -->
-					<h1 class="sr-only">{{ pageTitle }}</h1>
-
-					<div class="dashBar-right">
-						<!-- Before the bell, so the two things that change what the
-						     page shows sit together and away from the avatar. -->
-						<NuxtDashboardModeSwitch v-if="isAdmin" />
-
-						<!-- Only mounted for accounts that actually have an affiliate:
-						     the stream and inbox routes both require one.
-
-						     Hidden while viewing someone else. It opens an SSE stream
-						     and marks notifications read, which is a write — so it
-						     would 403 against the read-only rule on every open, and
-						     an admin has no business clearing another affiliate's
-						     unread badge by looking at it. -->
-						<NuxtDashboardInbox v-if="affiliate && !viewingAs" />
-
-						<NuxtLink
-							v-if="affiliate"
-							to="/dashboard/settings"
-							class="dashBar-avatar"
-							:aria-label="`Signed in as ${affiliate.displayName} — profile settings`"
-						>
-							<span aria-hidden="true">{{ initials }}</span>
-						</NuxtLink>
-					</div>
-				</header>
 
 				<!-- An admin-only login has no affiliate profile, so there are no
 				     figures to show. Saying that plainly beats a generic failure,
@@ -115,11 +130,11 @@
 </template>
 
 <script setup lang="ts">
-import { ADMIN_HOME, dashboardNav, isAdminRoute } from "~/composables/useDashboardNav";
+import { ADMIN_HOME, AFFILIATE_HOME, dashboardNav, isAdminRoute } from "~/composables/useDashboardNav";
 
 const { isAdmin, affiliate, viewingAs, stopViewingAs, fetchMe } = useAuth();
 const { collapsed, drawerOpen } = useDashboardNav();
-const { theme } = useTheme();
+const { resolved: theme } = useTheme();
 
 // The auth middleware has already populated this, but a direct load of a
 // nested route should not depend on that ordering.
@@ -138,7 +153,35 @@ const route = useRoute();
  * that ban is about SEO tags, and app.vue already uses useHead for its font
  * preload for the same reason.
  */
-useHead({ htmlAttrs: { "data-theme": theme } });
+useHead({
+	htmlAttrs: { "data-theme": theme },
+
+	/**
+	 * Corrects `data-theme` before the first paint, for the one case SSR cannot
+	 * get right on its own: `system`.
+	 *
+	 * The server has no way to read `prefers-color-scheme`, so it renders the
+	 * dark guess. This runs during head parsing — synchronously, before the body
+	 * is painted and well before hydration — and swaps the attribute if the OS
+	 * actually asks for light. Without it a light-mode visitor would see the
+	 * page render dark and snap over a moment later.
+	 *
+	 * Reads the cookie directly rather than being handed the value, because it
+	 * has to run before any of the app's own JavaScript exists. Wrapped in
+	 * try/catch: a browser with cookies walled off should render the SSR default,
+	 * not a blank page.
+	 */
+	script: [{
+		tagPosition: "head",
+		innerHTML: `(function(){try{`
+			+ `var m=document.cookie.match(/(?:^|; )ca_theme=([^;]*)/);`
+			+ `var c=m?decodeURIComponent(m[1]):'system';`
+			+ `if(c!=='dark'&&c!=='light'&&c!=='classic')c='system';`
+			+ `var t=c==='system'?(window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):c;`
+			+ `document.documentElement.setAttribute('data-theme',t);`
+			+ `}catch(e){}})();`,
+	}],
+});
 
 // Longest match wins, so /dashboard/analytics doesn't resolve to Overview.
 const pageTitle = computed(() => {
@@ -149,25 +192,6 @@ const pageTitle = computed(() => {
 	return match?.label ?? "Dashboard";
 });
 
-/**
- * Initials for the profile circle.
- *
- * Not a photo yet: `/api/auth/me` returns `avatarPath`, a Supabase Storage
- * path rather than a URL, and the bucket's base URL is server-side only — so
- * the browser cannot resolve it. When avatar upload ships, the endpoint should
- * return a resolved URL and this becomes the fallback for accounts without one.
- */
-const initials = computed(() => {
-	const name = affiliate.value?.displayName?.trim();
-	if (!name) return "?";
-
-	const parts = name.split(/\s+/).filter(Boolean);
-	const first = parts[0]?.[0] ?? "";
-	// Last word rather than second, so a middle name doesn't win over a surname.
-	const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
-
-	return (first + last).toUpperCase();
-});
 
 // An admin-only login has nothing to show on an affiliate page, but every
 // admin page is exactly what it is for — so the notice is suppressed across
