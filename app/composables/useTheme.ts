@@ -36,9 +36,10 @@ const CHOICES: ThemeChoice[] = ["system", "dark", "light", "classic"];
  *
  * During SSR that collapse has to guess, and it guesses dark. A wrong guess for
  * a light-mode visitor would be a visible flash, which is what the inline script
- * in `plugins/theme.client.ts` exists to prevent — it corrects the attribute
- * before first paint, ahead of hydration. Without it the page would render dark
- * and snap to light a moment later.
+ * in the dashboard layout's `useHead` exists to prevent — it corrects the
+ * attribute during head parsing, before first paint and well ahead of
+ * hydration. Without it the page would render dark and snap to light a moment
+ * later.
  *
  * Shared through `useState` because each `useCookie()` call returns its own ref
  * — without this the menu would update its own copy and the layout would carry
