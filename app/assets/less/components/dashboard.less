@@ -3595,27 +3595,31 @@
         flex-direction: column;
     }
 
-    // Only the chosen theme is marked. The unselected rows keep the *space* —
-    // the labels have to stay in a column — but draw nothing in it: four empty
-    // rings stacked up were more furniture than the one filled ring they
-    // existed to set off.
+    // Only the chosen theme is marked, and marked with a solid dot rather than
+    // a ring: the outline was drawing a radio button around a mark that is
+    // already unambiguous on its own.
+    //
+    // The 14px slot stays whatever is inside it — it matches the icon width on
+    // the rows above, which is what keeps every label in the menu starting on
+    // the same line. The dot itself is smaller and centred in it.
     &-dot {
         flex: none;
+        display: grid;
+        place-items: center;
         width: @vw14;
         height: @vw14;
-        border-radius: @dashRadiusPill;
-        border: max(1px, @vw1) solid transparent;
-        background: none;
-        .transition();
-        transition-property: border-color, background-color, box-shadow;
 
-        &.is-on {
-            border-color: var(--accent);
-            // Inset rather than a child element: one box, and the ring stays
-            // crisp at any size.
-            background-color: var(--accent);
-            box-shadow: inset 0 0 0 max(2px, @vw3) var(--surface);
+        &::after {
+            content: '';
+            width: @vw8;
+            height: @vw8;
+            border-radius: @dashRadiusPill;
+            background-color: transparent;
+            .transition();
+            transition-property: background-color;
         }
+
+        &.is-on::after { background-color: var(--accent); }
     }
 }
 
@@ -3815,10 +3819,24 @@
 
     // Auto detect is the first row of the list rather than a control above it,
     // so it takes the option's shape with a second line for the zone it found.
-    // Every row's shape: the offset (or "Auto detect") on top, and the cities
-    // it covers underneath. `min-width: 0` is what lets the second line wrap
-    // rather than pushing the tick off the row — without it a flex item refuses
-    // to shrink below its longest word.
+    // One line, wrapping: "(UTC+02:00) Amsterdam, Andorra, Belgrade +30 more".
+    // `min-width: 0` is what lets it wrap rather than pushing the tick off the
+    // row — without it a flex item refuses to shrink below its longest word.
+    &-optionLabel {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    // The offset reads first and identifies the row; the cities after it are
+    // examples of what the row covers, so they sit back a shade.
+    &-optionOffset {
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    // Auto detect keeps two lines — it is the one row that is a mode rather
+    // than a place, and it has a second thing to say: what it found.
     &-optionStack {
         display: flex;
         flex-direction: column;

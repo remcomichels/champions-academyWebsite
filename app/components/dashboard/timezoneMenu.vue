@@ -93,9 +93,12 @@
 						:class="{ 'is-selected': !auto && group.zones.includes(modelValue) }"
 						@click="pickGroup(group)"
 					>
-						<span class="tzMenu-optionStack">
-							<span class="tzMenu-optionLead">{{ group.offsetLabel }}</span>
-							<span class="tzMenu-optionZone">{{ cityList(group) }}</span>
+						<!-- One line: the offset that identifies the row, then the
+						     cities it covers. Two lines gave each row a heading
+						     and made 57 of them read as 57 sections. -->
+						<span class="tzMenu-optionLabel">
+							<span class="tzMenu-optionOffset">({{ group.offsetLabel }})</span>
+							{{ cityList(group) }}
 						</span>
 
 						<NuxtDashboardIcon
