@@ -221,6 +221,89 @@
 
 
 
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+// A balloon under whatever carries `data-tip`, in place of the browser's own.
+//
+// Native `title` was doing this job and doing it badly: it waits about a second,
+// renders in the OS's colours rather than the page's, and cannot be positioned.
+// This appears at once, sits where the design wants it, and is themed.
+//
+// Two pseudo-elements on the control itself rather than a component: the text
+// is one attribute, there is no state to hold, and nothing has to mount. The
+// accessible name still comes from `aria-label` — this is decoration over the
+// top of it, never the only place the name exists.
+.tip {
+    position: relative;
+
+    // The balloon.
+    &::after {
+        content: attr(data-tip);
+        position: absolute;
+        top: calc(100% + @vw10);
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 70;
+        padding: @vw6 @vw10;
+        border-radius: @dashRadiusInner;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        box-shadow: var(--shadow-pop);
+        font-family: @body;
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        line-height: 1.3;
+        letter-spacing: 0;
+        text-transform: none;
+        white-space: nowrap;
+        color: var(--text);
+    }
+
+    // The tail. A rotated square with two of its borders showing, so it takes
+    // the balloon's outline on the two edges that are actually exposed.
+    &::before {
+        content: '';
+        position: absolute;
+        top: calc(100% + @vw6);
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        z-index: 71;
+        width: @vw8;
+        height: @vw8;
+        background-color: var(--surface-raised);
+        border-left: max(1px, @vw1) solid var(--border);
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    &::after,
+    &::before {
+        opacity: 0;
+        // Never intercepts the pointer — a tooltip that can be hovered will
+        // flicker as the pointer crosses onto it.
+        pointer-events: none;
+        .transition();
+        transition-property: opacity;
+    }
+
+    // Keyboard users get it too: the balloon is the only visible label these
+    // controls have, so tabbing to one has to show it.
+    @media (hover: hover) {
+        &:hover::after,
+        &:hover::before { opacity: 1; }
+    }
+
+    &:focus-visible::after,
+    &:focus-visible::before { opacity: 1; }
+
+    // The last control sits against the right edge of the viewport, where a
+    // centred balloon would hang off it. This one grows leftward instead; the
+    // tail stays over the control.
+    &--end::after {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+}
+
 // ── Warning bar ──────────────────────────────────────────────────────────────
 // Account-level warnings, pinned across the very top of the viewport — over the
 // rail, not beside it. This is the one thing on the dashboard that is allowed
@@ -647,11 +730,13 @@
         .transition();
         transition-property: color, border-color, background-color;
 
+        // Only the ring and the glyph respond. A background wash on hover made
+        // the disc briefly look filled, which is the avatar's job — these read
+        // as outlined controls, so the outline is what should answer.
         @media (hover: hover) {
             &:hover {
                 color: var(--text);
-                border-color: var(--border-strong);
-                background-color: var(--surface-hover);
+                border-color: var(--text);
             }
         }
 
@@ -663,9 +748,15 @@
 
     // Sized here rather than by font-size, so every glyph in the bar is the
     // same drawn size whatever its container inherits.
+    //
+    // Smaller than the avatar's, and deliberately: Material's outline glyphs
+    // are drawn to the edge of their 24 box while `person-outline` keeps a
+    // margin inside its own. Matched by number they looked mismatched by eye,
+    // which is the only measure that counts — so these come down and the face
+    // goes up until the three read as one size.
     &-glyph {
-        width: @vw22;
-        height: @vw22;
+        width: @vw18;
+        height: @vw18;
     }
 
     // Feedback. A word carries it better than any glyph would — nobody guesses
@@ -2167,8 +2258,7 @@
         @media (hover: hover) {
             &:hover {
                 color: var(--text);
-                border-color: var(--border-strong);
-                background-color: var(--surface-hover);
+                border-color: var(--text);
             }
         }
 
@@ -3847,8 +3937,8 @@
     // Sized against the disc rather than inherited from the bar's font size —
     // it is a shape here, not a piece of text beside one.
     &-face {
-        width: @vw22;
-        height: @vw22;
+        width: @vw24;
+        height: @vw24;
     }
 
     // Hovering anywhere on the panel, not only the list itself: the pointer is

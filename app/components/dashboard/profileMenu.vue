@@ -2,10 +2,10 @@
 	<div ref="root" class="profileMenu">
 		<button
 			type="button"
-			class="dashBar-avatar profileMenu-trigger"
+			class="dashBar-avatar profileMenu-trigger tip tip--end"
 			:aria-expanded="open"
 			aria-haspopup="menu"
-			:title="open ? undefined : 'Account'"
+			data-tip="Account"
 			:aria-label="open ? 'Close account menu' : `Account menu — ${displayName}`"
 			@click="toggle"
 		>

@@ -2,10 +2,10 @@
 	<div ref="root" class="inbox">
 		<button
 			type="button"
-			class="inbox-trigger"
+			class="inbox-trigger tip"
 			:aria-expanded="open"
 			aria-haspopup="true"
-			:title="unread ? `Activity — ${unread} unread` : 'Activity'"
+			:data-tip="unread ? `Activity — ${unread} unread` : 'Activity'"
 			:aria-label="unread ? `Activity, ${unread} unread` : 'Activity'"
 			@click="toggle"
 		>

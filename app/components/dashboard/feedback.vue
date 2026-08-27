@@ -5,8 +5,8 @@
 		     is the one of the three nobody would guess. -->
 		<button
 			type="button"
-			class="dashBar-text"
-			title="Report an issue or share an idea"
+			class="dashBar-text tip"
+			data-tip="Report an issue or share an idea"
 			@click="openDialog"
 		>
 			Feedback

@@ -69,7 +69,12 @@
 
 				<NuxtDashboardFeedback v-if="affiliate && !viewingAs" />
 
-				<NuxtLink to="/dashboard/support" class="dashBar-action" title="Help and FAQ" aria-label="Help and FAQ">
+				<NuxtLink
+					to="/dashboard/support"
+					class="dashBar-action tip"
+					data-tip="Help and FAQ"
+					aria-label="Help and FAQ"
+				>
 					<Icon name="material-symbols-light:help-outline" class="dashBar-glyph" />
 				</NuxtLink>
 
