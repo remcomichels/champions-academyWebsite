@@ -3,7 +3,12 @@
 		<!-- A word rather than a glyph. A speech bubble beside a bell and a
 		     question mark was three icons competing to be understood, and this
 		     is the one of the three nobody would guess. -->
-		<button type="button" class="dashBar-text" @click="openDialog">
+		<button
+			type="button"
+			class="dashBar-text"
+			title="Report an issue or share an idea"
+			@click="openDialog"
+		>
 			Feedback
 		</button>
 

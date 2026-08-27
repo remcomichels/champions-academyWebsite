@@ -5,6 +5,7 @@
 			class="dashBar-avatar profileMenu-trigger"
 			:aria-expanded="open"
 			aria-haspopup="menu"
+			:title="open ? undefined : 'Account'"
 			:aria-label="open ? 'Close account menu' : `Account menu — ${displayName}`"
 			@click="toggle"
 		>

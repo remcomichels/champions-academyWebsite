@@ -5,6 +5,7 @@
 			class="inbox-trigger"
 			:aria-expanded="open"
 			aria-haspopup="true"
+			:title="unread ? `Activity — ${unread} unread` : 'Activity'"
 			:aria-label="unread ? `Activity, ${unread} unread` : 'Activity'"
 			@click="toggle"
 		>

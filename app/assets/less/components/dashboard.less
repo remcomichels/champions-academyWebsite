@@ -625,10 +625,13 @@
     // The circular controls — help, and the bell beside it.
     //
     // Exactly the avatar's disc: same @vw30 box, same @vw22 glyph inside it, so
-    // the three read as one row rather than three sizes. The difference is the
-    // fill. The avatar is solid because it is *you*; these are unfilled because
-    // they are things to do, and a row of three filled discs would give the
-    // notification bell the same weight as the account it sits beside.
+    // the three read as one row rather than three sizes. The difference is how
+    // the circle is drawn. The avatar is filled because it is *you*; these are
+    // outlined because they are things to do — the ring gives them the same
+    // footprint without claiming the same weight.
+    //
+    // `border-box` from _reset.less, so the ring is drawn inside the @vw30 and
+    // all three discs measure the same on the outside.
     &-action {
         display: grid;
         place-items: center;
@@ -637,16 +640,17 @@
         height: @vw30;
         padding: 0;
         background: none;
-        border: none;
+        border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadiusPill;
         color: var(--text-secondary);
         cursor: pointer;
         .transition();
-        transition-property: color, background-color;
+        transition-property: color, border-color, background-color;
 
         @media (hover: hover) {
             &:hover {
                 color: var(--text);
+                border-color: var(--border-strong);
                 background-color: var(--surface-hover);
             }
         }
@@ -2143,8 +2147,7 @@
     position: relative;
 
     // Matches `.dashBar-action` exactly — it is one of that row of controls and
-    // only lives in its own component because it owns a panel and a badge. The
-    // hairline border is gone with the rest of them.
+    // only lives in its own component because it owns a panel and a badge.
     &-trigger {
         position: relative;
         display: grid;
@@ -2152,7 +2155,7 @@
         width: @vw30;
         height: @vw30;
         background: none;
-        border: none;
+        border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadiusPill;
         padding: 0;
         color: var(--text-secondary);
@@ -2162,7 +2165,11 @@
         transition-property: color, border-color, background-color;
 
         @media (hover: hover) {
-            &:hover { color: var(--text); background-color: var(--surface-hover); }
+            &:hover {
+                color: var(--text);
+                border-color: var(--border-strong);
+                background-color: var(--surface-hover);
+            }
         }
 
         &:focus-visible {
