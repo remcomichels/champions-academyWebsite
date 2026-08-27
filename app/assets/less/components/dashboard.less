@@ -12,6 +12,27 @@
 // touches a Less variable, so the green system is untouched.
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Radius ───────────────────────────────────────────────────────────────────
+// Two values, and only two. This file used to ship nine (2, 3, 4, 6, 8, 10, 12,
+// 16, 20 plus 50%), which is the loudest "not quite designed" tell there is —
+// mixed corners read as inconsistency rather than intent, and nobody can tell
+// you why the panel was 12 and the card next to it was 10.
+//
+// `@dashRadius` is every surface: panel, card, input, button, image, modal.
+// Nested elements get the same 8, not a smaller one — the "inner radius =
+// outer minus padding" trick is exactly what produced the 2/3/4 steps.
+//
+// `@dashRadiusPill` is anything capsule-shaped: badges, chips, avatars, dots,
+// toggles, progress bars. @vw300 rather than a raw 9999px because the vw scale
+// is the system here; a browser clamps border-radius to half the box, so the
+// same token gives a perfect capsule on a chip and a perfect circle on a dot.
+//
+// Chart data marks that sit in a grid or on an axis — heatmap cells, bar tops —
+// are square (0). A radius on a 4px-wide bar is noise, and square marks are
+// what both reference dashboards use.
+@dashRadius: @vw8;
+@dashRadiusPill: @vw300;
+
 // Screen-reader-only text. No global utility exists in this project, and both
 // the checklist and the chart need one so state is announced rather than being
 // carried by a tick glyph or a bar height alone.
@@ -73,11 +94,25 @@
     }
 
     &-main {
-        // Above the wash, which is painted by the column behind it.
         position: relative;
         z-index: 1;
         flex: 1;
         padding: @vw32 @vw40 @vw96;
+
+        // Content cap — 1200 of content inside 40 of padding either side.
+        //
+        // There was no cap at all before, which is a large part of why two
+        // cards sitting next to each other felt cramped: on a wide monitor a
+        // `1.6fr 1fr` grid just kept stretching, so the cards grew but the gap
+        // between them stayed put and the ratio of content to air collapsed.
+        // Both reference dashboards cap their column for exactly this reason.
+        //
+        // On `-main` rather than an inner wrapper so the top bar is capped to
+        // the same measure as the cards under it — otherwise the avatar drifts
+        // off to a right edge the content never reaches.
+        width: 100%;
+        max-width: calc(@vw300 + @vw300 + @vw300 + @vw300 + @vw80);
+        margin-inline: auto;
     }
 
     // Pinned open, the rail is part of the layout again and the page makes room
@@ -88,29 +123,15 @@
         margin-left: var(--rail-open);
     }
 
-    // The accent wash.
+    // The accent wash that used to live here is gone, along with every resting
+    // shadow. Both were a decorative layer that neither reference dashboard
+    // has: Vercel and Supabase are flat, and their surfaces are separated by a
+    // single hairline border and nothing else. A gradient behind the fold and a
+    // shadow under every card are what made this page read as busy — the fix
+    // was to delete the layer, not to tune it.
     //
-    // On the column, not on `main`. Anchored to `main` it started at the bottom
-    // edge of the control row, and because the gradient is at full strength at
-    // its own top, that edge rendered as a hard horizontal line right across
-    // the page — which read as a bar sitting there even though the row itself
-    // has no background at all.
-    //
-    // Faded out well before the fold, so cards sit *on* the background rather
-    // than the wash being a band with an edge. Behind everything, never
-    // interactive.
-    &-body::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: calc(@vw300 + @vw240);
-        background:
-            radial-gradient(120% 100% at 50% 0%, var(--accent-wash) 0%, transparent 68%);
-        pointer-events: none;
-        z-index: 0;
-    }
+    // `--shadow-pop` survives, but only on things genuinely floating above the
+    // page: the hover-peek rail, tooltips, the inbox dropdown, toasts, modals.
 
     &-scrim {
         position: fixed;
@@ -183,7 +204,7 @@
         padding: 0;
         background: none;
         border: none;
-        border-radius: @vw8;
+        border-radius: @dashRadius;
         font-size: max(1em, @vw20);
         color: var(--text-secondary);
         cursor: pointer;
@@ -274,7 +295,7 @@
         // exactly in the middle — so the icon holds one position throughout the
         // collapse and only the label moves.
         padding: @vw10 @vw14;
-        border-radius: @vw8;
+        border-radius: @dashRadius;
         // Trims the label as the rail narrows. The label keeps its natural
         // width throughout — animating that width is what broke the close.
         // `outline-offset` below is negative, so the focus ring is drawn inside
@@ -419,7 +440,7 @@
         padding: 0;
         background: none;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: 50%;
+        border-radius: @dashRadiusPill;
         font-size: max(1em, @vw20);
         color: var(--text);
         cursor: pointer;
@@ -445,7 +466,7 @@
         place-items: center;
         width: @vw36;
         height: @vw36;
-        border-radius: 50%;
+        border-radius: @dashRadiusPill;
         background-color: var(--accent-subtle);
         border: max(1px, @vw1) solid var(--border);
         font-size: max(0.7em, @vw13);
@@ -470,13 +491,13 @@
 .dash {
     display: flex;
     flex-direction: column;
-    gap: @vw24;
+    gap: @vw40;
 }
 
 .dashSection {
     display: flex;
     flex-direction: column;
-    gap: @vw20;
+    gap: @vw24;
 }
 
 // ── Settings ─────────────────────────────────────────────────────────────────
@@ -581,7 +602,7 @@
         &:focus-visible {
             outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
-            border-radius: @vw2;
+            border-radius: @dashRadius;
         }
     }
 }
@@ -660,8 +681,7 @@
         padding: @vw16;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw12;
-        box-shadow: var(--shadow-panel);
+        border-radius: @dashRadius;
     }
 
     // The QR is generated as dark-on-transparent, so it needs a light plate
@@ -672,7 +692,7 @@
         height: @vw120;
         padding: @vw8;
         background-color: #FFFFFF;
-        border-radius: @vw8;
+        border-radius: @dashRadius;
     }
 
     &-qrNote {
@@ -686,11 +706,10 @@
     display: flex;
     flex-direction: column;
     gap: @vw16;
-    padding: @vw24;
+    padding: @vw16;
     background-color: var(--surface);
     border: max(1px, @vw1) solid var(--border);
-    border-radius: @vw12;
-    box-shadow: var(--shadow-panel);
+    border-radius: @dashRadius;
 
     &-head {
         display: flex;
@@ -710,7 +729,7 @@
     &-count {
         flex: none;
         padding: @vw2 @vw8;
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         background-color: var(--accent-subtle);
         font-size: max(0.7em, @vw12);
         font-weight: @medium;
@@ -767,7 +786,7 @@
         &:focus-visible {
             outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
-            border-radius: @vw4;
+            border-radius: @dashRadius;
         }
 
         &:disabled { opacity: 0.5; cursor: wait; }
@@ -785,7 +804,7 @@
 .dashGrid {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
-    gap: @vw20;
+    gap: @vw16;
     // Stretch, not start: two panels sharing a row match heights. Their notes
     // are pinned to the bottom by `margin-top: auto`, so the taller panel sets
     // the height and the shorter one fills rather than floating short.
@@ -805,7 +824,7 @@
     justify-content: center;
     gap: @vw8;
     padding: @vw12 @vw18;
-    border-radius: @vw8;
+    border-radius: @dashRadius;
     border: max(1px, @vw1) solid transparent;
     font-family: @body;
     font-size: max(0.8em, @vw14);
@@ -884,7 +903,7 @@
     padding: @vw6;
     background-color: var(--surface);
     border: max(1px, @vw1) solid var(--border);
-    border-radius: @vw10;
+    border-radius: @dashRadius;
 
     &-value {
         flex: 1;
@@ -907,7 +926,7 @@
         background-color: var(--accent);
         color: var(--on-accent);
         border: none;
-        border-radius: @vw6;
+        border-radius: @dashRadius;
         font-family: @body;
         font-size: max(0.75em, @vw13);
         font-weight: @semiBold;
@@ -940,12 +959,11 @@
 .statCard {
     display: flex;
     flex-direction: column;
-    gap: @vw10;
-    padding: @vw20;
+    gap: @vw8;
+    padding: @vw16;
     background-color: var(--surface);
     border: max(1px, @vw1) solid var(--border);
-    border-radius: @vw12;
-    box-shadow: var(--shadow-panel);
+    border-radius: @dashRadius;
     .transition();
     transition-property: border-color;
 
@@ -973,7 +991,7 @@
         place-items: center;
         width: @vw28;
         height: @vw28;
-        border-radius: @vw8;
+        border-radius: @dashRadius;
         background-color: var(--surface-raised);
         font-size: max(0.8em, @vw15);
         color: var(--text-tertiary);
@@ -1041,7 +1059,7 @@
         &::after {
             content: "";
             .absolute();
-            border-radius: @vw6;
+            border-radius: @dashRadius;
             background-color: var(--surface-raised);
             // A pulse, not a sweeping gradient: one pseudo-element, nothing to
             // clip, and _general.less's reduced-motion rule collapses it to a
@@ -1065,7 +1083,7 @@
 .dashSide {
     display: flex;
     flex-direction: column;
-    gap: @vw12;
+    gap: @vw16;
 }
 
 .dashSide-note {
@@ -1080,7 +1098,7 @@
 .miniGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: @vw10;
+    gap: @vw16;
     // Fills the panel, so the four cards stretch to meet the chart beside them
     // rather than stacking at the top of a tall column.
     flex: 1;
@@ -1091,14 +1109,13 @@
     flex-direction: column;
     justify-content: center;
     gap: @vw4;
-    padding: @vw14;
+    padding: @vw16;
     // Panel colours, not the raised fill they had while nested inside one:
     // out here they sit on the page background alongside the chart, so they
     // take the same surface and border it does.
     background-color: var(--surface);
     border: max(1px, @vw1) solid var(--border);
-    border-radius: @vw10;
-    box-shadow: var(--shadow-panel);
+    border-radius: @dashRadius;
     min-width: 0;
 
     &-label {
@@ -1148,7 +1165,7 @@
         display: block;
         height: max(4px, @vw6);
         background-color: var(--surface-raised);
-        border-radius: @vw6;
+        border-radius: @dashRadiusPill;
         overflow: hidden;
     }
 
@@ -1274,7 +1291,7 @@
         flex: none;
         width: @vw10;
         height: @vw10;
-        border-radius: @vw3;
+        border-radius: @dashRadiusPill;
     }
 
     &-name {
@@ -1349,7 +1366,7 @@
         // 4px cap; at this scale the bars are about five pixels wide, where 4px
         // would round the whole top into a dome, so it is stepped down to keep
         // the same read a full-size bar has.
-        border-radius: @vw2 @vw2 0 0;
+        border-radius: 0;
         .transition(height, @durationMedium, @easeOut);
         transition-property: height, background-color;
 
@@ -1375,7 +1392,7 @@
         z-index: 3;
         transform: translate(-50%, -@vw6);
         padding: @vw4 @vw8;
-        border-radius: @vw4;
+        border-radius: @dashRadius;
         background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
         box-shadow: var(--shadow-pop);
@@ -1492,7 +1509,7 @@
         display: block;
         width: 100%;
         background-color: var(--chart-bar);
-        border-radius: @vw4 @vw4 0 0;
+        border-radius: 0;
         .transition(background-color, @durationFast, @ease);
     }
 
@@ -1512,7 +1529,7 @@
         left: 50%;
         transform: translate(-50%, -@vw6);
         padding: @vw2 @vw6;
-        border-radius: @vw4;
+        border-radius: @dashRadius;
         background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
         box-shadow: var(--shadow-pop);
@@ -1578,7 +1595,7 @@
 .progress {
     height: max(6px, @vw8);
     background-color: var(--surface-raised);
-    border-radius: @vw8;
+    border-radius: @dashRadiusPill;
     overflow: hidden;
 
     &-fill {
@@ -1598,10 +1615,10 @@
     display: flex;
     flex-direction: column;
     gap: @vw14;
-    padding: @vw20 @vw24;
+    padding: @vw16;
     background-color: var(--surface);
     border: max(1px, @vw1) solid var(--border);
-    border-radius: @vw12;
+    border-radius: @dashRadius;
 
     &-head {
         display: flex;
@@ -1633,7 +1650,7 @@
         &:focus-visible {
             outline: max(2px, @vw2) solid var(--accent);
             outline-offset: @vw2;
-            border-radius: @vw4;
+            border-radius: @dashRadius;
         }
     }
 }
@@ -1668,7 +1685,7 @@
         place-items: center;
         width: @vw22;
         height: @vw22;
-        border-radius: 50%;
+        border-radius: @dashRadiusPill;
         border: max(1px, @vw1) solid var(--border-strong);
         font-size: max(0.6em, @vw11);
         color: var(--on-accent);
@@ -1715,7 +1732,7 @@
     &-state {
         flex: none;
         padding: @vw2 @vw8;
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         font-size: max(0.65em, @vw11);
         font-weight: @medium;
 
@@ -1755,7 +1772,7 @@
         height: @vw160;
         padding: @vw10;
         background-color: #FFFFFF;
-        border-radius: @vw10;
+        border-radius: @dashRadius;
     }
 
     &-side {
@@ -1791,7 +1808,7 @@
         padding: @vw12 @vw14;
         background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw8;
+        border-radius: @dashRadius;
         font-size: max(0.8em, @vw14);
         color: var(--text-secondary);
         overflow-wrap: anywhere;
@@ -1815,7 +1832,7 @@
         height: @vw36;
         background: none;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: 50%;
+        border-radius: @dashRadiusPill;
         padding: 0;
         font-size: max(0.9em, @vw18);
         color: var(--text-secondary);
@@ -1842,7 +1859,7 @@
         padding: 0 @vw4;
         background-color: var(--accent);
         color: var(--on-accent);
-        border-radius: @vw10;
+        border-radius: @dashRadiusPill;
         font-size: max(0.6em, @vw11);
         font-weight: @bold;
         line-height: 1.5;
@@ -1859,7 +1876,7 @@
         padding: @vw16;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw12;
+        border-radius: @dashRadius;
         box-shadow: var(--shadow-pop);
     }
 
@@ -1906,7 +1923,7 @@
     padding: @vw12 @vw16;
     background-color: var(--surface);
     border: max(1px, @vw1) solid var(--accent);
-    border-radius: @vw10;
+    border-radius: @dashRadius;
     box-shadow: var(--shadow-pop);
     font-size: max(0.8em, @vw14);
     color: var(--text);
@@ -1957,7 +1974,7 @@
         display: block;
         height: max(8px, @vw12);
         background-color: var(--surface-raised);
-        border-radius: @vw8;
+        border-radius: @dashRadius;
         overflow: hidden;
     }
 
@@ -2017,12 +2034,12 @@
     gap: @vw2;
     padding: @vw3;
     background-color: var(--surface-raised);
-    border-radius: @vw8;
+    border-radius: @dashRadiusPill;
 
     &-tab {
         background: none;
         border: none;
-        border-radius: @vw6;
+        border-radius: @dashRadiusPill;
         padding: @vw6 @vw12;
         font-family: @body;
         font-size: max(0.7em, @vw12);
@@ -2078,7 +2095,7 @@
     &-bar {
         height: max(6px, @vw8);
         background-color: var(--surface-raised);
-        border-radius: @vw8;
+        border-radius: @dashRadiusPill;
         overflow: hidden;
     }
 
@@ -2178,7 +2195,7 @@
         // Square whatever width the column ends up, so a wider card gives a
         // taller grid in proportion rather than a row of stretched slots.
         aspect-ratio: 1;
-        border-radius: @vw2;
+        border-radius: 0;
         background-color: var(--accent);
 
         &.is-empty {
@@ -2208,7 +2225,7 @@
         z-index: 2;
         transform: translate(-50%, -@vw4);
         padding: @vw4 @vw8;
-        border-radius: @vw4;
+        border-radius: @dashRadius;
         background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
         box-shadow: var(--shadow-pop);
@@ -2256,7 +2273,7 @@
         width: var(--cell);
         height: var(--cell);
         margin: 0 max(1px, @vw1);
-        border-radius: @vw2;
+        border-radius: 0;
         background-color: var(--accent);
 
         &.is-empty { background-color: var(--surface-raised); }
@@ -2280,7 +2297,7 @@
         width: @vw20;
         height: @vw20;
         border: max(1px, @vw1) solid var(--border-strong);
-        border-radius: @vw6;
+        border-radius: @dashRadius;
         background-color: var(--surface-raised);
         cursor: pointer;
         .transition();
@@ -2329,7 +2346,7 @@
     &-current {
         margin-left: @vw8;
         padding: @vw2 @vw8;
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         background-color: var(--accent-subtle);
         color: var(--accent);
         font-size: max(0.6em, @vw11);
@@ -2364,7 +2381,7 @@
     &:focus-visible {
         outline: max(2px, @vw2) solid var(--accent);
         outline-offset: @vw4;
-        border-radius: @vw2;
+        border-radius: @dashRadius;
     }
 
     &:disabled { opacity: 0.5; cursor: wait; }
@@ -2612,7 +2629,7 @@
         display: block;
         height: max(6px, @vw10);
         background-color: var(--surface-raised);
-        border-radius: @vw8;
+        border-radius: @dashRadiusPill;
         overflow: hidden;
     }
 
@@ -2624,7 +2641,7 @@
         width: 100%;
         transform-origin: left center;
         background-color: var(--accent);
-        border-radius: @vw8;
+        border-radius: @dashRadiusPill;
         .transition(transform, @durationMedium, @ease);
     }
 
@@ -2664,7 +2681,7 @@
     margin-bottom: @vw16;
     padding: @vw10 @vw16;
     border: max(1px, @vw1) solid var(--warning);
-    border-radius: @vw10;
+    border-radius: @dashRadius;
     background-color: var(--warning-subtle);
 
     &-text {
@@ -2693,7 +2710,7 @@
         padding: @vw6 @vw12;
         background: none;
         border: max(1px, @vw1) solid var(--warning);
-        border-radius: @vw6;
+        border-radius: @dashRadius;
         font-family: @body;
         font-size: max(0.7em, @vw12);
         font-weight: @semiBold;
@@ -2723,7 +2740,7 @@
     gap: @vw8;
     padding: @vw6 @vw10;
     border: max(1px, @vw1) solid var(--border);
-    border-radius: @vw20;
+    border-radius: @dashRadiusPill;
     cursor: pointer;
     user-select: none;
     .transition();
@@ -2771,7 +2788,7 @@
         flex: none;
         width: @vw32;
         height: @vw18;
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
         .transition();
@@ -2789,7 +2806,7 @@
         left: @vw2;
         width: @vw12;
         height: @vw12;
-        border-radius: 50%;
+        border-radius: @dashRadiusPill;
         background-color: var(--text-tertiary);
         transform: translateY(-50%);
         .transition();
@@ -2850,7 +2867,7 @@
         padding: @vw28;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw16;
+        border-radius: @dashRadius;
         box-shadow: var(--shadow-pop);
         // Fills the dialog rather than sizing to content, so the card is the
         // 80% box and not a smaller one floating inside it. Long content
@@ -2893,7 +2910,7 @@
         padding: 0;
         background: none;
         border: none;
-        border-radius: @vw8;
+        border-radius: @dashRadius;
         color: var(--text-tertiary);
         cursor: pointer;
         .transition();
@@ -2937,7 +2954,7 @@
         padding: @vw6 @vw12;
         background: none;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         font-family: @body;
         font-size: max(0.7em, @vw13);
         color: var(--text);
@@ -2999,7 +3016,7 @@
         width: @vw8;
         height: @vw8;
         margin-top: @vw6;
-        border-radius: 50%;
+        border-radius: @dashRadiusPill;
         background-color: var(--text-tertiary);
 
         &.is-good { background-color: var(--accent); }
@@ -3104,7 +3121,7 @@
         display: inline-block;
         margin-top: @vw4;
         padding: @vw2 @vw8;
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         font-size: max(0.6em, @vw11);
         font-weight: @medium;
         text-transform: uppercase;
@@ -3130,7 +3147,7 @@
 
     li {
         padding: @vw2 @vw8;
-        border-radius: @vw20;
+        border-radius: @dashRadiusPill;
         border: max(1px, @vw1) solid var(--border);
         font-size: max(0.6em, @vw11);
         color: var(--text-tertiary);
@@ -3158,7 +3175,7 @@
     button {
         background: none;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @vw6;
+        border-radius: @dashRadius;
         padding: @vw4 @vw10;
         font-family: @body;
         font-size: max(0.65em, @vw12);
@@ -3206,8 +3223,9 @@
         .icon { width: @vw18-1080; height: @vw18-1080; }
     }
 
-    .dashLayout-main { padding: @vw24-1080 @vw32-1080 @vw80-1080; }
-    .dashLayout-body::before { height: calc(@vw300-1080 + @vw200-1080); }
+    // Below the baseline the viewport is already narrower than the cap, so the
+    // cap only ever costs width here — released.
+    .dashLayout-main { padding: @vw24-1080 @vw32-1080 @vw80-1080; max-width: none; }
 
     .dashLayout {
         --rail-open: @vw240-1080;
@@ -3253,8 +3271,8 @@
 
     .dashNav-logo { width: @vw104-1080; height: @vw29-1080; }
 
-    .dash { gap: @vw20-1080; }
-    .dashSection { gap: @vw16-1080; }
+    .dash { gap: @vw32-1080; }
+    .dashSection { gap: @vw20-1080; }
 
     .dashHero {
         gap: @vw24-1080;
@@ -3263,8 +3281,8 @@
         &-qrImage { width: @vw100-1080; height: @vw100-1080; }
     }
 
-    .dashPanel { padding: @vw20-1080; gap: @vw16-1080; }
-    .dashSetup { padding: @vw16-1080 @vw20-1080; gap: @vw12-1080; }
+    .dashPanel { padding: @vw16-1080; gap: @vw16-1080; }
+    .dashSetup { padding: @vw16-1080; gap: @vw16-1080; }
     .donut {
         gap: @vw32-1080;
 
@@ -3276,8 +3294,8 @@
         &-trend { min-width: @vw40-1080; }
     }
 
-    .miniGrid { gap: @vw10-1080; }
-    .miniCard { padding: @vw12-1080; }
+    .miniGrid { gap: @vw16-1080; }
+    .miniCard { padding: @vw16-1080; }
     .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
     .miniCard-meter { height: max(4px, @vw6-1080); }
     .miniCard-flag { margin-right: @vw6-1080; font-size: max(0.9em, @vw16-1080); }
@@ -3374,7 +3392,6 @@
 
 @media (max-width: 600px) {
     .dashLayout-main { padding: @vw20-580 @vw20-580 @vw64-580; }
-    .dashLayout-body::before { height: calc(@vw300-580 + @vw100-580); }
 
     .dashBar {
         gap: @vw10-580;
@@ -3385,8 +3402,8 @@
         &-avatar { width: @vw36-580; height: @vw36-580; }
     }
 
-    .dash { gap: @vw16-580; }
-    .dashSection { gap: @vw16-580; }
+    .dash { gap: @vw32-580; }
+    .dashSection { gap: @vw20-580; }
     .dashSettings > * { margin-bottom: @vw16-580; }
     .dashNav-logo { width: @vw104-580; height: @vw29-580; }
 
@@ -3414,7 +3431,7 @@
         &-actions { flex-direction: column; margin-top: @vw8-580; }
     }
 
-    .dashPanel { padding: @vw16-580; gap: @vw12-580; }
+    .dashPanel { padding: @vw16-580; gap: @vw16-580; }
 
     .dashPanel-head {
         // The title and its control stack rather than squeezing a segmented
@@ -3423,11 +3440,11 @@
         gap: @vw10-580;
     }
 
-    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw10-580; }
+    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw16-580; }
 
     .dashSetup {
-        padding: @vw16-580 @vw20-580;
-        gap: @vw12-580;
+        padding: @vw16-580;
+        gap: @vw16-580;
     }
 
     .checklist--row { gap: @vw10-580 @vw16-580; }
@@ -3447,15 +3464,15 @@
         &-trend { min-width: @vw44-580; }
     }
 
-    .miniGrid { gap: @vw8-580; }
-    .miniCard { padding: @vw12-580; }
+    .miniGrid { gap: @vw16-580; }
+    .miniCard { padding: @vw16-580; }
     .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
     .miniCard-meter { height: max(4px, @vw6-580); }
     .miniCard-flag { margin-right: @vw6-580; font-size: max(0.9em, @vw16-580); }
     .sparkbars { height: @vw30-580; }
 
     .statCard {
-        padding: @vw14-580;
+        padding: @vw16-580;
         gap: @vw8-580;
 
         &-value { font-size: @vw32-580; }

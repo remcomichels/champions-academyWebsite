@@ -40,13 +40,7 @@
     --series-4: #3987E5;
     --series-5: #D55181;
 
-    // Top-of-page accent wash. Heavier than the light theme's because a violet
-    // at 12% simply disappears against #0A0A0C.
-    --accent-wash: rgba(124, 92, 252, 0.20);
-
-    // Shadows read as a dark halo rather than a grey smudge on a near-black
-    // surface, so they stay very low-opacity and are used sparingly.
-    --shadow-panel: 0 1px 2px rgba(0, 0, 0, 0.4);
+    // Only overlays cast a shadow — see the note under the light theme's copy.
     --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
@@ -95,9 +89,15 @@
     --series-4: #2A78D6;
     --series-5: #E87BA4;
 
-    --accent-wash: rgba(124, 92, 252, 0.14);
-
-    --shadow-panel: 0 1px 2px rgba(10, 10, 12, 0.04);
+    // ── Shadow ───────────────────────────────────────────────────────────
+    // One shadow, and it never touches a resting surface.
+    //
+    // There used to be a `--shadow-panel` under every card and a top-of-page
+    // accent wash behind them. Neither reference dashboard has either: Vercel
+    // and Supabase separate surfaces with a single hairline border and nothing
+    // else, and that flatness is most of what reads as "clean". A shadow here
+    // now means the element is genuinely floating above the page — a tooltip,
+    // the inbox dropdown, a toast, a modal, the hover-peek rail.
     --shadow-pop: 0 8px 24px rgba(10, 10, 12, 0.10);
 }
 
