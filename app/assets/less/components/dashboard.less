@@ -535,13 +535,13 @@
 .dash {
     display: flex;
     flex-direction: column;
-    gap: @vw40;
+    gap: @vw64;
 }
 
 .dashSection {
     display: flex;
     flex-direction: column;
-    gap: @vw24;
+    gap: @vw32;
 }
 
 // ── Settings ─────────────────────────────────────────────────────────────────
@@ -679,10 +679,14 @@
         min-width: 0;
     }
 
+    // Same micro-label treatment as the stat captions — it is doing the same
+    // job, naming what the block below it is.
     &-eyebrow {
-        font-size: max(0.68em, @vw12);
-        font-weight: @bold;
-        color: var(--text-secondary);
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
     }
 
     &-title {
@@ -842,7 +846,7 @@
 .dashGrid {
     display: grid;
     grid-template-columns: 1.6fr 1fr;
-    gap: @vw16;
+    gap: @vw32;
     // Stretch, not start: two panels sharing a row match heights. Their notes
     // are pinned to the bottom by `margin-top: auto`, so the taller panel sets
     // the height and the shorter one fills rather than floating short.
@@ -988,44 +992,72 @@
 // ── Stats ────────────────────────────────────────────────────────────────────
 .statGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(@vw200, 1fr));
-    gap: @vw16;
+    // Capped, not `1fr`. Stretched to a third of a 1200 column each, three
+    // stats ended up with 200-odd pixels of dead space inside every track and
+    // read as three unrelated things rather than one row of readings — the
+    // opposite of what taking their borders away was meant to achieve. A track
+    // that stops at @vw300 keeps them near enough to scan together.
+    grid-template-columns: repeat(auto-fit, minmax(@vw200, @vw300));
+    justify-content: start;
+    gap: @vw32 @vw40;
 }
 
 .statCard {
+    // Borderless, and that is the whole point of this pass.
+    //
+    // Supabase's project overview carries six of these — status, compute,
+    // github, recent branch, last migration, last backup — and not one of them
+    // is a card. No border, no surface, no shadow: an icon tile, a small label
+    // and a value, sitting straight on the page background. The only bordered
+    // things on that screen are the map panel and the charts along the bottom.
+    //
+    // Four bordered boxes in a row was the "card repetition" problem. A stat is
+    // three short pieces of text; wrapping each one in its own outline says
+    // "these are four separate objects" when the point is that they are four
+    // readings of the same thing. The grid gap groups them now instead, which
+    // is why `.statGrid` had to grow a much larger gap at the same time — with
+    // nothing drawing an edge, only space separates one reading from the next.
     display: flex;
-    flex-direction: column;
-    gap: @vw8;
-    padding: @vw16;
-    .dashSurface();
-    .transition();
-    transition-property: border-color;
-
-    @media (hover: hover) {
-        &:hover { border-color: var(--border-strong); }
-    }
-
-    &-head {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: @vw12;
-    }
-
-    &-label {
-        font-size: max(0.68em, @vw12);
-        font-weight: @medium;
-        color: var(--text-secondary);
-    }
+    align-items: flex-start;
+    gap: @vw16;
+    min-width: 0;
 
     &-icon {
+        flex: none;
         display: grid;
         place-items: center;
-        width: @vw28;
-        height: @vw28;
+        width: @vw44;
+        height: @vw44;
         border-radius: @dashRadius;
         background-color: var(--surface-raised);
-        font-size: max(0.80em, @vw14);
+        font-size: max(0.90em, @vw16);
+        color: var(--text-tertiary);
+
+        // The tile is always in the layout even when a caller passes no icon,
+        // just unpainted. Sales has one card without one, and letting that card
+        // close the gap would leave its label out of line with the three
+        // beside it — the alignment is the only thing holding the row together
+        // now that no border does.
+        &.is-empty { background-color: transparent; }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: @vw6;
+        min-width: 0;
+    }
+
+    // Uppercase and tracked, which is Supabase's treatment for exactly this
+    // role — a caption naming the figure under it. An earlier pass stripped
+    // this on the claim that neither reference used it; that was true of Vercel
+    // and plainly wrong about Supabase, whose every stat label is set this way.
+    &-label {
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
         color: var(--text-tertiary);
     }
 
@@ -1115,7 +1147,7 @@
 .dashSide {
     display: flex;
     flex-direction: column;
-    gap: @vw16;
+    gap: @vw32;
 }
 
 .dashSide-note {
@@ -1130,28 +1162,32 @@
 .miniGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: @vw16;
-    // Fills the panel, so the four cards stretch to meet the chart beside them
-    // rather than stacking at the top of a tall column.
-    flex: 1;
+    gap: @vw32;
+    // Natural height, pinned to the top. These used to stretch to meet the
+    // chart beside them, which was right while they were bordered cards — the
+    // boxes grew and stayed boxes. Borderless there is nothing to stretch but
+    // the gap, and a tall chart pushed the bottom row so far down that the four
+    // readings stopped looking like a set.
+    align-content: start;
 }
 
 .miniCard {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: @vw4;
-    padding: @vw16;
-    // Panel colours, not the raised fill they had while nested inside one:
-    // out here they sit on the page background alongside the chart, so they
-    // take the same surface and border it does.
-    .dashSurface();
+    gap: @vw6;
+    // Borderless, for the same reason `.statCard` is: four outlined boxes in a
+    // 2x2 beside an outlined chart panel is five edges in one screenful, and
+    // the four of them are readings rather than objects. They keep their place
+    // as peers of the chart — the grid gap does the separating.
     min-width: 0;
 
     &-label {
         font-size: max(0.62em, @vw11);
         font-weight: @medium;
-        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
     }
 
     &-value {
@@ -3275,8 +3311,8 @@
 
     .dashNav-logo { width: @vw104-1080; height: @vw29-1080; }
 
-    .dash { gap: @vw32-1080; }
-    .dashSection { gap: @vw20-1080; }
+    .dash { gap: @vw48-1080; }
+    .dashSection { gap: @vw24-1080; }
 
     .dashHero {
         gap: @vw24-1080;
@@ -3298,13 +3334,12 @@
         &-trend { min-width: @vw40-1080; }
     }
 
-    .miniGrid { gap: @vw16-1080; }
-    .miniCard { padding: @vw16-1080; }
+    .miniGrid { gap: @vw24-1080; }
     .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
     .miniCard-meter { height: max(4px, @vw6-1080); }
     .miniCard-flag { margin-right: @vw6-1080; font-size: max(0.90em, @vw16-1080); }
     .sparkbars { height: @vw30-1080; }
-    .dashGrid { gap: @vw16-1080; }
+    .dashGrid { gap: @vw24-1080; }
 
     .dashSettings {
         column-gap: @vw16-1080;
@@ -3315,11 +3350,10 @@
     }
 
     .statGrid {
-        gap: @vw16-1080;
+        gap: @vw32-1080 @vw24-1080;
         grid-template-columns: repeat(auto-fit, minmax(@vw200-1080, 1fr));
     }
 
-    .statCard { padding: @vw16-1080; }
     .statCard-value { font-size: max(1.05em, @vw20-1080); }
 
     .barChart-frame { grid-template-rows: @vw180-1080 auto; }
@@ -3406,8 +3440,8 @@
         &-avatar { width: @vw36-580; height: @vw36-580; }
     }
 
-    .dash { gap: @vw32-580; }
-    .dashSection { gap: @vw20-580; }
+    .dash { gap: @vw40-580; }
+    .dashSection { gap: @vw24-580; }
     .dashSettings > * { margin-bottom: @vw16-580; }
     .dashNav-logo { width: @vw104-580; height: @vw29-580; }
 
@@ -3444,7 +3478,7 @@
         gap: @vw10-580;
     }
 
-    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw16-580; }
+    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw24-580; }
 
     .dashSetup {
         padding: @vw16-580;
@@ -3468,16 +3502,14 @@
         &-trend { min-width: @vw44-580; }
     }
 
-    .miniGrid { gap: @vw16-580; }
-    .miniCard { padding: @vw16-580; }
+    .miniGrid { gap: @vw24-580; }
     .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
     .miniCard-meter { height: max(4px, @vw6-580); }
     .miniCard-flag { margin-right: @vw6-580; font-size: max(0.90em, @vw16-580); }
     .sparkbars { height: @vw30-580; }
 
     .statCard {
-        padding: @vw16-580;
-        gap: @vw8-580;
+        gap: @vw12-580;
 
         &-value { font-size: max(1.05em, @vw20-580); }
         &-icon { display: none; }
