@@ -22,7 +22,7 @@
 					<span class="viewingAs-text">
 						Viewing <strong>{{ viewingAs.displayName }}</strong>
 						<span class="viewingAs-slug">?r={{ viewingAs.slug }}</span>
-						<span v-if="viewingAs.status !== 'active'" class="viewingAs-flag">revoked</span>
+						<span v-if="viewingAs.status !== 'active'" class="viewingAs-flag">Revoked</span>
 						— read only.
 					</span>
 					<button type="button" class="viewingAs-exit" @click="stopViewingAs">

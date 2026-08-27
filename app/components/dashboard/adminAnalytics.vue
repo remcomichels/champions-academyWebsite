@@ -102,7 +102,7 @@
 									<!-- The name truncates; the flag must not. Inside the
 									     ellipsis container it was the thing that got cut. -->
 									<span class="leaderboard-nameText">{{ row.displayName }}</span>
-									<span v-if="row.status !== 'active'" class="leaderboard-flag">revoked</span>
+									<span v-if="row.status !== 'active'" class="leaderboard-flag">Revoked</span>
 								</span>
 								<span class="leaderboard-slug">?r={{ row.slug }}</span>
 							</span>

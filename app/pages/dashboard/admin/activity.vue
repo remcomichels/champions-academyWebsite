@@ -42,7 +42,7 @@
 					>
 						{{ affiliate.displayName }}
 						<span class="auditFilter-slug">?r={{ affiliate.slug }}</span>
-						<span v-if="affiliate.status !== 'active'" class="auditFilter-revoked">revoked</span>
+						<span v-if="affiliate.status !== 'active'" class="auditFilter-revoked">Revoked</span>
 					</button>
 				</li>
 				<li v-if="!matchingAffiliates.length" class="dashPanel-note">

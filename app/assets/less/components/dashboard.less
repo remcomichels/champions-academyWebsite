@@ -61,6 +61,22 @@
 // busier at 11px, and neither reference dashboard uses it — their badges are
 // sentence case too.
 
+// The one card.
+//
+// Six primitives used to declare this same three-line group independently —
+// dashPanel, statCard, miniCard, dashSetup, copyField and the hero's QR tile —
+// and no two of them agreed on padding or radius (24/20/20-24/14/6 and 12 or
+// 10). That disagreement is what made the page read as a pile of boxes rather
+// than a set of peers: when every surface differs slightly the eye keeps
+// parsing the boxes instead of the content inside them.
+//
+// Declared with parentheses so it is a mixin, not an emitted class.
+.dashSurface() {
+    background-color: var(--surface);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @dashRadius;
+}
+
 // Screen-reader-only text. No global utility exists in this project, and both
 // the checklist and the chart need one so state is announced rather than being
 // carried by a tick glyph or a bar height alone.
@@ -705,9 +721,7 @@
         align-items: center;
         gap: @vw10;
         padding: @vw16;
-        background-color: var(--surface);
-        border: max(1px, @vw1) solid var(--border);
-        border-radius: @dashRadius;
+        .dashSurface();
     }
 
     // The QR is generated as dark-on-transparent, so it needs a light plate
@@ -733,9 +747,7 @@
     flex-direction: column;
     gap: @vw16;
     padding: @vw16;
-    background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    .dashSurface();
 
     &-head {
         display: flex;
@@ -927,9 +939,7 @@
     min-width: 0;
     gap: @vw8;
     padding: @vw6;
-    background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    .dashSurface();
 
     &-value {
         flex: 1;
@@ -987,9 +997,7 @@
     flex-direction: column;
     gap: @vw8;
     padding: @vw16;
-    background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    .dashSurface();
     .transition();
     transition-property: border-color;
 
@@ -1137,9 +1145,7 @@
     // Panel colours, not the raised fill they had while nested inside one:
     // out here they sit on the page background alongside the chart, so they
     // take the same surface and border it does.
-    background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    .dashSurface();
     min-width: 0;
 
     &-label {
@@ -1636,11 +1642,9 @@
 .dashSetup {
     display: flex;
     flex-direction: column;
-    gap: @vw14;
+    gap: @vw16;
     padding: @vw16;
-    background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    .dashSurface();
 
     &-head {
         display: flex;
@@ -1896,9 +1900,7 @@
         width: calc(@vw300 + @vw40);
         max-width: 85vw;
         padding: @vw16;
-        background-color: var(--surface);
-        border: max(1px, @vw1) solid var(--border);
-        border-radius: @dashRadius;
+        .dashSurface();
         box-shadow: var(--shadow-pop);
     }
 
@@ -1941,9 +1943,7 @@
 
 .toast {
     padding: @vw12 @vw16;
-    background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    .dashSurface();
     box-shadow: var(--shadow-pop);
     font-size: max(0.80em, @vw14);
     color: var(--text);
@@ -2873,9 +2873,7 @@
         flex-direction: column;
         gap: @vw20;
         padding: @vw28;
-        background-color: var(--surface);
-        border: max(1px, @vw1) solid var(--border);
-        border-radius: @dashRadius;
+        .dashSurface();
         box-shadow: var(--shadow-pop);
         // Fills the dialog rather than sizing to content, so the card is the
         // 80% box and not a smaller one floating inside it. Long content
@@ -3128,6 +3126,10 @@
         border-radius: @dashRadiusPill;
         font-size: max(0.62em, @vw11);
         font-weight: @medium;
+        // The chip renders `affiliate.status` straight from the database, which
+        // is lowercase. This is casing a raw value for display, not the
+        // decorative uppercase that came off every other label in this file.
+        text-transform: capitalize;
 
         &.is-active  { color: var(--success); background-color: var(--surface-raised); }
         &.is-revoked { color: var(--error); background-color: var(--surface-raised); }

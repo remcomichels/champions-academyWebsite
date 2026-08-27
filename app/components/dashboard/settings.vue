@@ -103,7 +103,7 @@
 				<li v-for="session in data.sessions" :key="session.id" class="sessionList-row">
 					<span class="sessionList-device">
 						{{ session.device }}
-						<span v-if="session.current" class="sessionList-current">this device</span>
+						<span v-if="session.current" class="sessionList-current">This device</span>
 					</span>
 					<span class="sessionList-meta">last used {{ formatWhen(session.lastSeenAt) }}</span>
 				</li>
