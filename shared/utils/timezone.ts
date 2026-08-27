@@ -157,9 +157,89 @@ export function timezoneOffsetLabel(zone: string, now: Date = new Date()): strin
 	}
 }
 
-/** "(UTC+02:00) Europe/Amsterdam" — the picker's one display format. */
+/**
+ * The readable half of a zone name: its last segment, with the underscores the
+ * tz database uses in place of spaces put back. `America/Argentina/Buenos_Aires`
+ * is "Buenos Aires".
+ */
+export function timezoneCity(zone: string): string {
+	return (zone.split("/").pop() ?? zone).replace(/_/g, " ");
+}
+
+/** "(UTC+02:00) Europe/Amsterdam" — for the row that shows the current zone. */
 export function timezoneLabel(zone: string, now: Date = new Date()): string {
-	return `(${timezoneOffsetLabel(zone, now)}) ${zone}`;
+	return `(${timezoneOffsetLabel(zone, now)}) ${zone.replace(/_/g, " ")}`;
+}
+
+export interface TimezoneGroup {
+	/** The zone actually stored when this row is chosen. */
+	value: string;
+	/** Every zone folded into this row, for matching a stored value back. */
+	zones: string[];
+	/** Their readable names, sorted. */
+	cities: string[];
+	/** "(UTC+02:00)" — resolved against `now`, so DST-correct. */
+	offsetLabel: string;
+	/** Minutes from UTC right now. The sort key. */
+	offset: number;
+}
+
+/**
+ * The zone list, folded into rows that mean the same thing.
+ *
+ * Four hundred-odd IANA zones is not a list anybody reads; most of it is the
+ * same handful of clocks under different city names. Zones are grouped by the
+ * pair (offset in January, offset in July), which is a fingerprint of both the
+ * standard offset *and* the DST rule — so Amsterdam, Berlin, Rome, Stockholm,
+ * Vienna, Belgrade and Prague collapse into one row, while Lagos, which sits at
+ * the same +01:00 but never moves, stays separate. That is exactly the
+ * distinction that matters: two zones in one row will agree on every timestamp
+ * this dashboard ever buckets. 418 zones become 57 rows.
+ *
+ * Derived rather than transcribed from a list. The Windows/CLDR groupings that
+ * inspired this split that European row in two for historical reasons with no
+ * present-day meaning, and any written-down table also freezes offsets that the
+ * whole point here is to compute.
+ *
+ * The stored value is the group's first city alphabetically — Europe/Amsterdam
+ * for that row — except where the group contains plain `UTC`, which wins,
+ * because "UTC" is the name someone looking for it will expect to see.
+ */
+export function timezoneGroups(now: Date = new Date()): TimezoneGroup[] {
+	const year = now.getUTCFullYear();
+	// Mid-month, mid-winter and mid-summer for the northern hemisphere. Southern
+	// zones simply produce the reversed pair, which fingerprints them just as
+	// well — Adelaide's (+10:30, +09:30) is as distinctive as Amsterdam's.
+	const january = new Date(Date.UTC(year, 0, 15));
+	const july = new Date(Date.UTC(year, 6, 15));
+
+	const buckets = new Map<string, string[]>();
+
+	for (const zone of timezoneNames()) {
+		const key = `${timezoneOffsetMinutes(zone, january)}|${timezoneOffsetMinutes(zone, july)}`;
+		const bucket = buckets.get(key);
+		if (bucket) bucket.push(zone);
+		else buckets.set(key, [zone]);
+	}
+
+	const groups = [...buckets.values()].map((zones) => {
+		const sorted = [...zones].sort((a, b) =>
+			timezoneCity(a).localeCompare(timezoneCity(b)));
+
+		const value = sorted.includes("UTC") ? "UTC" : sorted[0]!;
+
+		return {
+			value,
+			zones: sorted,
+			// The stored zone's own name leads the row, so the label always
+			// opens with the one the affiliate picked.
+			cities: [timezoneCity(value), ...sorted.filter(z => z !== value).map(timezoneCity)],
+			offsetLabel: timezoneOffsetLabel(value, now),
+			offset: timezoneOffsetMinutes(value, now),
+		};
+	});
+
+	return groups.sort((a, b) => a.offset - b.offset || a.cities[0]!.localeCompare(b.cities[0]!));
 }
 
 /**

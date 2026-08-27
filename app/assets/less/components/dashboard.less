@@ -33,6 +33,20 @@
 @dashRadius: @vw8;
 @dashRadiusPill: @vw300;
 
+// The one exception to "nested elements get the same 8".
+//
+// That rule holds everywhere a box sits *on* a surface. It does not hold where
+// a box sits *inside* one with only a few pixels of padding between them: a row
+// carrying the panel's own 8 inside a panel padded by 4 has a corner rounder
+// than the gap containing it, and the two arcs visibly fight. The old ladder
+// came from applying inner-minus-padding to everything; applying it in the one
+// place the geometry demands is not the same mistake.
+//
+// 4 is not a taste call — it is 8 minus the 4 of panel padding, which is the
+// radius that keeps the two arcs concentric. Used by the account menu's rows
+// and the timezone search field, and nowhere else.
+@dashRadiusInner: @vw4;
+
 // ── Type ─────────────────────────────────────────────────────────────────────
 // Six rungs, and every `font-size` in this file lands on one of them:
 //
@@ -3513,7 +3527,7 @@
         width: 100%;
         padding: @vw6 @vw8;
         border: none;
-        border-radius: @dashRadius;
+        border-radius: @dashRadiusInner;
         background: none;
         font-family: @body;
         font-size: max(0.68em, @vw12);
@@ -3524,10 +3538,16 @@
         .transition();
         transition-property: color, background-color;
 
+        // Transitioned on the same clock as the row's own colour. Without
+        // this the icon has no transition at all: it snapped to red the instant
+        // the pointer landed while the text beside it faded over 0.3s, so the
+        // two halves of one row changed at visibly different times.
         .icon {
             flex: none;
             font-size: max(0.80em, @vw14);
             color: var(--text-tertiary);
+            .transition();
+            transition-property: color;
         }
 
         @media (hover: hover) {
@@ -3542,6 +3562,7 @@
         &:focus-visible {
             outline: max(2px, @vw2) solid var(--accent);
             outline-offset: -@vw2;
+            border-radius: @dashRadiusInner;
         }
 
         // Log out. Red on hover only — a permanently red row at the foot of a
@@ -3678,7 +3699,7 @@
         flex: none;
         padding: @vw6 @vw8;
         border: max(1px, @vw1) solid var(--border);
-        border-radius: @dashRadius;
+        border-radius: @dashRadiusInner;
         background-color: var(--surface-raised);
         color: var(--text-tertiary);
 
@@ -3717,6 +3738,40 @@
         // the wheel globally, so the list also carries `data-lenis-prevent` —
         // without it the page scrolled and this never saw the event.
         overscroll-behavior: contain;
+
+        // ── Scrollbar ────────────────────────────────────────────────────
+        // No track, and no thumb until the pointer is over the panel. A
+        // permanent bar down the edge of a floating menu is a piece of chrome
+        // announcing that a list is long, which the list is already doing.
+        //
+        // The gutter is reserved either way — `scrollbar-gutter` and a fixed
+        // WebKit width — so nothing reflows when the thumb appears. Fading in
+        // a bar that shoved every row sideways by 6px would be worse than
+        // leaving it on.
+        scrollbar-width: thin;
+        scrollbar-gutter: stable;
+        scrollbar-color: transparent transparent;
+        .transition();
+        transition-property: scrollbar-color;
+
+        &::-webkit-scrollbar { width: max(6px, @vw6); }
+        &::-webkit-scrollbar-track { background: none; }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: @dashRadiusPill;
+            background-color: transparent;
+            .transition();
+            transition-property: background-color;
+        }
+    }
+
+    // Hovering anywhere on the panel, not only the list itself: the pointer is
+    // usually over a row, and a thumb that only appeared once you found the
+    // 6px strip it lives in would be a bar you had to already know was there.
+    &-panel:hover &-list {
+        scrollbar-color: var(--border-strong) transparent;
+
+        &::-webkit-scrollbar-thumb { background-color: var(--border-strong); }
     }
 
     &-option {
@@ -3727,7 +3782,7 @@
         width: 100%;
         padding: @vw6 @vw8;
         border: none;
-        border-radius: @dashRadius;
+        border-radius: @dashRadiusInner;
         background: none;
         font-family: @body;
         font-size: max(0.62em, @vw11);
@@ -3749,15 +3804,6 @@
         &.is-selected { color: var(--text); }
     }
 
-    // A zone name that will not fit wraps instead of being clipped or pushing
-    // the row sideways. `min-width: 0` is what lets it: without it the flex
-    // item refuses to shrink below its longest word.
-    &-optionLabel {
-        min-width: 0;
-        white-space: normal;
-        overflow-wrap: anywhere;
-    }
-
     // The tick, and only on the chosen row. Replaces the leading dot the
     // options used to carry: a column of empty circles down the left cost a
     // column of width and marked nothing.
@@ -3769,6 +3815,10 @@
 
     // Auto detect is the first row of the list rather than a control above it,
     // so it takes the option's shape with a second line for the zone it found.
+    // Every row's shape: the offset (or "Auto detect") on top, and the cities
+    // it covers underneath. `min-width: 0` is what lets the second line wrap
+    // rather than pushing the tick off the row — without it a flex item refuses
+    // to shrink below its longest word.
     &-optionStack {
         display: flex;
         flex-direction: column;
@@ -3779,6 +3829,13 @@
     &-optionLead {
         font-size: max(0.68em, @vw12);
         font-weight: @medium;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    // Auto detect is the one row that is a mode rather than a place, so it is
+    // the one that keeps the accent on its lead line.
+    &-option--auto &-optionLead {
         color: var(--accent);
     }
 
