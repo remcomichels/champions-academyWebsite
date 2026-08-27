@@ -23,47 +23,47 @@
 				</div>
 			</div>
 
-			<!-- The QR tile that used to sit here is gone. It lives on the Links
-			     page, next to a download button — which is where someone goes
-			     when they actually want it. On Overview it was a bordered box
-			     competing with the copy field, which is the thing this block
-			     exists for. -->
+			<!-- In the slot the QR tile used to hold — which is where the space
+			     was, and it puts the outstanding tasks beside the link rather
+			     than in a strip of their own below it. Disappears for good once
+			     all four are done, leaving the hero a single column. -->
+			<section v-if="!onboardingComplete" class="dashSetup">
+				<div class="dashSetup-head">
+					<h2 class="dashSetup-title">Getting set up</h2>
+					<span class="dashPanel-count">{{ summary.onboarding.completed }} of {{ summary.onboarding.total }}</span>
+				</div>
+
+				<ul class="checklist">
+					<li v-for="step in steps" :key="step.key" class="checklist-item" :class="{ 'is-done': step.done }">
+						<span class="checklist-mark" aria-hidden="true">
+							<NuxtDashboardIcon v-if="step.done" name="check" />
+						</span>
+
+						<!-- A step with somewhere to go is a link to it, done or
+						     not: a finished one is exactly where you go to
+						     change your mind about it. The two that are not
+						     tasks — copying the link, waiting for a first
+						     visit — have no destination and stay plain. -->
+						<NuxtLink v-if="step.to" :to="step.to" class="checklist-text checklist-link">
+							{{ step.label }}
+							<span class="sr-only">{{ step.done ? "(done)" : "(not done)" }}</span>
+						</NuxtLink>
+
+						<span v-else class="checklist-text">
+							{{ step.label }}
+							<span class="sr-only">{{ step.done ? "(done)" : "(not done)" }}</span>
+						</span>
+					</li>
+				</ul>
+
+				<NuxtLink to="/dashboard/links" class="dashSetup-cta">Finish setup</NuxtLink>
+			</section>
 		</header>
 
 		<!-- The VIP-link warning used to sit here, inline under the hero. It is
 		     an account-level fact rather than an Overview one, and it now runs
 		     as a fixed bar across the top of the viewport from the layout — see
 		     `.alertBar` there. -->
-
-		<!-- ── Getting set up ────────────────────────────────────────────── -->
-		<!-- Directly under the notice rather than in the grid below. It is a
-		     temporary strip, not a permanent panel: it is the first thing to read
-		     while there is anything left to do, and once all four steps are done
-		     it disappears for good instead of leaving a card behind. -->
-		<section v-if="!onboardingComplete" class="dashSetup">
-			<div class="dashSetup-head">
-				<h2 class="dashSetup-title">Getting set up</h2>
-				<span class="dashPanel-count">{{ summary.onboarding.completed }} of {{ summary.onboarding.total }}</span>
-			</div>
-
-			<!-- The progress bar that sat here is gone with the card around it.
-			     The count beside the heading and the ticks down the list say
-			     the same thing, and a third reading of it was furniture. -->
-
-			<ul class="checklist">
-				<li v-for="step in steps" :key="step.key" class="checklist-item" :class="{ 'is-done': step.done }">
-					<span class="checklist-mark" aria-hidden="true">
-						<NuxtDashboardIcon v-if="step.done" name="check" />
-					</span>
-					<span class="checklist-text">
-						{{ step.label }}
-						<span class="sr-only">{{ step.done ? "(done)" : "(not done)" }}</span>
-					</span>
-				</li>
-			</ul>
-
-			<NuxtLink to="/dashboard/links" class="dashSetup-cta">Finish setup</NuxtLink>
-		</section>
 
 		<!-- ── Figures ───────────────────────────────────────────────────── -->
 		<div class="statGrid">
@@ -124,10 +124,10 @@
 				</p>
 			</section>
 
-			<!-- The four figures worth knowing at a glance, in the slot the setup
-			     checklist used to occupy. Deliberately not wrapped in a panel:
-			     four cards inside a fifth card is a box that earns nothing, so
-			     they sit on the page as peers of the chart beside them. -->
+			<!-- The four figures worth knowing at a glance. Cards, but not inside
+			     a panel of their own — four cards in a fifth card is a box that
+			     earns nothing, so they are peers of the chart beside them and
+			     their grid fills the column to finish level with it. -->
 			<section class="dashGrid-side dashSide">
 				<!-- Kept for the heading outline a screen reader navigates by.
 				     Sighted readers get the same from the four labels, which is
@@ -168,11 +168,6 @@
 						<p v-if="card.note" class="miniCard-note">{{ card.note }}</p>
 					</div>
 				</div>
-
-				<p class="dashSide-note">
-					Hours are in {{ summary.highlights.timezone }}
-					<span class="dashPanel-count">last {{ summary.highlights.days }} days</span>
-				</p>
 			</section>
 		</div>
 
@@ -284,11 +279,18 @@ const salesHint = computed(() => {
 	return `${((sales / visits) * 100).toFixed(1)}% of all-time visits`;
 });
 
+/**
+ * `to` is the shortcut: a step that names something to go and do links to the
+ * page it is done on. The other two are not tasks — copying the referral link
+ * is done from the field directly above this card, and a first visit is
+ * something that happens rather than something you action — so they carry no
+ * destination and render as plain text.
+ */
 const steps = computed(() => [
-	{ key: "lite", label: "Add your Telegram link", done: props.summary.onboarding.steps.liteTelegramAdded },
-	{ key: "calendly", label: "Add your Calendly link", done: props.summary.onboarding.steps.calendlyAdded },
-	{ key: "shared", label: "Copy your referral link", done: props.summary.onboarding.steps.linkShared },
-	{ key: "visit", label: "Get your first link visit", done: props.summary.onboarding.steps.firstVisitReceived },
+	{ key: "lite", label: "Add your Telegram link", done: props.summary.onboarding.steps.liteTelegramAdded, to: "/dashboard/links" },
+	{ key: "calendly", label: "Add your Calendly link", done: props.summary.onboarding.steps.calendlyAdded, to: "/dashboard/links" },
+	{ key: "shared", label: "Copy your referral link", done: props.summary.onboarding.steps.linkShared, to: null },
+	{ key: "visit", label: "Get your first link visit", done: props.summary.onboarding.steps.firstVisitReceived, to: null },
 ]);
 
 const onboardingComplete = computed(() =>

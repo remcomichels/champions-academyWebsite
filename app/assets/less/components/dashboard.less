@@ -700,17 +700,16 @@
     justify-content: space-between;
     gap: @vw16;
 
-    // The page title on Sales, Analytics and the admin pages — Overview's
-    // equivalent is `.dashHero-title`. Serif, and a rung larger than it was:
-    // at 16 in bold body it was indistinguishable from a panel heading, which
-    // left those pages with nothing that read as their title.
+    // The page title on Sales, Analytics and the admin pages. Sans — the serif
+    // is reserved for the affiliate's own name on Overview and nothing else.
+    // Kept a rung larger than its original 16 though: at that size in bold body
+    // it was indistinguishable from a panel heading, which left those pages
+    // with nothing reading as their title at all.
     &-title {
-        font-family: @serif;
+        font-family: @body;
         font-size: max(1.05em, @vw20);
-        font-weight: @regular;
-        // Instrument Serif ships one weight, so `@bold` here would be a
-        // browser-synthesised smear. The serif is doing the emphasis.
-        letter-spacing: 0;
+        font-weight: @bold;
+        letter-spacing: 0.01em;
         color: var(--text);
     }
 }
@@ -783,20 +782,27 @@
     }
 
     &-title {
-        font-family: @serif;
+        font-family: @body;
         font-size: max(1.45em, @vw28);
-        font-weight: @regular;
+        font-weight: @bold;
         line-height: 1.15;
-        // The negative tracking was there to tighten a bold sans at display
-        // size. A serif at 400 does not want it.
-        letter-spacing: 0;
+        letter-spacing: -0.02em;
         color: var(--text);
     }
 
-    // The affiliate's own name, in the serif's true italic. The only italic on
-    // the dashboard, on the one word that is personally theirs.
+    // The affiliate's own name, and the only serif on the dashboard — "Welcome
+    // back," stays in the sans it shares with every other heading, so the
+    // change of voice lands on the one word that is personally theirs.
+    //
+    // Its own weight and tracking because it is a different family mid-sentence:
+    // Instrument Serif ships one weight, so the @bold around it would be
+    // synthesised, and the sans's -0.02em is a correction this face does not
+    // want.
     &-name {
+        font-family: @serif;
         font-style: italic;
+        font-weight: @regular;
+        letter-spacing: 0;
     }
 
     &-sub {
@@ -817,7 +823,7 @@
         // The link is the one thing on this page the affiliate came to copy.
         // It was sitting tight under the strapline as if it belonged to the
         // sentence; this separates it into its own beat.
-        margin-top: @vw24;
+        margin-top: @vw40;
         width: 100%;
         max-width: calc(@vw300 + @vw200);
     }
@@ -1232,36 +1238,29 @@
     gap: @vw32;
 }
 
-.dashSide-note {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: @vw8;
-    font-size: max(0.68em, @vw12);
-    color: var(--text-tertiary);
-}
-
 .miniGrid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: @vw32;
-    // Natural height, pinned to the top. These used to stretch to meet the
-    // chart beside them, which was right while they were bordered cards — the
-    // boxes grew and stayed boxes. Borderless there is nothing to stretch but
-    // the gap, and a tall chart pushed the bottom row so far down that the four
-    // readings stopped looking like a set.
-    align-content: start;
+    gap: @vw16;
+    // Fills the column, so the 2x2 ends level with the chart panel beside it.
+    // Right again now they are cards: the boxes themselves grow, which is what
+    // `justify-content: space-between` inside each one is spreading. While they
+    // were borderless this only stretched the gaps and scattered them.
+    flex: 1;
 }
 
 .miniCard {
     display: flex;
     flex-direction: column;
     justify-content: center;
+    // Cards again — unlike `.statCard`, which stays borderless. The stat row
+    // sits alone on the page background where a border would be the only edge
+    // in sight; these four sit directly beside the chart panel, so an outline
+    // reads as matching it rather than as clutter.
+    justify-content: space-between;
     gap: @vw6;
-    // Borderless, for the same reason `.statCard` is: four outlined boxes in a
-    // 2x2 beside an outlined chart panel is five edges in one screenful, and
-    // the four of them are readings rather than objects. They keep their place
-    // as peers of the chart — the grid gap does the separating.
+    padding: @vw16;
+    .dashSurface();
     min-width: 0;
 
     &-label {
@@ -1743,19 +1742,30 @@
 // filled like `.dashPanel`, so it reads as a temporary band of business at the
 // top of the page — it is removed for good once the fourth step is done, and a
 // panel that vanishes leaves a more obvious hole than a strip does.
-// A short list, not a panel.
+// The setup card, in the hero's right-hand slot.
 //
-// This was a full-width bordered card carrying a heading, a progress bar, a row
-// of four steps and a link — a lot of furniture for "two things left to do",
-// and it was the heaviest object on a page whose stat rows had just lost their
-// borders entirely. It reads as a list now: heading, the steps stacked under
-// each other, the link. The progress bar went with the border; the count beside
-// the heading and the ticks down the list already say the same thing twice.
+// It has been three things now. It started as a full-width bordered strip
+// carrying a heading, a progress bar, a row of four steps and a link — far too
+// much furniture, and the heaviest object on a page whose stat rows had just
+// lost their borders. Stripping it to a bare list fixed the weight but left it
+// spanning the full column for four short lines, with the space beside the hero
+// sitting empty since the QR tile came out.
+//
+// So: a card again, but a narrow one, filling that gap. The progress bar stays
+// gone — the count beside the heading and the ticks down the list say the same
+// thing twice already — and the steps that lead somewhere are links now, so the
+// card is a set of shortcuts rather than a read-only status list.
 .dashSetup {
+    // Does not stretch to the hero copy's height: pinned to the top so its
+    // heading lines up with the eyebrow across from it.
+    flex: none;
+    width: calc(@vw300 + @vw40);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: @vw12;
+    padding: @vw16;
+    .dashSurface();
 
     // The count sits straight after the heading rather than being pushed to a
     // far edge — there is no card edge left to push it to.
@@ -1807,6 +1817,35 @@
         color: var(--text-secondary);
 
         &.is-done { color: var(--text); }
+    }
+
+    // The steps that lead somewhere are links — the point of the card is to be
+    // the shortest route to finishing setup, and a status list that made you go
+    // find the page yourself was the long way round.
+    //
+    // Deliberately not accent-coloured. Four accent links stacked in a card
+    // would out-shout the primary button in the hero beside it; they take the
+    // row's own colour and announce themselves on hover instead.
+    &-link {
+        color: inherit;
+        text-decoration: underline;
+        text-decoration-color: transparent;
+        text-underline-offset: 0.2em;
+        .transition();
+        transition-property: color, text-decoration-color;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--text);
+                text-decoration-color: currentColor;
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+            border-radius: @dashRadius;
+        }
     }
 
     &-mark {
@@ -3389,7 +3428,7 @@
     }
 
     .dashPanel { padding: @vw16-1080; gap: @vw16-1080; }
-    .dashSetup { gap: @vw12-1080; }
+    .dashSetup { width: calc(@vw300-1080 + @vw40-1080); gap: @vw12-1080; padding: @vw16-1080; }
     .donut {
         gap: @vw32-1080;
 
@@ -3401,7 +3440,8 @@
         &-trend { min-width: @vw40-1080; }
     }
 
-    .miniGrid { gap: @vw24-1080; }
+    .miniGrid { gap: @vw12-1080; }
+    .miniCard { padding: @vw16-1080; }
     .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
     .miniCard-meter { height: max(4px, @vw6-1080); }
     .miniCard-flag { margin-right: @vw6-1080; font-size: max(0.90em, @vw16-1080); }
@@ -3488,10 +3528,11 @@
         align-items: stretch;
 
         &-actions { max-width: none; }
-
-        // Side by side with the copy would leave the QR stranded on its own
-        // row at full width; inline-flex keeps it card-sized.
     }
+
+    // Stacked under the hero copy rather than beside it, so it takes the
+    // column instead of holding the narrow width it has at the baseline.
+    .dashSetup { width: 100%; }
 }
 
 @media (max-width: 600px) {
@@ -3546,7 +3587,7 @@
 
     .statGrid { grid-template-columns: 1fr 1fr; gap: @vw24-580; }
 
-    .dashSetup { gap: @vw12-580; }
+    .dashSetup { width: 100%; gap: @vw12-580; padding: @vw16-580; }
 
     .linkStatus--row { gap: @vw12-580; }
     // Side by side stops working once the ring has to shrink to leave the
@@ -3564,7 +3605,8 @@
         &-trend { min-width: @vw44-580; }
     }
 
-    .miniGrid { gap: @vw24-580; }
+    .miniGrid { gap: @vw12-580; }
+    .miniCard { padding: @vw16-580; }
     .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
     .miniCard-meter { height: max(4px, @vw6-580); }
     .miniCard-flag { margin-right: @vw6-580; font-size: max(0.90em, @vw16-580); }

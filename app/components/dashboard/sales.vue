@@ -28,7 +28,7 @@
 				<NuxtDashboardStatCard
 					label="Sales"
 					:value="data?.counts.window ?? 0"
-					icon="tag"
+					icon="sales"
 					accent
 					:trend="salesTrend"
 					:loading="pending"
@@ -55,6 +55,7 @@
 				<NuxtDashboardStatCard
 					label="All time"
 					:value="data?.counts.total ?? 0"
+					icon="history"
 					:hint="allTimeHint"
 				/>
 			</div>
