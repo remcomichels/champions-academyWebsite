@@ -242,14 +242,14 @@
         top: calc(100% + @vw10);
         left: 50%;
         transform: translateX(-50%);
-        z-index: 70;
-        padding: @vw6 @vw10;
+        z-index: 80;
+        padding: @vw4 @vw8;
         border-radius: @dashRadiusInner;
         background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
         box-shadow: var(--shadow-pop);
         font-family: @body;
-        font-size: max(0.62em, @vw11);
+        font-size: max(0.55em, @vw10);
         font-weight: @medium;
         line-height: 1.3;
         letter-spacing: 0;
@@ -266,7 +266,7 @@
         top: calc(100% + @vw6);
         left: 50%;
         transform: translateX(-50%) rotate(45deg);
-        z-index: 71;
+        z-index: 81;
         width: @vw8;
         height: @vw8;
         background-color: var(--surface-raised);
@@ -3135,87 +3135,97 @@
 // A checkbox styled as a switch. The input stays in the DOM and keeps its own
 // focus and checked state — the track and knob below are painted from it, so
 // none of that has to be reimplemented.
+// ── Mode switch ──────────────────────────────────────────────────────────────
+// Personal | Admin, as a segmented control.
+//
+// It was a labelled toggle before, which framed one half of the pair as "off".
+// An admin is both things at once — an affiliate with their own figures and the
+// owner of everyone else's — so neither side is the absence of the other, and
+// naming both is the honest shape.
+//
+// Sized against the bar's circular controls rather than invented: the same
+// @vw30 height and the same pill radius, so it reads as another control in the
+// row rather than a widget parked in it.
 .modeSwitch {
-    display: inline-flex;
+    position: relative;
+    display: flex;
+    flex: none;
     align-items: center;
-    gap: @vw8;
-    padding: @vw6 @vw10;
+    height: @vw30;
+    padding: max(2px, @vw2);
     border: max(1px, @vw1) solid var(--border);
     border-radius: @dashRadiusPill;
-    cursor: pointer;
-    user-select: none;
-    .transition();
-    transition-property: color, border-color, background-color;
+
+    &-option {
+        position: relative;
+        // Above the indicator sliding underneath.
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        padding: 0 @vw12;
+        height: 100%;
+        border-radius: @dashRadiusPill;
+        cursor: pointer;
+    }
+
+    &-text {
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        line-height: 1;
+        white-space: nowrap;
+        color: var(--text-tertiary);
+        .transition();
+        transition-property: color;
+    }
+
+    &-option.is-active &-text { color: var(--text); }
 
     @media (hover: hover) {
-        &:hover { border-color: var(--border-strong); }
+        &-option:not(.is-active):hover &-text { color: var(--text-secondary); }
     }
 
-    &.is-on {
-        color: var(--accent);
-        border-color: var(--accent);
-        background-color: var(--accent-subtle);
-    }
-
-    // Clipped rather than `display: none` — a hidden input is not focusable,
-    // which would leave the switch unreachable by keyboard.
-    &-input {
+    // The moving part. One element that slides rather than a background on each
+    // option, so the change reads as the *same* marker moving between two
+    // places — which is what a mode switch is — instead of one light going out
+    // as another comes on.
+    //
+    // Half the track minus the padding either side, so it lands exactly on an
+    // option at both ends.
+    &-indicator {
         position: absolute;
-        width: 1px;
-        height: 1px;
-        margin: -1px;
-        padding: 0;
-        border: 0;
-        overflow: hidden;
-        clip-path: inset(50%);
-        white-space: nowrap;
-    }
-
-    &-input:focus-visible ~ &-track {
-        outline: max(2px, @vw2) solid var(--accent);
-        outline-offset: @vw2;
-    }
-
-    &-label {
-        font-size: max(0.68em, @vw12);
-        font-weight: @semiBold;
-        color: currentColor;
-    }
-
-    &-track {
-        position: relative;
-        flex: none;
-        width: @vw32;
-        height: @vw18;
+        top: max(2px, @vw2);
+        left: max(2px, @vw2);
+        z-index: 0;
+        width: calc(50% - max(2px, @vw2));
+        height: calc(100% - max(4px, @vw4));
         border-radius: @dashRadiusPill;
         background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
-        .transition();
-        transition-property: background-color, border-color;
-    }
-
-    &.is-on &-track {
-        background-color: var(--accent);
-        border-color: var(--accent);
-    }
-
-    &-knob {
-        position: absolute;
-        top: 50%;
-        left: @vw2;
-        width: @vw12;
-        height: @vw12;
-        border-radius: @dashRadiusPill;
-        background-color: var(--text-tertiary);
-        transform: translateY(-50%);
-        .transition();
+        .transition(transform, @durationFast, @ease);
         transition-property: transform, background-color;
+
+        &.is-admin {
+            transform: translateX(100%);
+            // The one tinted state in the bar. Being in admin mode changes what
+            // every figure on the page means, so it is worth a colour — and the
+            // accent is already what "active" looks like everywhere else here.
+            background-color: var(--accent-subtle);
+        }
     }
 
-    &.is-on &-knob {
-        background-color: var(--on-accent);
-        // Track width less the knob and both insets.
-        transform: translate(calc(@vw32 - @vw12 - @vw6), -50%);
+    // The radios themselves are invisible but still focusable and still the
+    // thing the keyboard drives; the ring is drawn on the label around them.
+    &-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        margin: 0;
+    }
+
+    &-input:focus-visible + &-text {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw4;
+        border-radius: @dashRadiusPill;
     }
 }
 
@@ -3638,7 +3648,9 @@
         // Minus, not plus: the card tucks up under the bar's bottom edge
         // rather than floating clear of it.
         top: calc(var(--alert-bar) + var(--top-bar) - @vw4);
-        right: @vw16;
+        // The bar's own horizontal padding, so the panel's right edge lines up
+        // with the avatar's rather than stopping a few pixels short of it.
+        right: @vw12;
         z-index: 60;
         width: @vw248;
         max-width: calc(100vw - @vw24);
@@ -4304,17 +4316,10 @@
     }
 
     .modeSwitch {
-        padding: @vw6-1080 @vw10-1080;
+        height: @vw30-1080;
 
-        &-track { width: @vw32-1080; height: @vw18-1080; }
-        &-knob { width: @vw12-1080; height: @vw12-1080; left: @vw2-1080; }
-        &.is-on .modeSwitch-knob { transform: translate(calc(@vw32-1080 - @vw12-1080 - @vw6-1080), -50%); }
-    }
-
-    .dashBar {
-        padding: 0 0 @vw16-1080;
-
-        &-avatar { width: @vw36-1080; height: @vw36-1080; }
+        &-option { padding: 0 @vw10-1080; }
+        &-text { font-size: max(0.62em, @vw11-1080); }
     }
 
     .dashNav-logo { width: @vw104-1080; height: @vw29-1080; }
@@ -4472,14 +4477,8 @@
 
     .feedbackList-when { margin-left: 0; }
 
-    .dashBar {
-        gap: @vw10-580;
-        padding: 0 0 @vw16-580;
-
-        &-menu { width: @vw36-580; height: @vw36-580; }
-        &-right { gap: @vw8-580; }
-        &-avatar { width: @vw36-580; height: @vw36-580; }
-    }
+    .dashBar-menu { width: @vw30-580; height: @vw30-580; }
+    .dashBar-right { gap: @vw8-580; }
 
     .dash { gap: @vw40-580; }
     .dashSection { gap: @vw24-580; }

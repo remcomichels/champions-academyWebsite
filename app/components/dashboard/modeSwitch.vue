@@ -1,20 +1,31 @@
 <template>
-	<!-- A real checkbox, not a div with a click handler: this is a two-state
-	     control, and `role="switch"` on an <input type="checkbox"> is announced
-	     as on/off by every screen reader without any aria-* bookkeeping. -->
-	<label class="modeSwitch" :class="{ 'is-on': adminMode }">
-		<input
-			class="modeSwitch-input"
-			type="checkbox"
-			role="switch"
-			:checked="adminMode"
-			@change="onChange"
+	<!-- Two radios in a group, not a checkbox.
+	     "Admin: on/off" was the wrong shape for this: the affiliate side is not
+	     the absence of the admin side, it is the other half of a pair, and a
+	     switch made one of the two the default state and the other a deviation
+	     from it. A radiogroup says what this actually is — two modes, one
+	     current — and arrow keys move between them for free. -->
+	<div class="modeSwitch" role="radiogroup" aria-label="Dashboard mode">
+		<!-- Slides between the two. Behind the labels and out of the a11y tree:
+		     it is the same information the checked state already carries. -->
+		<span class="modeSwitch-indicator" :class="{ 'is-admin': adminMode }" aria-hidden="true" />
+
+		<label
+			v-for="option in options"
+			:key="option.label"
+			class="modeSwitch-option"
+			:class="{ 'is-active': adminMode === option.value }"
 		>
-		<span class="modeSwitch-label">Admin</span>
-		<span class="modeSwitch-track" aria-hidden="true">
-			<span class="modeSwitch-knob" />
-		</span>
-	</label>
+			<input
+				class="modeSwitch-input"
+				type="radio"
+				name="dashboard-mode"
+				:checked="adminMode === option.value"
+				@change="setAdminMode(option.value)"
+			>
+			<span class="modeSwitch-text">{{ option.label }}</span>
+		</label>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -28,7 +39,8 @@
  */
 const { adminMode, setAdminMode } = useDashboardNav();
 
-const onChange = (event: Event) => {
-	setAdminMode((event.target as HTMLInputElement).checked);
-};
+const options = [
+	{ value: false, label: "Personal" },
+	{ value: true, label: "Admin" },
+] as const;
 </script>
