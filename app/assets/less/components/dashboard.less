@@ -3148,7 +3148,17 @@
 // row rather than a widget parked in it.
 .modeSwitch {
     position: relative;
-    display: flex;
+    // Grid, so both halves are the width of the wider word.
+    //
+    // As a flex row they sized to their own text, and "Personal" is longer than
+    // "Admin" — so the indicator, which is half the track, was narrower than the
+    // half it was meant to cover. It cropped the right of "Personal" and
+    // overhung "Admin". Equal columns make half the track and half the control
+    // the same measurement, which is what the indicator's `calc` already
+    // assumed.
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
     flex: none;
     align-items: center;
     height: @vw30;
