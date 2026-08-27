@@ -295,6 +295,11 @@
     }
 }
 
+[data-theme="light"] {
+    .dashBar-logo--onDark { display: none; }
+    .dashBar-logo--onLight { display: block; }
+}
+
 // ── Sidebar ──────────────────────────────────────────────────────────────────
 .dashNav {
     // Fixed, not sticky in the flow: expanding used to widen a flex sibling,
@@ -592,7 +597,10 @@
     align-items: center;
     gap: @vw16;
     height: var(--top-bar);
-    padding: 0 @vw24;
+    // Tight to the screen. The bar spans the full viewport and is the topmost
+    // thing on it, so it takes the edge rather than being inset the way the
+    // content column below it is.
+    padding: 0 @vw12;
     background-color: var(--surface);
     border-bottom: max(1px, @vw1) solid var(--border);
 
@@ -607,6 +615,12 @@
         width: auto;
         height: @vw26;
     }
+
+    // The wordmark is white and vanished against the light theme's page. Rather
+    // than recolouring it in JS, both files render and the attribute on <html>
+    // decides — see the note in the layout for why binding `:src` to the
+    // resolved theme would flash the wrong one.
+    &-logo--onLight { display: none; }
 
     // The ? and the speech bubble. Same shape as the bell beside them so the
     // group reads as one row of controls rather than three unrelated buttons.
@@ -670,23 +684,31 @@
     }
 
     // Initials until avatar upload ships; see the note in the layout.
+    // A solid disc rather than a tinted one with a hairline round it.
+    //
+    // It holds a single glyph now instead of initials, and the fill inverts
+    // against the page: white on the dark themes, near-black on the light one.
+    // That is the one element in the bar that should read as a filled shape —
+    // it is the only control here that is *you*, and everything beside it is an
+    // outlined icon on the surface, so the inversion is what separates them.
+    //
+    // No border: at full inversion an outline has nothing to do but soften the
+    // edge it is drawn on.
     &-avatar {
         display: grid;
         place-items: center;
-        width: @vw36;
-        height: @vw36;
+        width: @vw30;
+        height: @vw30;
+        padding: 0;
+        border: none;
         border-radius: @dashRadiusPill;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
-        font-size: max(0.68em, @vw12);
-        font-weight: @bold;
-        letter-spacing: 0.02em;
-        color: var(--text-secondary);
+        background-color: var(--text);
+        color: var(--background);
         .transition();
-        transition-property: border-color, background-color;
+        transition-property: opacity;
 
         @media (hover: hover) {
-            &:hover { border-color: var(--border-strong); }
+            &:hover { opacity: 0.85; }
         }
 
         &:focus-visible {
@@ -3767,6 +3789,13 @@
             .transition();
             transition-property: background-color;
         }
+    }
+
+    // Sized against the disc rather than inherited from the bar's font size —
+    // it is a shape here, not a piece of text beside one.
+    &-face {
+        width: @vw20;
+        height: @vw20;
     }
 
     // Hovering anywhere on the panel, not only the list itself: the pointer is

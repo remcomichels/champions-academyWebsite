@@ -33,13 +33,26 @@
 				<NuxtDashboardIcon name="menu" />
 			</button>
 
+			<!-- Both marks render and CSS picks one by `data-theme`, rather than
+			     binding `:src` to the resolved theme. The pre-paint script in
+			     <head> can change that attribute before hydration, so a bound src
+			     would serve the wrong mark for the first frame to anyone on
+			     `system` + light — the very flash that script exists to prevent,
+			     moved onto the logo. An attribute-driven swap has no such gap. -->
 			<NuxtLink :to="AFFILIATE_HOME" class="dashBar-brand" aria-label="Champions Academy — Overview">
 				<NuxtAppImage
 					src="/images/logo.svg"
 					alt=""
-					class="dashBar-logo"
-					:width="120"
-					:height="34"
+					class="dashBar-logo dashBar-logo--onDark"
+					:width="103"
+					:height="29"
+				/>
+				<NuxtAppImage
+					src="/images/logo-light.svg"
+					alt=""
+					class="dashBar-logo dashBar-logo--onLight"
+					:width="103"
+					:height="29"
 				/>
 			</NuxtLink>
 

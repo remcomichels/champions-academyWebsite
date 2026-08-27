@@ -76,6 +76,25 @@ export default defineNuxtConfig({
 	 * would fetch weight 400 only, and the 500/700 the design system uses would
 	 * be synthesised — while also duplicating what fonts.css already loads.
 	 * ----------------------------- */
+	/* -----------------------------
+	 * Icons
+	 * @nuxt/icon bundles whole collections by default, which is fine for a
+	 * small set and ruinous for a large one: adding material-symbols-light
+	 * (15,957 glyphs) put a 9.8 MB chunk into the server output to serve the
+	 * handful this dashboard actually draws.
+	 *
+	 * `scan` walks the source for the icons genuinely referenced and bundles
+	 * only those, so the pack can stay installed — and more of it can be used
+	 * later — without the whole thing shipping.
+	 * ----------------------------- */
+	icon: {
+		serverBundle: false,
+		clientBundle: {
+			scan: true,
+			includeCustomCollections: true,
+		},
+	},
+
 	fonts: {
 		families: [
 			{ name: "Plus Jakarta Sans", provider: "none" },

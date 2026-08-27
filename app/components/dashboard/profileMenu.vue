@@ -5,10 +5,10 @@
 			class="dashBar-avatar profileMenu-trigger"
 			:aria-expanded="open"
 			aria-haspopup="menu"
-			:aria-label="open ? 'Close account menu' : 'Account menu'"
+			:aria-label="open ? 'Close account menu' : `Account menu — ${displayName}`"
 			@click="toggle"
 		>
-			{{ initials }}
+			<Icon name="material-symbols-light:person-2-outline" class="profileMenu-face" />
 		</button>
 
 		<!-- Anchored to the trigger's right edge and hung below it. Not a
@@ -93,18 +93,6 @@ const root = ref<HTMLElement | null>(null);
 const displayName = computed(() => affiliate.value?.displayName ?? "Your account");
 const email = computed(() => affiliate.value?.email ?? null);
 const timezone = computed(() => affiliate.value?.timezone ?? "UTC");
-
-const initials = computed(() => {
-	const name = affiliate.value?.displayName?.trim();
-	if (!name) return "?";
-
-	const parts = name.split(/\s+/).filter(Boolean);
-	const first = parts[0]?.[0] ?? "";
-	// Last word rather than second, so a middle name doesn't win over a surname.
-	const last = parts.length > 1 ? parts[parts.length - 1]?.[0] ?? "" : "";
-
-	return (first + last).toUpperCase();
-});
 
 const close = () => { open.value = false; };
 const toggle = () => { open.value = !open.value; };
