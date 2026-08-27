@@ -36,12 +36,10 @@
 			</div>
 		</header>
 
-		<!-- Owner-side problem, not an affiliate task: their VIP buttons are
-		     quietly falling back to the site default until this is set up. -->
-		<NuxtAlertBanner v-if="summary.vipLinkPending" variant="warning">
-			Your VIP link is still being set up. Until it's ready, VIP buttons on the
-			site show the standard link and those sales won't be credited to you.
-		</NuxtAlertBanner>
+		<!-- The VIP-link warning used to sit here, inline under the hero. It is
+		     an account-level fact rather than an Overview one, and it now runs
+		     as a fixed bar across the top of the viewport from the layout — see
+		     `.alertBar` there. -->
 
 		<!-- ── Getting set up ────────────────────────────────────────────── -->
 		<!-- Directly under the notice rather than in the grid below. It is a

@@ -96,7 +96,7 @@
     display: flex;
     gap: @vw12;
     padding: @vw12 @vw14;
-    border-radius: @vw10;
+    border-radius: @dashRadius;
     border: max(1px, @vw1) solid var(--border);
     background-color: var(--surface-raised);
 
@@ -107,7 +107,7 @@
         content: '';
         flex: none;
         width: max(2px, @vw3);
-        border-radius: @vw3;
+        border-radius: @dashRadiusPill;
         background-color: currentColor;
     }
 
@@ -130,7 +130,6 @@
     .alert {
         gap: @vw12-1080;
         padding: @vw12-1080 @vw14-1080;
-        border-radius: @vw10-1080;
     }
 }
 
@@ -138,6 +137,5 @@
     .alert {
         gap: @vw10-580;
         padding: @vw12-580 @vw14-580;
-        border-radius: @vw10-580;
     }
 }
