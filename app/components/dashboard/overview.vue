@@ -4,7 +4,7 @@
 		<header class="dashHero">
 			<div class="dashHero-copy">
 				<p class="dashHero-eyebrow">Affiliate dashboard</p>
-				<p class="dashHero-title">Welcome back, {{ firstName }}</p>
+				<p class="dashHero-title">Welcome back, <span class="dashHero-name">{{ firstName }}</span></p>
 				<p class="dashHero-sub">Share your link, and everyone who arrives through it is credited to you for 30 days.</p>
 
 				<div class="dashHero-actions">
@@ -23,17 +23,11 @@
 				</div>
 			</div>
 
-			<div class="dashHero-qr">
-				<!-- eslint-disable-next-line vue/html-self-closing -->
-				<img
-					class="dashHero-qrImage"
-					:src="qrSrc"
-					alt="QR code for your referral link"
-					width="140"
-					height="140"
-				>
-				<span class="dashHero-qrNote">Scan to open</span>
-			</div>
+			<!-- The QR tile that used to sit here is gone. It lives on the Links
+			     page, next to a download button — which is where someone goes
+			     when they actually want it. On Overview it was a bordered box
+			     competing with the copy field, which is the thing this block
+			     exists for. -->
 		</header>
 
 		<!-- The VIP-link warning used to sit here, inline under the hero. It is
@@ -52,17 +46,11 @@
 				<span class="dashPanel-count">{{ summary.onboarding.completed }} of {{ summary.onboarding.total }}</span>
 			</div>
 
-			<div
-				class="progress"
-				role="progressbar"
-				:aria-valuenow="summary.onboarding.completed"
-				aria-valuemin="0"
-				:aria-valuemax="summary.onboarding.total"
-			>
-				<div class="progress-fill" :style="{ transform: `scaleX(${progress})` }" />
-			</div>
+			<!-- The progress bar that sat here is gone with the card around it.
+			     The count beside the heading and the ticks down the list say
+			     the same thing, and a third reading of it was furniture. -->
 
-			<ul class="checklist checklist--row">
+			<ul class="checklist">
 				<li v-for="step in steps" :key="step.key" class="checklist-item" :class="{ 'is-done': step.done }">
 					<span class="checklist-mark" aria-hidden="true">
 						<NuxtDashboardIcon v-if="step.done" name="check" />
@@ -97,6 +85,15 @@
 				:value="summary.visits.total"
 				icon="tag"
 				:hint="allTimeHint"
+			/>
+			<!-- The only figure in this row that is not a visit count. Three
+			     readings of traffic and no sales figure left the page unable to
+			     answer the question the affiliate actually has. -->
+			<NuxtDashboardStatCard
+				label="Total sales"
+				:value="summary.sales.total"
+				icon="sales"
+				:hint="salesHint"
 			/>
 		</div>
 
@@ -206,9 +203,6 @@ import type { AffiliateSummary } from "~/composables/useAffiliateSummary";
 const props = defineProps<{ summary: AffiliateSummary }>();
 const emit = defineEmits<{ refresh: [] }>();
 
-/** Bound rather than a literal src, or Rollup treats it as a build asset. */
-const qrSrc = "/api/affiliate/qr";
-
 // Just the first word: "Welcome back, Remco Michels" reads like a form letter.
 const firstName = computed(() => props.summary.affiliate.displayName.split(" ")[0] ?? "there");
 
@@ -277,6 +271,19 @@ const allTimeHint = computed(() => {
 	return `${recent.toLocaleString("en-GB")} in the last 30 days`;
 });
 
+/**
+ * Sales converted from the visits beside them, which is the comparison the
+ * figure is actually for. Null below one sale rather than showing "0.0%": a
+ * rate needs something to be a rate of, and a new affiliate would otherwise
+ * read a rounded zero as a verdict on their link.
+ */
+const salesHint = computed(() => {
+	const sales = props.summary.sales.total;
+	const visits = props.summary.visits.total;
+	if (!sales || !visits) return null;
+	return `${((sales / visits) * 100).toFixed(1)}% of all-time visits`;
+});
+
 const steps = computed(() => [
 	{ key: "lite", label: "Add your Telegram link", done: props.summary.onboarding.steps.liteTelegramAdded },
 	{ key: "calendly", label: "Add your Calendly link", done: props.summary.onboarding.steps.calendlyAdded },
@@ -287,10 +294,6 @@ const steps = computed(() => [
 const onboardingComplete = computed(() =>
 	props.summary.onboarding.completed >= props.summary.onboarding.total);
 
-const progress = computed(() =>
-	props.summary.onboarding.total === 0
-		? 0
-		: props.summary.onboarding.completed / props.summary.onboarding.total);
 
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 

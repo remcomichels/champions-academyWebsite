@@ -63,6 +63,14 @@ const icons: Record<string, string[]> = {
 	],
 	chart: ["M4.5 20.5v-5.5", "M12 20.5V4.5", "M19.5 20.5v-9"],
 	tag: ["M3.5 3.5h6.4l10.6 10.6-6.4 6.4L3.5 9.9V3.5Z", "M7.2 7.3v.01"],
+	// A shopping bag: body, then the handle as a half-circle arc over it. The
+	// only glyph here that means "a sale happened" rather than "some traffic
+	// did" — `tag` was the nearest existing fit and it is already spoken for by
+	// the all-time visit count sitting next to it.
+	sales: [
+		"M4.5 8h15l-1.2 11a2 2 0 0 1-2 1.8H7.7a2 2 0 0 1-2-1.8L4.5 8Z",
+		"M8.8 8V6.4a3.2 3.2 0 0 1 6.4 0V8",
+	],
 	link: [
 		"M10.4 13.6a3.8 3.8 0 0 0 5.4 0l2.8-2.8a3.8 3.8 0 1 0-5.4-5.4l-1.3 1.3",
 		"M13.6 10.4a3.8 3.8 0 0 0-5.4 0l-2.8 2.8a3.8 3.8 0 1 0 5.4 5.4l1.3-1.3",

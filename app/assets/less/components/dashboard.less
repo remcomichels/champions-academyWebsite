@@ -130,7 +130,7 @@
     padding-top: var(--alert-bar);
     background-color: var(--background);
 
-    &.has-alertBar { --alert-bar: @vw44; }
+    &.has-alertBar { --alert-bar: @vw36; }
 
     &-body {
         position: relative;
@@ -138,7 +138,7 @@
         // Clears the collapsed rail. The rail is out of flow, so this is the
         // only thing holding the column off it.
         margin-left: var(--rail-shut);
-        .transition(margin-left, @durationMedium, @ease);
+        .transition(margin-left, @durationFast, @ease);
         // Without this a wide table stretches the flex item instead of
         // scrolling inside its own container, and the whole page scrolls
         // sideways.
@@ -228,12 +228,12 @@
     // Read from the same custom property the layout offsets itself by, so the
     // bar's height and the space reserved for it cannot drift apart.
     min-height: var(--alert-bar);
-    padding: @vw10 @vw24;
+    padding: @vw8 @vw24;
     background-color: var(--warning);
     text-align: center;
 
     &-text {
-        font-size: max(0.80em, @vw14);
+        font-size: max(0.68em, @vw12);
         line-height: 1.4;
         // Body copy inherits `white-space: pre-line` from _general.less, which
         // turns a wrapped template string into stray line breaks.
@@ -252,12 +252,12 @@
 // vw unit pinned to the 1440 baseline; left alone it would shrink to about
 // 18px on a phone and the bar would collapse under its own text.
 @media (max-width: 1080px) {
-    .dashLayout.has-alertBar { --alert-bar: @vw44-1080; }
+    .dashLayout.has-alertBar { --alert-bar: @vw36-1080; }
 
     .alertBar {
-        padding: @vw10-1080 @vw20-1080;
+        padding: @vw8-1080 @vw20-1080;
 
-        &-text { font-size: max(0.80em, @vw14-1080); }
+        &-text { font-size: max(0.68em, @vw12-1080); }
     }
 }
 
@@ -265,12 +265,12 @@
     // Taller, because this message wraps to two lines at 320 and the bar is
     // fixed — anything it cannot fit would sit on top of the page instead of
     // pushing it down.
-    .dashLayout.has-alertBar { --alert-bar: @vw72-580; }
+    .dashLayout.has-alertBar { --alert-bar: @vw56-580; }
 
     .alertBar {
-        padding: @vw10-580 @vw16-580;
+        padding: @vw8-580 @vw16-580;
 
-        &-text { font-size: max(0.80em, @vw13-580); }
+        &-text { font-size: max(0.68em, @vw12-580); }
     }
 }
 
@@ -294,7 +294,7 @@
     padding: @vw16 @vw12;
     background-color: var(--surface);
     border-right: max(1px, @vw1) solid var(--border);
-    .transition(width, @durationMedium, @ease);
+    .transition(width, @durationFast, @ease);
     transition-property: width, box-shadow;
 
     // No elevation when pinned: the page has made room for it, so it is sitting
@@ -700,11 +700,17 @@
     justify-content: space-between;
     gap: @vw16;
 
+    // The page title on Sales, Analytics and the admin pages — Overview's
+    // equivalent is `.dashHero-title`. Serif, and a rung larger than it was:
+    // at 16 in bold body it was indistinguishable from a panel heading, which
+    // left those pages with nothing that read as their title.
     &-title {
-        font-family: @body;
-        font-size: max(0.90em, @vw16);
-        font-weight: @bold;
-        letter-spacing: 0.01em;
+        font-family: @serif;
+        font-size: max(1.05em, @vw20);
+        font-weight: @regular;
+        // Instrument Serif ships one weight, so `@bold` here would be a
+        // browser-synthesised smear. The serif is doing the emphasis.
+        letter-spacing: 0;
         color: var(--text);
     }
 }
@@ -777,12 +783,20 @@
     }
 
     &-title {
-        font-family: @body;
+        font-family: @serif;
         font-size: max(1.45em, @vw28);
-        font-weight: @bold;
-        line-height: 1.1;
-        letter-spacing: -0.02em;
+        font-weight: @regular;
+        line-height: 1.15;
+        // The negative tracking was there to tighten a bold sans at display
+        // size. A serif at 400 does not want it.
+        letter-spacing: 0;
         color: var(--text);
+    }
+
+    // The affiliate's own name, in the serif's true italic. The only italic on
+    // the dashboard, on the one word that is personally theirs.
+    &-name {
+        font-style: italic;
     }
 
     &-sub {
@@ -800,35 +814,12 @@
         align-items: stretch;
         flex-wrap: wrap;
         gap: @vw12;
-        margin-top: @vw12;
+        // The link is the one thing on this page the affiliate came to copy.
+        // It was sitting tight under the strapline as if it belonged to the
+        // sentence; this separates it into its own beat.
+        margin-top: @vw24;
         width: 100%;
         max-width: calc(@vw300 + @vw200);
-    }
-
-    &-qr {
-        flex: none;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: @vw10;
-        padding: @vw16;
-        .dashSurface();
-    }
-
-    // The QR is generated as dark-on-transparent, so it needs a light plate
-    // behind it in both themes — on the dark surface it would otherwise be
-    // invisible.
-    &-qrImage {
-        width: @vw120;
-        height: @vw120;
-        padding: @vw8;
-        background-color: #FFFFFF;
-        border-radius: @dashRadius;
-    }
-
-    &-qrNote {
-        font-size: max(0.68em, @vw12);
-        color: var(--text-tertiary);
     }
 }
 
@@ -1084,7 +1075,11 @@
     // read as three unrelated things rather than one row of readings — the
     // opposite of what taking their borders away was meant to achieve. A track
     // that stops at @vw300 keeps them near enough to scan together.
-    grid-template-columns: repeat(auto-fit, minmax(@vw200, @vw300));
+    // The cap has to let four tracks and their gaps inside the 1200 content
+    // column, or the fourth stat drops to a row of its own and reads as an
+    // afterthought: 4x260 + 3x40 = 1160. Three stats still sit comfortably
+    // without stretching into the dead space `1fr` used to give them.
+    grid-template-columns: repeat(auto-fit, minmax(@vw180, @vw260));
     justify-content: start;
     gap: @vw32 @vw40;
 }
@@ -1743,37 +1738,31 @@
 }
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
-.progress {
-    height: max(6px, @vw8);
-    background-color: var(--surface-raised);
-    border-radius: @dashRadiusPill;
-    overflow: hidden;
-
-    &-fill {
-        height: 100%;
-        background-color: var(--accent);
-        transform-origin: left center;
-        .transition(transform, @durationMedium, @easeOut);
-    }
-}
-
 // ── Getting set up ───────────────────────────────────────────────────────────
 // A strip under the VIP notice, not a card in the grid. Bordered rather than
 // filled like `.dashPanel`, so it reads as a temporary band of business at the
 // top of the page — it is removed for good once the fourth step is done, and a
 // panel that vanishes leaves a more obvious hole than a strip does.
+// A short list, not a panel.
+//
+// This was a full-width bordered card carrying a heading, a progress bar, a row
+// of four steps and a link — a lot of furniture for "two things left to do",
+// and it was the heaviest object on a page whose stat rows had just lost their
+// borders entirely. It reads as a list now: heading, the steps stacked under
+// each other, the link. The progress bar went with the border; the count beside
+// the heading and the ticks down the list already say the same thing twice.
 .dashSetup {
     display: flex;
     flex-direction: column;
-    gap: @vw16;
-    padding: @vw16;
-    .dashSurface();
+    align-items: flex-start;
+    gap: @vw12;
 
+    // The count sits straight after the heading rather than being pushed to a
+    // far edge — there is no card edge left to push it to.
     &-head {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: @vw16;
+        align-items: baseline;
+        gap: @vw10;
     }
 
     &-title {
@@ -1807,16 +1796,8 @@
 .checklist {
     display: flex;
     flex-direction: column;
-    gap: @vw12;
+    gap: @vw10;
     list-style: none;
-
-    // Across the strip instead of down a column. Wraps rather than shrinking,
-    // so a long step label never gets squeezed into two words per line.
-    &--row {
-        flex-direction: row;
-        flex-wrap: wrap;
-        gap: @vw12 @vw24;
-    }
 
     &-item {
         display: flex;
@@ -3405,11 +3386,10 @@
         gap: @vw24-1080;
 
         &-title { font-size: max(1.45em, @vw28-1080); }
-        &-qrImage { width: @vw100-1080; height: @vw100-1080; }
     }
 
     .dashPanel { padding: @vw16-1080; gap: @vw16-1080; }
-    .dashSetup { padding: @vw16-1080; gap: @vw16-1080; }
+    .dashSetup { gap: @vw12-1080; }
     .donut {
         gap: @vw32-1080;
 
@@ -3511,7 +3491,6 @@
 
         // Side by side with the copy would leave the QR stranded on its own
         // row at full width; inline-flex keeps it card-sized.
-        &-qr { align-self: flex-start; }
     }
 }
 
@@ -3567,12 +3546,8 @@
 
     .statGrid { grid-template-columns: 1fr 1fr; gap: @vw24-580; }
 
-    .dashSetup {
-        padding: @vw16-580;
-        gap: @vw16-580;
-    }
+    .dashSetup { gap: @vw12-580; }
 
-    .checklist--row { gap: @vw10-580 @vw16-580; }
     .linkStatus--row { gap: @vw12-580; }
     // Side by side stops working once the ring has to shrink to leave the
     // legend a readable width — below this the ring sits above its legend and

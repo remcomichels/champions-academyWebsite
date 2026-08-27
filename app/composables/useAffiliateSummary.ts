@@ -12,6 +12,14 @@ export interface AffiliateSummary {
 		calendly: string | null;
 	};
 	vipLinkPending: boolean;
+	/**
+	 * All-time conversions. Only the total: the Sales tab owns the windowed
+	 * figures and the buyer list, and Overview needs one number beside the
+	 * visit counts so the row is not three readings of the same thing.
+	 */
+	sales: {
+		total: number;
+	};
 	visits: {
 		today: number;
 		/** Comparison window for the trend shown under "Today". */

@@ -18,7 +18,7 @@ export default defineEventHandler(async (event) => {
 	const HIGHLIGHT_DAYS = 30;
 	const timezone = canonicalTimezone(affiliate.timezone) ?? "UTC";
 
-	const [counts, firstVisit, traffic] = await Promise.all([
+	const [counts, firstVisit, traffic, salesTotal] = await Promise.all([
 		// Every counter on this page, bucketed on the affiliate's own local day.
 		//
 		// These used to be six PostgREST queries filtering `referral_visits.day`,
@@ -43,6 +43,12 @@ export default defineEventHandler(async (event) => {
 			p_until: new Date().toISOString(),
 			p_timezone: timezone,
 		}),
+
+		// All-time conversions, counted rather than fetched — `head: true` sends
+		// no rows back, so this stays one cheap count however long the account
+		// has been running. The Sales tab does the windowed version of this.
+		db().from("conversions").select("*", { count: "exact", head: true })
+			.eq("affiliate_id", affiliate.id),
 	]);
 
 	const day = (counts.data ?? {}) as {
@@ -89,6 +95,13 @@ export default defineEventHandler(async (event) => {
 		// Distinct from "the affiliate hasn't filled something in": this one is
 		// on the owner, so the UI shows a notice rather than a task.
 		vipLinkPending: !affiliate.vip_checkout_url,
+
+		// A failed count comes back null. Zero is the honest fallback here —
+		// the rest of this payload degrades the same way rather than 503-ing a
+		// whole dashboard over one figure.
+		sales: {
+			total: salesTotal.count ?? 0,
+		},
 
 		visits: {
 			today: day.today ?? 0,
