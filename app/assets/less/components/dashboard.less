@@ -3456,12 +3456,14 @@
     // ancestor would make it a containing block, and the bar has none.
     &-panel {
         position: fixed;
-        top: calc(var(--alert-bar) + var(--top-bar) + @vw4);
+        // Minus, not plus: the card tucks up under the bar's bottom edge
+        // rather than floating clear of it.
+        top: calc(var(--alert-bar) + var(--top-bar) - @vw4);
         right: @vw16;
         z-index: 60;
         width: @vw248;
         max-width: calc(100vw - @vw24);
-        padding: @vw6;
+        padding: @vw4;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadius;
@@ -3499,7 +3501,7 @@
     // than a line drawn between two of its items.
     &-rule {
         height: 0;
-        margin: @vw4 (-@vw6);
+        margin: @vw4 (-@vw4);
         border: 0;
         border-top: max(1px, @vw1) solid var(--border);
     }
@@ -3509,7 +3511,7 @@
         align-items: center;
         gap: @vw8;
         width: 100%;
-        padding: @vw5 @vw8;
+        padding: @vw6 @vw8;
         border: none;
         border-radius: @dashRadius;
         background: none;
@@ -3572,15 +3574,16 @@
         flex-direction: column;
     }
 
-    // The dot is the whole indication of which theme is on, so it has to carry
-    // it alone: it grows and fills rather than only changing colour, because a
-    // colour-only difference is not a difference for everyone.
+    // Only the chosen theme is marked. The unselected rows keep the *space* —
+    // the labels have to stay in a column — but draw nothing in it: four empty
+    // rings stacked up were more furniture than the one filled ring they
+    // existed to set off.
     &-dot {
         flex: none;
         width: @vw14;
         height: @vw14;
         border-radius: @dashRadiusPill;
-        border: max(1px, @vw1) solid var(--border-strong);
+        border: max(1px, @vw1) solid transparent;
         background: none;
         .transition();
         transition-property: border-color, background-color, box-shadow;
@@ -3644,28 +3647,24 @@
     // Opens leftward. The menu this sits in is already pinned to the right edge
     // of the viewport, so a panel hanging right would open off screen; there is
     // nothing but page to the left.
-    // Bottom-anchored, and this is what fixes the list refusing to scroll.
+    // Top edge level with the trigger's, opening leftward.
     //
-    // It used to hang *down* from a row that sits near the foot of the account
-    // menu, so on anything but a tall window the panel ran off the bottom of
-    // the viewport: the list scrolled perfectly well, but the part of it you
-    // would have scrolled — and its scrollbar — were below the fold with no way
-    // to reach them. Growing upward from the row keeps the whole panel between
-    // the top bar and the row, whatever the window height.
-    //
-    // The `min()` is the belt to that braces: on a genuinely short viewport the
-    // panel gives up its preferred height rather than sliding under the bar.
+    // No `max-height` here on purpose: the component measures the room between
+    // that row and the bottom of the window and sets one inline. The row's
+    // position depends on how far down the account menu it falls, which no CSS
+    // length can express — and a fixed height that guessed too generously is
+    // what put this panel off the bottom of the viewport and made the list look
+    // unscrollable in the first place.
     &-panel {
         position: absolute;
-        bottom: -@vw6;
-        top: auto;
+        top: 0;
+        bottom: auto;
         right: calc(100% + @vw6);
         z-index: 61;
         display: flex;
         flex-direction: column;
         width: @vw280;
-        max-height: ~"min(@{vw280}, calc(100vh - var(--chrome) - @{vw40}))";
-        padding: @vw6;
+        padding: @vw4;
         background-color: var(--surface);
         border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadius;
@@ -3677,7 +3676,7 @@
         align-items: center;
         gap: @vw6;
         flex: none;
-        padding: @vw4 @vw8;
+        padding: @vw6 @vw8;
         border: max(1px, @vw1) solid var(--border);
         border-radius: @dashRadius;
         background-color: var(--surface-raised);
@@ -3704,78 +3703,38 @@
         &::placeholder { color: var(--text-tertiary); }
     }
 
-    &-detect {
-        flex: none;
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: @vw1;
-        width: 100%;
-        margin-top: @vw4;
-        padding: @vw5 @vw8;
-        border: none;
-        border-radius: @dashRadius;
-        background: none;
-        font-family: @body;
-        text-align: left;
-        color: var(--accent);
-        cursor: pointer;
-
-        @media (hover: hover) {
-            &:hover { background-color: var(--surface-hover); }
-        }
-
-        &:focus-visible {
-            outline: max(2px, @vw2) solid var(--accent);
-            outline-offset: -@vw2;
-        }
-    }
-
-    &-detected {
-        max-width: 100%;
-        color: var(--text-tertiary);
-        font-size: max(0.58em, @vw10);
-        font-weight: @regular;
-        font-variant-numeric: tabular-nums;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
     &-list {
         flex: 1;
         min-height: 0;
         margin-top: @vw4;
         overflow-y: auto;
+        // Never sideways. Long zone names wrap now rather than running off the
+        // edge, so there is nothing left to scroll horizontally to.
+        overflow-x: hidden;
         list-style: none;
         // Stops a wheel that reaches the end of this list carrying on into the
-        // page behind it, which in a floating panel reads as the menu sliding
-        // away under the pointer.
+        // page behind it. Note this alone was never enough: Lenis intercepts
+        // the wheel globally, so the list also carries `data-lenis-prevent` —
+        // without it the page scrolled and this never saw the event.
         overscroll-behavior: contain;
-
-        // `content-visibility: auto` used to be here to skip laying out four
-        // hundred rows on open. Dropped — measured against a browser it changed
-        // neither scrollHeight nor scroll behaviour, so it was buying an
-        // optimisation nobody could observe while adding a rendering mode to
-        // reason about. The panel being off-screen was the actual reason this
-        // would not scroll; see the note above.
     }
 
     &-option {
         display: flex;
         align-items: center;
+        justify-content: space-between;
         gap: @vw8;
         width: 100%;
-        padding: @vw4 @vw8;
+        padding: @vw6 @vw8;
         border: none;
         border-radius: @dashRadius;
         background: none;
         font-family: @body;
         font-size: max(0.62em, @vw11);
+        line-height: 1.35;
         text-align: left;
         color: var(--text-secondary);
         cursor: pointer;
-        white-space: nowrap;
         font-variant-numeric: tabular-nums;
 
         @media (hover: hover) {
@@ -3790,23 +3749,49 @@
         &.is-selected { color: var(--text); }
     }
 
-    &-dot {
-        flex: none;
-        width: @vw12;
-        height: @vw12;
-        border-radius: @dashRadiusPill;
-        border: max(1px, @vw1) solid var(--border-strong);
+    // A zone name that will not fit wraps instead of being clipped or pushing
+    // the row sideways. `min-width: 0` is what lets it: without it the flex
+    // item refuses to shrink below its longest word.
+    &-optionLabel {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
 
-        &.is-on {
-            border-color: var(--accent);
-            background-color: var(--accent);
-            box-shadow: inset 0 0 0 max(2px, @vw2) var(--surface);
-        }
+    // The tick, and only on the chosen row. Replaces the leading dot the
+    // options used to carry: a column of empty circles down the left cost a
+    // column of width and marked nothing.
+    &-check {
+        flex: none;
+        font-size: max(0.68em, @vw12);
+        color: var(--accent);
+    }
+
+    // Auto detect is the first row of the list rather than a control above it,
+    // so it takes the option's shape with a second line for the zone it found.
+    &-optionStack {
+        display: flex;
+        flex-direction: column;
+        gap: @vw1;
+        min-width: 0;
+    }
+
+    &-optionLead {
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--accent);
+    }
+
+    &-optionZone {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        color: var(--text-tertiary);
     }
 
     &-empty {
         padding: @vw10 @vw8;
         font-size: max(0.62em, @vw11);
+        list-style: none;
         white-space: normal;
         color: var(--text-tertiary);
     }

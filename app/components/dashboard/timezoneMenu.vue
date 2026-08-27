@@ -23,10 +23,15 @@
 			<NuxtDashboardIcon name="chevronRight" class="tzMenu-caret" />
 		</button>
 
-		<!-- Opens to the left. The menu it lives in is already pinned to the
-		     right edge of the viewport, so a panel hanging right would be off
-		     screen; there is nothing but page to the left of it. -->
-		<div v-if="open" class="tzMenu-panel" @pointerenter="cancelClose">
+		<!-- Opens to the left, top edge level with the trigger's. The menu it
+		     lives in is already pinned to the right of the viewport, so a panel
+		     hanging right would open off screen. -->
+		<div
+			v-if="open"
+			class="tzMenu-panel"
+			:style="panelStyle"
+			@pointerenter="cancelClose"
+		>
 			<div class="tzMenu-search">
 				<NuxtDashboardIcon name="search" />
 				<input
@@ -42,12 +47,35 @@
 				>
 			</div>
 
-			<button v-if="detected" type="button" class="tzMenu-detect" @click="useDetected">
-				<span class="tzMenu-heading">Auto detect</span>
-				<span class="tzMenu-detected">{{ detectedLabel }}</span>
-			</button>
+			<!-- `data-lenis-prevent` is what makes the wheel work in here.
+			     Lenis is a global plugin with no route gating, so it intercepts
+			     wheel events across the whole app and scrolls the page with
+			     them — an inner scroller gets nothing unless it opts out, which
+			     is what this attribute does. `_general.less` already carries the
+			     rule for it; nothing had needed it until now. -->
+			<ul
+				ref="list"
+				class="tzMenu-list"
+				role="listbox"
+				aria-label="Timezones"
+				data-lenis-prevent
+			>
+				<!-- First in the list rather than pinned above it: it is one more
+				     zone you can pick, and holding it apart made it read as a
+				     control that did something else. -->
+				<li v-if="detected">
+					<button
+						type="button"
+						class="tzMenu-option tzMenu-option--detect"
+						@click="useDetected"
+					>
+						<span class="tzMenu-optionStack">
+							<span class="tzMenu-optionLead">Auto detect</span>
+							<span class="tzMenu-optionZone">{{ detectedLabel }}</span>
+						</span>
+					</button>
+				</li>
 
-			<ul class="tzMenu-list" role="listbox" aria-label="Timezones">
 				<li v-if="!matches.length" class="tzMenu-empty">
 					Nothing matches “{{ query.trim() }}”. Try a city, or a region like Europe.
 				</li>
@@ -61,8 +89,16 @@
 						:class="{ 'is-selected': zone === modelValue }"
 						@click="pick(zone)"
 					>
-						<span class="tzMenu-dot" :class="{ 'is-on': zone === modelValue }" aria-hidden="true" />
-						{{ label(zone) }}
+						<span class="tzMenu-optionLabel">{{ label(zone) }}</span>
+
+						<!-- Only on the chosen one. An unselected row carries no
+						     placeholder at all — a column of empty circles was
+						     more furniture than the thing it was marking. -->
+						<NuxtDashboardIcon
+							v-if="zone === modelValue"
+							name="check"
+							class="tzMenu-check"
+						/>
 					</button>
 				</li>
 			</ul>
@@ -86,6 +122,30 @@ const open = ref(false);
 const query = ref("");
 const root = ref<HTMLElement | null>(null);
 const input = ref<HTMLInputElement | null>(null);
+const list = ref<HTMLElement | null>(null);
+
+/**
+ * How tall the panel is allowed to be, measured rather than guessed.
+ *
+ * Its top is level with the trigger, so the room it has is whatever is left
+ * between that row and the bottom of the window. That distance depends on how
+ * far down the account menu the row happens to sit, which no CSS length can
+ * express — a fixed `max-height` would either waste space on a tall window or
+ * run off the bottom of a short one, and running off the bottom is exactly the
+ * bug that made this list look unscrollable before.
+ */
+const maxHeight = ref<number | null>(null);
+
+const panelStyle = computed(() =>
+	(maxHeight.value ? { maxHeight: `${maxHeight.value}px` } : undefined));
+
+const measure = () => {
+	const rect = root.value?.getBoundingClientRect();
+	if (!rect) return;
+
+	// 16px of breathing room at the bottom of the window.
+	maxHeight.value = Math.max(160, Math.round(window.innerHeight - rect.top - 16));
+};
 
 /**
  * Every zone, ordered west to east rather than alphabetically, so scrolling the
@@ -143,10 +203,15 @@ const show = async ({ focus = true } = {}) => {
 
 	open.value = true;
 	query.value = "";
-	if (!focus) return;
+	measure();
 
-	// After the panel exists, or there is nothing to focus yet.
 	await nextTick();
+	// Scrolls the chosen zone into view — with ~420 of them the selected one is
+	// almost never near the top, and opening on a list that does not show it
+	// reads as having no selection at all.
+	list.value?.querySelector(".is-selected")?.scrollIntoView({ block: "center" });
+
+	if (!focus) return;
 	input.value?.focus();
 };
 
@@ -207,7 +272,11 @@ watch(open, (isOpen) => {
 
 	if (isOpen) {
 		document.addEventListener("pointerdown", onPointer);
-		cleanup = () => document.removeEventListener("pointerdown", onPointer);
+		window.addEventListener("resize", measure);
+		cleanup = () => {
+			document.removeEventListener("pointerdown", onPointer);
+			window.removeEventListener("resize", measure);
+		};
 	}
 	else {
 		cleanup?.();
