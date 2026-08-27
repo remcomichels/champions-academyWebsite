@@ -70,7 +70,7 @@
 				<NuxtDashboardFeedback v-if="affiliate && !viewingAs" />
 
 				<NuxtLink to="/dashboard/support" class="dashBar-action" aria-label="Help and FAQ">
-					<NuxtDashboardIcon name="help" />
+					<Icon name="material-symbols-light:help-outline" class="dashBar-glyph" />
 				</NuxtLink>
 
 				<!-- Only mounted for accounts that actually have an affiliate:

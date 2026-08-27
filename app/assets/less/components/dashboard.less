@@ -622,21 +622,65 @@
     // resolved theme would flash the wrong one.
     &-logo--onLight { display: none; }
 
-    // The ? and the speech bubble. Same shape as the bell beside them so the
-    // group reads as one row of controls rather than three unrelated buttons.
+    // The circular controls — help, and the bell beside it.
+    //
+    // Exactly the avatar's disc: same @vw30 box, same @vw22 glyph inside it, so
+    // the three read as one row rather than three sizes. The difference is the
+    // fill. The avatar is solid because it is *you*; these are unfilled because
+    // they are things to do, and a row of three filled discs would give the
+    // notification bell the same weight as the account it sits beside.
     &-action {
         display: grid;
         place-items: center;
         flex: none;
-        width: @vw34;
-        height: @vw34;
+        width: @vw30;
+        height: @vw30;
         padding: 0;
         background: none;
         border: none;
         border-radius: @dashRadiusPill;
-        font-size: max(0.90em, @vw16);
         color: var(--text-secondary);
         cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--text);
+                background-color: var(--surface-hover);
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+
+    // Sized here rather than by font-size, so every glyph in the bar is the
+    // same drawn size whatever its container inherits.
+    &-glyph {
+        width: @vw22;
+        height: @vw22;
+    }
+
+    // Feedback. A word carries it better than any glyph would — nobody guesses
+    // a speech bubble means "tell us what you think" — and it stays borderless
+    // so it does not read as the primary action of a bar it merely sits in. The
+    // pill only appears under the pointer, which is enough to say it is
+    // pressable without drawing a button around it permanently.
+    &-text {
+        flex: none;
+        padding: @vw6 @vw12;
+        border: none;
+        border-radius: @dashRadiusPill;
+        background: none;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
         .transition();
         transition-property: color, background-color;
 
@@ -2098,17 +2142,19 @@
 .inbox {
     position: relative;
 
+    // Matches `.dashBar-action` exactly — it is one of that row of controls and
+    // only lives in its own component because it owns a panel and a badge. The
+    // hairline border is gone with the rest of them.
     &-trigger {
         position: relative;
         display: grid;
         place-items: center;
-        width: @vw36;
-        height: @vw36;
+        width: @vw30;
+        height: @vw30;
         background: none;
-        border: max(1px, @vw1) solid var(--border);
+        border: none;
         border-radius: @dashRadiusPill;
         padding: 0;
-        font-size: max(0.90em, @vw16);
         color: var(--text-secondary);
         line-height: 1;
         cursor: pointer;

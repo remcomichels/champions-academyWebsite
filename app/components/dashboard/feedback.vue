@@ -1,12 +1,10 @@
 <template>
 	<div class="feedback">
-		<button
-			type="button"
-			class="dashBar-action"
-			aria-label="Send feedback"
-			@click="openDialog"
-		>
-			<NuxtDashboardIcon name="feedback" />
+		<!-- A word rather than a glyph. A speech bubble beside a bell and a
+		     question mark was three icons competing to be understood, and this
+		     is the one of the three nobody would guess. -->
+		<button type="button" class="dashBar-text" @click="openDialog">
+			Feedback
 		</button>
 
 		<dialog ref="dialog" class="modal" @close="reset" @click="onBackdrop">

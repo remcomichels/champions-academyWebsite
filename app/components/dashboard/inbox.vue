@@ -8,7 +8,7 @@
 			:aria-label="unread ? `Activity, ${unread} unread` : 'Activity'"
 			@click="toggle"
 		>
-			<NuxtDashboardIcon name="bell" />
+			<Icon name="material-symbols-light:notifications-outline" class="dashBar-glyph" />
 			<span v-if="unread" class="inbox-badge">{{ unread > 9 ? "9+" : unread }}</span>
 		</button>
 
