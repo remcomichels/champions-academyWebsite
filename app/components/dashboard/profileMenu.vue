@@ -8,7 +8,7 @@
 			:aria-label="open ? 'Close account menu' : `Account menu — ${displayName}`"
 			@click="toggle"
 		>
-			<Icon name="material-symbols-light:person-2-outline" class="profileMenu-face" />
+			<Icon name="material-symbols-light:person-outline" class="profileMenu-face" />
 		</button>
 
 		<!-- Anchored to the trigger's right edge and hung below it. Not a
