@@ -103,8 +103,20 @@
 
 // ── Accent ───────────────────────────────────────────────────────────────────
 // One accent, deliberately rationed: the primary action, the active nav item,
-// the focus ring, and the one bar in a chart worth calling out. If it turns up
-// on more than about one element per screen it has stopped being an accent.
+// the focus ring, links, and the one mark in a chart worth calling out. If it
+// turns up on more than about one element per screen it has stopped being an
+// accent.
+//
+// This rule was written here first and the file did not follow it — the accent
+// had spread to the page wash, the hero eyebrow, the panel count chip, the
+// avatar, the "current session" tag and several status badges, none of which
+// is an action. Those are neutral now.
+//
+// The division that keeps it honest: **accent means interactive**, and a state
+// that is genuinely good or bad takes a *status* colour instead. So a live
+// link and an active invite are `--success` (pairing with the `--error` their
+// revoked twin already used), which keeps real signal on the screen without
+// spending the accent on it.
 //
 // The same hex in both themes — violet at this saturation holds its own against
 // both #0A0A0C and #FFFFFF, so there is nothing to keep in sync.

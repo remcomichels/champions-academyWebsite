@@ -495,17 +495,17 @@
         width: @vw36;
         height: @vw36;
         border-radius: @dashRadiusPill;
-        background-color: var(--accent-subtle);
+        background-color: var(--surface-raised);
         border: max(1px, @vw1) solid var(--border);
         font-size: max(0.68em, @vw12);
         font-weight: @bold;
         letter-spacing: 0.02em;
-        color: var(--accent);
+        color: var(--text-secondary);
         .transition();
         transition-property: border-color, background-color;
 
         @media (hover: hover) {
-            &:hover { border-color: var(--accent); }
+            &:hover { border-color: var(--border-strong); }
         }
 
         &:focus-visible {
@@ -666,7 +666,7 @@
     &-eyebrow {
         font-size: max(0.68em, @vw12);
         font-weight: @bold;
-        color: var(--accent);
+        color: var(--text-secondary);
     }
 
     &-title {
@@ -756,10 +756,10 @@
         flex: none;
         padding: @vw2 @vw8;
         border-radius: @dashRadiusPill;
-        background-color: var(--accent-subtle);
+        background-color: var(--surface-raised);
         font-size: max(0.68em, @vw12);
         font-weight: @medium;
-        color: var(--accent);
+        color: var(--text-secondary);
     }
 
     // A footnote explaining the panel above it, not body copy — it should be
@@ -1758,7 +1758,7 @@
         font-size: max(0.62em, @vw11);
         font-weight: @medium;
 
-        &.is-set { background-color: var(--accent-subtle); color: var(--accent); }
+        &.is-set { background-color: var(--surface-raised); color: var(--success); }
         &.is-unset { background-color: var(--surface-raised); color: var(--text-tertiary); }
     }
 }
@@ -1942,7 +1942,7 @@
 .toast {
     padding: @vw12 @vw16;
     background-color: var(--surface);
-    border: max(1px, @vw1) solid var(--accent);
+    border: max(1px, @vw1) solid var(--border);
     border-radius: @dashRadius;
     box-shadow: var(--shadow-pop);
     font-size: max(0.80em, @vw14);
@@ -2012,7 +2012,7 @@
         font-size: max(0.80em, @vw14);
         color: var(--text-secondary);
 
-        strong { color: var(--accent); font-weight: @bold; }
+        strong { color: var(--text); font-weight: @bold; }
     }
 }
 
@@ -2363,8 +2363,8 @@
         margin-left: @vw8;
         padding: @vw2 @vw8;
         border-radius: @dashRadiusPill;
-        background-color: var(--accent-subtle);
-        color: var(--accent);
+        background-color: var(--surface-raised);
+        color: var(--text-secondary);
         font-size: max(0.62em, @vw11);
         font-weight: @medium;
     }
@@ -2479,7 +2479,7 @@
 
 // ── Admin ────────────────────────────────────────────────────────────────────
 .inviteDialog {
-    border-color: var(--accent);
+    border-color: var(--border);
 }
 
 .adminForm {
@@ -3129,7 +3129,7 @@
         font-size: max(0.62em, @vw11);
         font-weight: @medium;
 
-        &.is-active  { color: var(--accent); background-color: var(--accent-subtle); }
+        &.is-active  { color: var(--success); background-color: var(--surface-raised); }
         &.is-revoked { color: var(--error); background-color: var(--surface-raised); }
     }
 
@@ -3155,9 +3155,9 @@
         color: var(--text-tertiary);
 
         &.is-done {
-            color: var(--accent);
-            border-color: var(--accent-subtle);
-            background-color: var(--accent-subtle);
+            color: var(--success);
+            border-color: var(--border);
+            background-color: var(--surface-raised);
         }
     }
 }
