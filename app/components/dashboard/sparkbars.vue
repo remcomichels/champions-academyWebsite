@@ -7,10 +7,15 @@
 	     pointer affordance over information that is already reachable, which is
 	     the one case where a tooltip is allowed not to have a focus twin. -->
 	<span class="sparkbars" aria-hidden="true">
+		<!-- `--i` and `--n` are the slot's index and the slot count. The readout
+		     pins to the edge of the plot rather than of its own slot, and the
+		     offset is the number of slots between this one and that edge — the
+		     same arithmetic the bar chart's readout uses. -->
 		<span
 			v-for="(point, index) in bars"
 			:key="index"
 			class="sparkbars-slot"
+			:style="{ '--i': index, '--n': bars.length }"
 			@pointerenter="hover = index"
 			@pointerleave="hover = null"
 		>
@@ -58,9 +63,10 @@ const bars = computed(() => {
 
 	return props.points.map((point, index) => {
 		// Near either end the centred readout would hang past the side of the
-		// card, so it pins to that end of its slot and opens inwards. Measured
-		// as a fraction rather than a fixed index, because this plots both a
-		// 7-slot week and a 24-slot day.
+		// card, so it pins to that side instead — to the plot's edge, not the
+		// slot's, which is what holds it still across the leading group rather
+		// than stepping a slot at a time. Measured as a fraction rather than a
+		// fixed index, because this plots both a 7-slot week and a 24-slot day.
 		const position = last > 0 ? index / last : 0.5;
 
 		return {

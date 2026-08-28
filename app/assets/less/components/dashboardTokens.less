@@ -52,6 +52,16 @@
     --series-4: #3987E5;
     --series-5: #D55181;
 
+    // ── Popovers ─────────────────────────────────────────────────────────
+    // Tooltips and readouts, and the one rule about them is that they are
+    // opaque. Every other surface draws its edge with the shared `--border`,
+    // which is an rgba — fine on a panel sitting on a known background, wrong
+    // on a box that floats over charts and bars, where a part-transparent edge
+    // reads as a translucent tooltip. These are the flat equivalents, with
+    // nothing left to see through.
+    --popover: #2A2A31;
+    --popover-border: #414148;
+
     // Only overlays cast a shadow — see the note under the light theme's copy.
     --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
@@ -82,6 +92,9 @@
     --series-3: #D95926;
     --series-4: #3987E5;
     --series-5: #D55181;
+
+    --popover: #1C1C20;
+    --popover-border: #2E2E32;
 
     --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
@@ -130,6 +143,18 @@
     --series-3: #EB6834;
     --series-4: #2A78D6;
     --series-5: #E87BA4;
+
+    // ── Popovers ─────────────────────────────────────────────────────────
+    // Tooltips and readouts, and the one rule about them is that they are
+    // opaque. Every other surface draws its edge with the shared `--border`,
+    // which is an rgba — fine on a panel sitting on a known background, wrong
+    // on a box that floats over charts and bars, where a part-transparent edge
+    // reads as a translucent tooltip. These are the flat equivalents, with
+    // nothing left to see through.
+    // White, a step above the raised surface these sit over, so a readout
+    // never dissolves into the card behind it.
+    --popover: #FFFFFF;
+    --popover-border: #DFDFE1;
 
     // ── Shadow ───────────────────────────────────────────────────────────
     // One shadow, and it never touches a resting surface.

@@ -61,7 +61,13 @@
 // The cap is two pixels, not the four a surface gets. A bar is often five or
 // six pixels wide; a 4px radius on that rounds the whole top into a dome and
 // the bar stops reading as a measured height.
-@chartBarGap: max(2px, @vw2);
+//
+// The gutter is a flat 2px and deliberately *not* on the vw scale. A vw value
+// lands on a fraction at most viewport widths — @vw2 is 2.67px at 1920 — and a
+// fractional gutter between fractionally-positioned columns is what made the
+// spacing look uneven from one pair of bars to the next. A whole pixel is the
+// same whole pixel in every chart at every width, which is the entire ask.
+@chartBarGap: 2px;
 @chartBarCap: max(2px, @vw2);
 
 // ── Type ─────────────────────────────────────────────────────────────────────
@@ -302,8 +308,8 @@
         z-index: 99;
         padding: @vw4 @vw8;
         border-radius: @dashRadiusInner;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
         box-shadow: var(--shadow-pop);
         font-family: @body;
         font-size: max(0.55em, @vw10);
@@ -326,9 +332,9 @@
         z-index: 100;
         width: @vw8;
         height: @vw8;
-        background-color: var(--surface-raised);
-        border-left: max(1px, @vw1) solid var(--border);
-        border-top: max(1px, @vw1) solid var(--border);
+        background-color: var(--popover);
+        border-left: max(1px, @vw1) solid var(--popover-border);
+        border-top: max(1px, @vw1) solid var(--popover-border);
     }
 
     // `visibility`, not `opacity`.
@@ -1602,45 +1608,28 @@
 }
 
 // ── Country mark ─────────────────────────────────────────────────────────────
-// The flag beside a country figure, clipped to a disc.
+// The flag beside a country figure — Circle Flags artwork, the same set the
+// testimonials use, which arrives already round so nothing here clips it.
 //
-// Loose, the platform emoji are flat rectangles at whatever aspect ratio the
-// font feels like — a row of them reads as a row of different sizes, and none
-// of them look like they belong to this dashboard. A disc of a fixed size gives
-// every country the same footprint and the same weight beside its number.
+// It replaced the platform emoji, which were flat rectangles at whatever aspect
+// ratio the font felt like: four in a row read as four different sizes, and
+// Windows draws no glyph for the regional-indicator pairs at all, so half the
+// audience saw a country code where the others saw a picture.
 //
-// The mark is *not* scaled to fill the disc, deliberately. Windows ships no
-// glyph for the regional-indicator pairs and draws the two letters instead — so
-// on that platform this is a country code in a circle, which is a perfectly
-// good badge, and a scale-to-fill would have cropped it to one and a half
-// letters. Sized to sit inside the disc, it works out on both.
+// The ring is inset rather than a border, so it is drawn *within* the @vw20 and
+// cannot push the digits beside it out of line. It earns its place on the flags
+// carrying white at their edge — Japan is a red disc on white, which without
+// this dissolves into a light surface.
 .flagChip {
-    display: inline-grid;
-    place-items: center;
+    display: inline-block;
     flex: none;
     width: @vw20;
     height: @vw20;
     margin-right: @vw6;
     border-radius: @dashRadiusPill;
-    // Clips whatever the platform draws to the disc.
-    overflow: hidden;
-    background-color: var(--surface-raised);
-    // Inset rather than a border: a border would sit outside the @vw20 and
-    // break the alignment with the digits beside it.
     box-shadow: inset 0 0 0 max(1px, @vw1) var(--border);
     // Sits the disc on the text baseline it interrupts.
     vertical-align: -0.22em;
-
-    &-mark {
-        font-size: @vw14;
-        line-height: 1;
-        // The two-letter fallback is set in the dashboard's own face rather
-        // than whatever the emoji font would have handed back.
-        font-family: @body;
-        font-weight: @semiBold;
-        letter-spacing: -0.04em;
-        color: var(--text-secondary);
-    }
 }
 
 // ── Sources donut ────────────────────────────────────────────────────────────
@@ -1846,8 +1835,8 @@
         transform: translate(-50%, -@vw6);
         padding: @vw4 @vw8;
         border-radius: @dashRadius;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
         box-shadow: var(--shadow-pop);
         font-size: max(0.62em, @vw11);
         font-variant-numeric: tabular-nums;
@@ -1858,14 +1847,20 @@
         // tip would unmount, and the slot would take it back.
         pointer-events: none;
 
+        // The same pinning the bar chart's readout uses, and for the same
+        // reason: to the edge of the *plot* rather than of its own slot, so it
+        // holds one position across the whole leading group instead of
+        // stepping a slot at a time under the pointer. `100%` resolves against
+        // the slot, every slot is the same width, and `--i` / `--n` come from
+        // the component.
         &.is-start {
-            left: 0;
+            left: calc(-1 * var(--i) * (100% + @chartBarGap));
             transform: translate(0, -@vw6);
         }
 
         &.is-end {
             left: auto;
-            right: 0;
+            right: calc(-1 * (var(--n) - 1 - var(--i)) * (100% + @chartBarGap));
             transform: translate(0, -@vw6);
         }
     }
@@ -1988,8 +1983,8 @@
         transform: translate(-50%, -@vw6);
         padding: @vw2 @vw6;
         border-radius: @dashRadius;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
         box-shadow: var(--shadow-pop);
         font-size: max(0.62em, @vw11);
         font-variant-numeric: tabular-nums;
@@ -2729,8 +2724,8 @@
         transform: translate(-50%, -@vw4);
         padding: @vw4 @vw8;
         border-radius: @dashRadius;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
         box-shadow: var(--shadow-pop);
         font-size: max(0.62em, @vw11);
         white-space: nowrap;
@@ -4535,7 +4530,6 @@
     .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
     .miniCard-meter { height: max(4px, @vw6-1080); }
     .flagChip { width: @vw20-1080; height: @vw20-1080; margin-right: @vw6-1080; }
-    .flagChip-mark { font-size: @vw14-1080; }
     .sparkbars { height: @vw30-1080; }
     .dashGrid { gap: @vw24-1080; }
 
@@ -4738,7 +4732,6 @@
     .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
     .miniCard-meter { height: max(4px, @vw6-580); }
     .flagChip { width: @vw20-580; height: @vw20-580; margin-right: @vw6-580; }
-    .flagChip-mark { font-size: @vw14-580; }
     .sparkbars { height: @vw30-580; }
 
     .statCard {

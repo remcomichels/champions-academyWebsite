@@ -146,16 +146,21 @@
 						<p class="miniCard-label">{{ card.label }}</p>
 
 						<p class="miniCard-value" :class="{ 'is-empty': !card.note }">
-							<!-- The mark is clipped to a disc rather than set loose
-							     as a bare emoji: the platform glyphs are flat
-							     rectangles at wildly different aspect ratios, and
-							     four of them in a row read as four different sizes.
-							     A disc gives every country the same footprint. -->
-							<span
+							<!-- Drawn artwork, not the platform's emoji. The emoji
+							     are flat rectangles at wildly different aspect
+							     ratios — four in a row read as four different
+							     sizes — and Windows ships no glyph for the pairs
+							     at all, so half the audience saw a country code
+							     where the others saw a picture. Same Circle Flags
+							     set the testimonials already use. -->
+							<NuxtAppImage
 								v-if="card.flag"
+								:src="card.flag"
+								alt=""
 								class="flagChip"
-								aria-hidden="true"
-							><span class="flagChip-mark">{{ card.flag }}</span></span>{{ card.value }}
+								:width="20"
+								:height="20"
+							/>{{ card.value }}
 						</p>
 
 						<!-- One mark per card, and only where there is something
@@ -336,23 +341,21 @@ interface HighlightCard {
 	peak?: number | null;
 	/** 0–1 share of all visits, for the cards that are a proportion. */
 	share?: number | null;
+	/** Path to the country's flag SVG, or null where there is no artwork. */
 	flag?: string | null;
 }
 
 /**
- * ISO 3166-1 alpha-2 to a flag, via the regional-indicator block.
+ * ISO 3166-1 alpha-2 to the flag artwork for it.
  *
- * Windows ships no glyph for these pairs and draws the two letters instead, so
- * a Dutch flag becomes "NL". That is a fine outcome and the reason the country
- * name still sits beside it — the flag is a second read of something already
+ * `resolveCountryFlagByCode` is auto-imported from app/utils, and returns null
+ * for any code the set has no drawing for — which is what keeps the mark from
+ * becoming a broken image on an unrecognised country. The country's name still
+ * sits beside it either way; the flag is a second read of something already
  * written, never the only one.
  */
 const flagOf = (code: string) => {
-	if (!/^[a-z]{2}$/i.test(code)) return null;
-
-	return String.fromCodePoint(
-		...[...code.toUpperCase()].map(letter => 0x1F1E6 + letter.charCodeAt(0) - 65),
-	);
+	return resolveCountryFlagByCode(code);
 };
 
 /**
