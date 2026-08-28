@@ -6,17 +6,12 @@
 	     a form nobody can hold in their head. The hover readout is a sighted
 	     pointer affordance over information that is already reachable, which is
 	     the one case where a tooltip is allowed not to have a focus twin. -->
-	<span class="sparkbars" aria-hidden="true">
-		<!-- `--i` and `--n` are the slot's index and the slot count. The readout
-		     pins to the edge of the plot rather than of its own slot, and the
-		     offset is the number of slots between this one and that edge — the
-		     same arithmetic the bar chart's readout uses. -->
+	<span ref="plot" class="sparkbars" aria-hidden="true">
 		<span
 			v-for="(point, index) in bars"
 			:key="index"
 			class="sparkbars-slot"
-			:style="{ '--i': index, '--n': bars.length }"
-			@pointerenter="hover = index"
+			@pointerenter="show(index, $event)"
 			@pointerleave="hover = null"
 		>
 			<span
@@ -31,8 +26,9 @@
 			     one line above the plot whatever the bar underneath it does. -->
 			<span
 				v-if="hover === index"
+				ref="tip"
 				class="sparkbars-tip"
-				:class="point.edge"
+				:style="{ '--tip-shift': `${shift}px` }"
 			>{{ point.label }} — {{ point.text }}</span>
 		</span>
 	</span>
@@ -55,20 +51,35 @@ const props = withDefaults(defineProps<{
 	unitOne?: string;
 }>(), { unit: "visits", unitOne: "visit" });
 
+/**
+ * The hovered slot, and the correction that keeps its readout inside the plot.
+ * Measured rather than derived from the index — see `clampChartTip`.
+ */
 const hover = ref<number | null>(null);
+const shift = ref(0);
+const plot = useTemplateRef<HTMLElement>("plot");
+const tip = useTemplateRef<HTMLElement[]>("tip");
+
+// A template ref inside `v-for` is collected as an array, even where `v-if`
+// leaves exactly one of them rendered — so this reads the first entry rather
+// than the ref itself. Handed the array, the measurement silently read
+// `undefined` for a width and corrected by zero, which looked precisely like
+// no clamping at all.
+const tipEl = () => (Array.isArray(tip.value) ? tip.value[0] ?? null : tip.value);
+
+const show = async (index: number, event: PointerEvent) => {
+	const slot = event.currentTarget as HTMLElement;
+
+	hover.value = index;
+	shift.value = 0;
+	await nextTick();
+	shift.value = clampChartTip(tipEl(), slot, plot.value);
+};
 
 const bars = computed(() => {
 	const max = Math.max(0, ...props.points.map(point => point.value));
-	const last = props.points.length - 1;
 
-	return props.points.map((point, index) => {
-		// Near either end the centred readout would hang past the side of the
-		// card, so it pins to that side instead — to the plot's edge, not the
-		// slot's, which is what holds it still across the leading group rather
-		// than stepping a slot at a time. Measured as a fraction rather than a
-		// fixed index, because this plots both a 7-slot week and a 24-slot day.
-		const position = last > 0 ? index / last : 0.5;
-
+	return props.points.map((point) => {
 		return {
 			label: point.label,
 			text: `${point.value.toLocaleString("en-GB")} ${point.value === 1 ? props.unitOne : props.unit}`,
@@ -81,8 +92,6 @@ const bars = computed(() => {
 			height: max <= 0 || point.value <= 0
 				? "0%"
 				: `${Math.max((point.value / max) * 100, 8)}%`,
-
-			edge: position < 0.2 ? "is-start" : position > 0.8 ? "is-end" : undefined,
 		};
 	});
 });

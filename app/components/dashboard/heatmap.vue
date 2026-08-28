@@ -1,6 +1,6 @@
 <template>
 	<figure class="heatmap">
-		<div class="heatmap-grid">
+		<div ref="grid" class="heatmap-grid">
 			<span class="heatmap-corner" aria-hidden="true" />
 
 			<span
@@ -19,7 +19,7 @@
 					class="heatmap-cell"
 					:class="{ 'is-empty': cell.visits === 0 }"
 					:style="cell.visits ? { opacity: cell.intensity } : undefined"
-					@pointerenter="hover = { row, cell }"
+					@pointerenter="show(row, cell, $event)"
 					@pointerleave="hover = null"
 				/>
 			</template>
@@ -34,8 +34,8 @@
 			     it never takes the pointer — the cell underneath keeps it. -->
 			<span
 				v-if="hover"
+				ref="tip"
 				class="heatmap-tip"
-				:class="tipEdge"
 				aria-hidden="true"
 				:style="tipStyle"
 			>{{ hoverLabel }}</span>
@@ -130,24 +130,30 @@ const tipStyle = computed(() => {
 	return {
 		gridColumn: `${col} / ${col + 1}`,
 		gridRow: `${line} / ${line + 1}`,
+		"--tip-shift": `${shift.value}px`,
 	};
 });
 
 /**
- * Which end of the label to pin to the cell near the edges of the grid.
+ * Keeps the label inside the grid.
  *
- * Centred on an hour-0 or hour-23 cell, a label this wide hangs well past the
- * side of the card — the panel does not clip, so it would simply sit outside
- * it. Within about three columns of either end it aligns to that edge of the
- * cell instead and opens inwards.
+ * It used to pin to the cell's own edge within three columns of either end,
+ * which is an approximation of this and broke where the approximation did: a
+ * label wider than three columns still hung off the card. Measured instead, so
+ * the limit is the grid's real edge whatever the text turns out to be.
  */
-const tipEdge = computed(() => {
-	if (!hover.value) return undefined;
-	const { hour } = hover.value.cell;
-	if (hour <= 3) return "is-start";
-	if (hour >= 20) return "is-end";
-	return undefined;
-});
+const shift = ref(0);
+const grid = useTemplateRef<HTMLElement>("grid");
+const tip = useTemplateRef<HTMLElement>("tip");
+
+const show = async (row: Row, cell: Cell, event: PointerEvent) => {
+	const square = event.currentTarget as HTMLElement;
+
+	hover.value = { row, cell };
+	shift.value = 0;
+	await nextTick();
+	shift.value = clampChartTip(tip.value, square, grid.value);
+};
 
 const lookup = computed(() => {
 	const map = new Map<string, number>();

@@ -1832,7 +1832,10 @@
         bottom: 100%;
         left: 50%;
         z-index: 3;
-        transform: translate(-50%, -@vw6);
+        // Centred on the slot, plus the correction that keeps it inside the
+        // plot — measured in the component, because the limit depends on how
+        // wide the text turns out. See `clampChartTip`.
+        transform: translate(calc(-50% + var(--tip-shift, 0px)), -@vw6);
         padding: @vw4 @vw8;
         border-radius: @dashRadius;
         background-color: var(--popover);
@@ -1847,22 +1850,6 @@
         // tip would unmount, and the slot would take it back.
         pointer-events: none;
 
-        // The same pinning the bar chart's readout uses, and for the same
-        // reason: to the edge of the *plot* rather than of its own slot, so it
-        // holds one position across the whole leading group instead of
-        // stepping a slot at a time under the pointer. `100%` resolves against
-        // the slot, every slot is the same width, and `--i` / `--n` come from
-        // the component.
-        &.is-start {
-            left: calc(-1 * var(--i) * (100% + @chartBarGap));
-            transform: translate(0, -@vw6);
-        }
-
-        &.is-end {
-            left: auto;
-            right: calc(-1 * (var(--n) - 1 - var(--i)) * (100% + @chartBarGap));
-            transform: translate(0, -@vw6);
-        }
     }
 }
 
@@ -1980,7 +1967,19 @@
         // happens to be.
         bottom: 100%;
         left: 50%;
-        transform: translate(-50%, -@vw6);
+        // Above every bar on the chart, not just its own.
+        //
+        // Each column is `position: relative`, so without this the readout
+        // painted in document order: the bars to its left went behind it and
+        // the bars to its right went over it, clipping the box down its right
+        // side. It read as a tooltip that was somehow half transparent, which
+        // is what it was — the wrong half of a stacking order, not an alpha.
+        // The column sets no z-index of its own, so it opens no stacking
+        // context and this lifts the readout clear of the whole row.
+        z-index: 3;
+        // Centred on the bar, plus the correction that keeps it inside the
+        // plot — measured in the component. See `clampChartTip`.
+        transform: translate(calc(-50% + var(--tip-shift, 0px)), -@vw6);
         padding: @vw2 @vw6;
         border-radius: @dashRadius;
         background-color: var(--popover);
@@ -1990,37 +1989,10 @@
         font-variant-numeric: tabular-nums;
         color: var(--text);
         white-space: nowrap;
-
-        // `visibility`, not `opacity` — the same call `.tip` makes, for the
-        // same reason. Fading meant every frame drew a part-transparent
-        // readout with the chart showing through it, and sweeping quickly
-        // along a row left a trail of half-faded boxes behind the pointer.
-        // A figure either applies to the bar under the pointer or it does not.
-        visibility: hidden;
+        // Never intercepts the pointer: the bar underneath has to keep it, or
+        // crossing onto the readout would close the readout.
         pointer-events: none;
 
-        // Pinned to the edge of the *plot*, not of its own bar.
-        //
-        // Centred, the readout on a leading bar hangs off the side of the
-        // chart; pinned to the bar it moved a full column every time the
-        // pointer stepped, which is a lot of motion for a box that says the
-        // same kind of thing each time. Pinned to the plot it does not move at
-        // all across the whole leading group — it sits as far out as it can go
-        // and stays there until there is room to centre it again.
-        //
-        // The offset is the column's own width times how many columns lie
-        // between it and the edge: `100%` here resolves against the bar, every
-        // column is the same width, and `--i` / `--n` come from the component.
-        &.is-start {
-            left: calc(-1 * var(--i) * (100% + @chartBarGap));
-            transform: translate(0, -@vw6);
-        }
-
-        &.is-end {
-            left: auto;
-            right: calc(-1 * (var(--n) - 1 - var(--i)) * (100% + @chartBarGap));
-            transform: translate(0, -@vw6);
-        }
     }
 
     // The bar answers the pointer, not the column.
@@ -2032,7 +2004,6 @@
     // anything being looked at.
     @media (hover: hover) {
         &-fill:hover { background-color: var(--chart-bar-hover); }
-        &-fill:hover &-value { visibility: visible; }
         &-col.is-highlight &-fill:hover { background-color: var(--accent-hover); }
         // The empty column's hit target paints nothing, hover included.
         &-col.is-empty &-fill:hover { background-color: transparent; }
@@ -2721,7 +2692,9 @@
         bottom: 100%;
         left: 50%;
         z-index: 2;
-        transform: translate(-50%, -@vw4);
+        // Centred on the cell, plus the correction that keeps it inside the
+        // grid — measured in the component. See `clampChartTip`.
+        transform: translate(calc(-50% + var(--tip-shift, 0px)), -@vw4);
         padding: @vw4 @vw8;
         border-radius: @dashRadius;
         background-color: var(--popover);
@@ -2731,20 +2704,6 @@
         white-space: nowrap;
         color: var(--text);
         pointer-events: none;
-
-        // Near either end of the day the centred label would hang past the side
-        // of the card — see `tipEdge`. These pin it to that edge of the cell
-        // instead, so it opens inwards across the grid.
-        &.is-start {
-            left: 0;
-            transform: translate(0, -@vw4);
-        }
-
-        &.is-end {
-            left: auto;
-            right: 0;
-            transform: translate(0, -@vw4);
-        }
     }
 
     &-foot {

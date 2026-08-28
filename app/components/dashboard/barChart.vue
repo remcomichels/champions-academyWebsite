@@ -7,7 +7,7 @@
 				<li v-for="tick in ticks" :key="tick" class="barChart-tick">{{ format(tick) }}</li>
 			</ul>
 
-			<div class="barChart-plot">
+			<div ref="plot" class="barChart-plot">
 				<div class="barChart-grid" aria-hidden="true">
 					<span v-for="tick in ticks" :key="tick" class="barChart-gridLine" />
 				</div>
@@ -17,28 +17,33 @@
 				     gives a screen reader the same figures in order without the
 				     overhead of a grid the sighted view never renders. -->
 				<ul class="barChart-cols">
-					<!-- `--i` and `--n` are the column's index and the column
-					     count, and the readout's edge-pinning is computed from
-					     them: a bar near either end offsets its readout by the
-					     number of columns between it and the side of the plot,
-					     so it lands on the plot's edge rather than its own. -->
 					<li
 						v-for="(point, i) in scaled"
 						:key="point.label"
 						class="barChart-col"
 						:class="{ 'is-highlight': i === highlightIndex, 'is-empty': point.value === 0 }"
-						:style="{ '--i': i, '--n': scaled.length }"
 					>
 						<span class="barChart-track">
 							<!-- The readout lives inside the bar rather than beside it.
 							     Anchored to the column it sat at the top of the chart,
 							     which for a short bar was a long way from the thing it
 							     described; anchored to the bar, `bottom: 100%` is the
-							     bar's own top edge whatever its height. -->
-							<span class="barChart-fill" :style="{ height: `${point.pct}%` }">
+							     bar's own top edge whatever its height.
+
+							     The bar takes the pointer, not the column: a column is
+							     the full height of the plot, so hovering the air above
+							     a short bar used to answer for it. -->
+							<span
+								class="barChart-fill"
+								:style="{ height: `${point.pct}%` }"
+								@pointerenter="show(i, $event)"
+								@pointerleave="hover = null"
+							>
 								<span
+									v-if="hover === i"
+									ref="tip"
 									class="barChart-value"
-									:class="point.edge"
+									:style="{ '--tip-shift': `${shift}px` }"
 									aria-hidden="true"
 								>{{ point.caption }}</span>
 							</span>
@@ -119,16 +124,8 @@ const ticks = computed(() => {
 });
 
 const scaled = computed(() => {
-	const last = props.points.length - 1;
-
-	return props.points.map((point, index) => {
+	return props.points.map((point) => {
 		const unit = point.value === 1 && props.unitOne ? props.unitOne : props.unit;
-		// Near either end the centred readout hangs past the side of the plot,
-		// so it pins to that side instead — to the plot's edge, not the bar's,
-		// which is what keeps it still across the whole leading group rather
-		// than stepping a column at a time. A fraction rather than a fixed
-		// index, because this draws a fortnight and a quarter.
-		const position = last > 0 ? index / last : 0.5;
 
 		return {
 			...point,
@@ -136,10 +133,39 @@ const scaled = computed(() => {
 			// is visible rather than rounding away to an empty column.
 			pct: point.value === 0 ? 0 : Math.max((point.value / axisMax.value) * 100, 2),
 			caption: `${point.title ?? point.label} — ${format(point.value)}${unit ? ` ${unit}` : ""}`,
-			edge: position < 0.12 ? "is-start" : position > 0.88 ? "is-end" : undefined,
 		};
 	});
 });
+
+/**
+ * The hovered bar, and the correction that keeps its readout inside the plot.
+ *
+ * Both live here rather than in CSS because the readout has to be *measured* to
+ * be placed — see the note in `clampChartTip`. One is open at a time, so this
+ * is one element and one measurement per hover.
+ */
+const hover = ref<number | null>(null);
+const shift = ref(0);
+const plot = useTemplateRef<HTMLElement>("plot");
+const tip = useTemplateRef<HTMLElement[]>("tip");
+
+// A template ref inside `v-for` is collected as an array, even where `v-if`
+// leaves exactly one of them rendered — so this reads the first entry rather
+// than the ref itself. Handed the array, the measurement silently read
+// `undefined` for a width and corrected by zero, which looked precisely like
+// no clamping at all.
+const tipEl = () => (Array.isArray(tip.value) ? tip.value[0] ?? null : tip.value);
+
+const show = async (index: number, event: PointerEvent) => {
+	const bar = event.currentTarget as HTMLElement;
+
+	hover.value = index;
+	shift.value = 0;
+	// The readout is rendered by the line above, so it cannot be measured until
+	// the DOM has caught up with it.
+	await nextTick();
+	shift.value = clampChartTip(tipEl(), bar, plot.value);
+};
 
 const highlightIndex = computed(() =>
 	(props.highlightLast ? props.points.length - 1 : -1));
