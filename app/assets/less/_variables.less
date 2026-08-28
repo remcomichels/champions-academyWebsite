@@ -10,13 +10,13 @@
 @handWritten:   "Alex Brush", cursive;
 // The affiliate's own name on Overview, and nothing else on the dashboard.
 //
-// Newsreader rather than Instrument Serif, which ships Regular and Italic and
-// no more: asking it for bold got a browser-synthesised smear, and in italic at
-// display size that is very visible. Newsreader is variable 200-800 with a
-// drawn italic at every weight, so the name can carry real weight against the
-// sans beside it. @nuxt/fonts resolves and self-hosts it from this reference
-// alone; a different serif is a one-line change here.
-@serif:         'Newsreader', Georgia, serif;
+// Playfair Display, which is variable 400-900 with a drawn italic at every
+// weight — so the name is set in a real 500 rather than a browser-synthesised
+// one, and at display size in italic a synthesised weight is very visible. Its
+// high contrast and tall x-height are what let it hold the line beside the sans
+// at the same weight. @nuxt/fonts resolves and self-hosts it from this
+// reference alone; a different serif is a one-line change here.
+@serif:         'Playfair Display', Georgia, serif;
 
 // Font weights
 @light:         300;

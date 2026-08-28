@@ -3,8 +3,11 @@
 		<!-- ── Hero ──────────────────────────────────────────────────────── -->
 		<header class="dashHero">
 			<div class="dashHero-copy">
-				<p class="dashHero-eyebrow">Affiliate dashboard</p>
 				<p class="dashHero-title">Welcome back, <span class="dashHero-name">{{ firstName }}</span></p>
+
+				<!-- The strapline explains the link, not the greeting, so it
+				     sits with the field it describes rather than under the
+				     title. -->
 				<p class="dashHero-sub">Share your link, and everyone who arrives through it is credited to you for 30 days.</p>
 
 				<div class="dashHero-actions">

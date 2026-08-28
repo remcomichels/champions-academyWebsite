@@ -99,11 +99,11 @@ export default defineNuxtConfig({
 		families: [
 			{ name: "Plus Jakarta Sans", provider: "none" },
 			// Declared rather than left to resolve, for the reason in the note
-			// above: the module fetches weight 400 only unless told otherwise,
-			// and 400 is exactly what this face is here to avoid. The one place
-			// it is used — the affiliate's name on Overview — is bold italic and
-			// nothing else, so that is all that gets downloaded.
-			{ name: "Newsreader", weights: [700], styles: ["italic"] },
+			// above: the module fetches weight 400 only unless told otherwise.
+			// The one place it is used — the affiliate's name on Overview — is
+			// medium italic and nothing else, so that is all that gets
+			// downloaded.
+			{ name: "Playfair Display", weights: [500], styles: ["italic"] },
 		],
 	},
 

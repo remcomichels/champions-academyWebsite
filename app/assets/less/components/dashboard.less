@@ -1070,35 +1070,37 @@
     gap: @vw40;
     padding: @vw16 0 @vw8;
 
+    // No `gap`: the three children want different spacing from each other —
+    // a wide break under the greeting, and the strapline sitting tight on the
+    // link it describes — so each carries its own margin instead.
     &-copy {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        gap: @vw8;
         min-width: 0;
-    }
-
-    // Same micro-label treatment as the stat captions — it is doing the same
-    // job, naming what the block below it is.
-    &-eyebrow {
-        font-size: max(0.62em, @vw11);
-        font-weight: @medium;
-        text-transform: uppercase;
-        letter-spacing: 0.06em;
-        color: var(--text-tertiary);
     }
 
     // The one piece of display type on the dashboard, and the only place the
     // serif appears — worth the size, and worth some air around it. Everything
     // else on the page is deliberately small, which is what lets this be large
-    // without shouting.
+    // without shouting. It is also the only title the page has now that the
+    // eyebrow above it is gone, which is the other half of the size.
+    //
+    // Medium rather than bold: at this size weight is no longer what makes it
+    // read as the title, and the lighter line sits better under the serif.
     &-title {
         font-family: @body;
-        font-size: max(1.75em, @vw34);
-        font-weight: @bold;
+        font-size: max(2em, @vw40);
+        font-weight: @medium;
         line-height: 1.15;
-        letter-spacing: -0.02em;
-        padding: @vw6 0 @vw10;
+        // Looser than the -0.02em it carried at 34/bold: tracking that tightens
+        // a heavy line into a block reads as a missing word space once the
+        // weight drops and the size goes up.
+        letter-spacing: -0.01em;
+        padding: @vw2 0 0;
+        // The break between the greeting and the link block below it. Large,
+        // because it is the only division left in this column.
+        margin-bottom: @vw32;
         color: var(--text);
     }
 
@@ -1106,24 +1108,26 @@
     // back," stays in the sans it shares with every other heading, so the change
     // of voice lands on the one word that is personally theirs.
     //
-    // Bold, and a real 700 rather than a synthesised one: this is why the face
-    // changed from Instrument Serif, which has no weight above 400. Set a shade
-    // larger than the sans around it too, because a serif at matched point size
-    // reads smaller — the two together are what make it jump without leaving
-    // the line looking mismatched.
+    // Matched to the sans at @medium, and a real 500 rather than a synthesised
+    // one — which is why the face is a variable one. Set a shade larger than
+    // the sans around it, because a serif at matched point size reads smaller;
+    // less of a bump than Newsreader wanted, Playfair's x-height being taller.
     //
     // Its own tracking because it is a different family mid-sentence: the -0.02em
     // on the sans is a correction for that face and this one does not want it.
     &-name {
         font-family: @serif;
         font-style: italic;
-        font-weight: @bold;
-        font-size: 1.08em;
+        font-weight: @medium;
+        font-size: 1.04em;
         letter-spacing: 0;
     }
 
+    // Sits directly above the field it explains rather than under the greeting,
+    // so the two read as one block — the sentence and the thing it is about.
     &-sub {
         max-width: calc(@vw300 + @vw140);
+        margin-bottom: @vw10;
         font-size: max(0.90em, @vw16);
         line-height: 1.5;
         // _general.less puts `white-space: pre-line` on every p, which turns a
@@ -1137,10 +1141,6 @@
         align-items: stretch;
         flex-wrap: wrap;
         gap: @vw12;
-        // The link is the one thing on this page the affiliate came to copy.
-        // It was sitting tight under the strapline as if it belonged to the
-        // sentence; this separates it into its own beat.
-        margin-top: @vw40;
         width: 100%;
         max-width: calc(@vw300 + @vw200);
     }
@@ -4490,7 +4490,12 @@
     .dashHero {
         gap: @vw24-1080;
 
-        &-title { font-size: max(1.75em, @vw34-1080); padding: @vw6-1080 0 @vw10-1080; }
+        &-title {
+            font-size: max(2em, @vw40-1080);
+            padding: @vw2-1080 0 0;
+            margin-bottom: @vw32-1080;
+        }
+        &-sub { margin-bottom: @vw10-1080; }
     }
 
     .dashPanel { padding: @vw16-1080; gap: @vw16-1080; }
@@ -4665,9 +4670,20 @@
         gap: @vw16-580;
         padding: @vw8-580 0 0;
 
-        &-title { font-size: max(1.75em, @vw30-580); padding: @vw4-580 0 @vw8-580; }
-        &-sub { font-size: max(0.80em, @vw14-580); }
-        &-actions { flex-direction: column; margin-top: @vw8-580; }
+        &-title {
+            font-size: max(2em, @vw34-580);
+            padding: @vw2-580 0 0;
+            margin-bottom: @vw24-580;
+        }
+        // The measure is a vw of the 1440 column, and on a phone it shrinks
+        // faster than the column does — leaving a narrow ragged block above a
+        // full-width field. It takes the column here instead.
+        &-sub {
+            max-width: none;
+            margin-bottom: @vw10-580;
+            font-size: max(0.80em, @vw14-580);
+        }
+        &-actions { flex-direction: column; }
     }
 
     .dashPanel { padding: @vw16-580; gap: @vw16-580; }
