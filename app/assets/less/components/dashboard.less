@@ -258,6 +258,23 @@
 // top of it, never the only place the name exists.
 .tip {
     position: relative;
+    // ── Why the host carries a z-index and not just the balloon ──────────
+    // The tooltip lives in `::after`, and a pseudo-element's z-index is only
+    // ever resolved inside its host's stacking context. The account avatar
+    // fades to `opacity: 0.85` on hover — and any opacity below 1 creates a
+    // stacking context — so at exactly the moment the balloon appears, the host
+    // became one and trapped it. `z-index: 99` on the balloon then ordered it
+    // against its own siblings and nothing else, while the host, at `auto`,
+    // painted below the panel at 60 and took the balloon down with it.
+    //
+    // Confirmed rather than reasoned: with the trigger at opacity 1 the balloon
+    // renders over the panel, and at 0.85 it disappears behind it, same
+    // z-index both times.
+    //
+    // So the number that matters is this one. 61 clears the panels at 60,
+    // which is all the balloon ever needed — and it holds however the host is
+    // styled, including any future hover that transforms or filters it.
+    z-index: 61;
 
     // The balloon.
     &::after {
