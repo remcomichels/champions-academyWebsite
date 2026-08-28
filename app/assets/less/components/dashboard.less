@@ -266,10 +266,9 @@
         top: calc(100% + @vw6);
         left: 50%;
         transform: translateX(-50%);
-        // Above every panel in the bar. These all sit at 60; the balloon
-        // belongs to the button that opens one and has to stay in front of it,
-        // so it is put well clear rather than one step ahead.
-        z-index: 200;
+        // In front of the panels, which sit at 60. The balloon belongs to the
+        // button that opens one, so it has to stay on top of it.
+        z-index: 99;
         padding: @vw4 @vw8;
         border-radius: @dashRadiusInner;
         background-color: var(--surface-raised);
@@ -293,7 +292,7 @@
         top: calc(100% + @vw2);
         left: 50%;
         transform: translateX(-50%) rotate(45deg);
-        z-index: 201;
+        z-index: 100;
         width: @vw8;
         height: @vw8;
         background-color: var(--surface-raised);
@@ -3685,31 +3684,20 @@
         cursor: pointer;
     }
 
-    // Fixed to the viewport rather than absolute to the avatar.
+    // Hung off the avatar, exactly as the activity and feedback panels hang off
+    // theirs — same `top: calc(100% + @vw5)`, same `right: 0`.
     //
-    // Two reasons. It right-aligns to the *screen* instead of to the trigger,
-    // which sits inside the bar's own padding and so left the card floating
-    // short of the edge. And its top is measured from the chrome, so it clears
-    // the bar by a known amount whether or not the warning bar is up — hung off
-    // the avatar it was offset from a button that is itself vertically centred,
-    // which is two guesses stacked on each other.
-    //
-    // `position: fixed` inside `.dashBar`, which is also fixed, still resolves
-    // against the viewport: only a transform, filter or will-change on an
-    // ancestor would make it a containing block, and the bar has none.
+    // It was `position: fixed`, offset from the bar's own height, which is why
+    // it sat lower than the other two: they measure from the bottom of a 30px
+    // button centred in a 56px bar, and this measured from the bottom of the
+    // bar itself — 13px further down. Anchoring it to the trigger costs
+    // nothing, because the wrapper *is* the avatar: `right: 0` still puts the
+    // panel's right edge on the avatar's, which is where it was already meant
+    // to be.
     &-panel {
-        position: fixed;
-        // Minus, not plus: the card tucks up under the bar's bottom edge
-        // rather than floating clear of it.
-        // Back against the bar. It was pushed down to make room for the
-        // tooltip, which was the wrong fix — the balloon needed a z-index above
-        // the panel, not the panel moved out of its way. @vw5 rather than the
-        // original -@vw4 is the one concession: the tail stands @vw5 proud of
-        // the panel, and any less would bury it behind the bar.
-        top: calc(var(--alert-bar) + var(--top-bar) + @vw5);
-        // The bar's own horizontal padding, so the panel's right edge lines up
-        // with the avatar's rather than stopping a few pixels short of it.
-        right: @vw12;
+        position: absolute;
+        top: calc(100% + @vw5);
+        right: 0;
         z-index: 60;
         width: @vw248;
         max-width: calc(100vw - @vw24);
