@@ -47,6 +47,10 @@
 						<NuxtLink v-if="step.to" :to="step.to" class="checklist-text checklist-link">
 							{{ step.label }}
 							<span class="sr-only">{{ step.done ? "(done)" : "(not done)" }}</span>
+							<!-- Marks the row as somewhere to go. Only the rows that
+							     lead anywhere carry it, which is what separates
+							     them from the two that are not tasks. -->
+							<NuxtDashboardIcon name="chevronRight" class="checklist-arrow" />
 						</NuxtLink>
 
 						<span v-else class="checklist-text">
@@ -56,7 +60,6 @@
 					</li>
 				</ul>
 
-				<NuxtLink to="/dashboard/links" class="dashSetup-cta">Finish setup</NuxtLink>
 			</section>
 		</header>
 
@@ -73,6 +76,7 @@
 				icon="home"
 				accent
 				:trend="todayTrend"
+				:hint="todayHint"
 			/>
 			<NuxtDashboardStatCard
 				label="Last 30 days"
@@ -249,6 +253,17 @@ const series = computed(() => {
 
 const todayTrend = computed(() =>
 	trend(props.summary.visits.today, props.summary.visits.yesterday, "vs yesterday"));
+
+/**
+ * What "Today" says when a percentage would be dishonest.
+ *
+ * `trend()` returns null when today and yesterday are both zero — there is no
+ * meaningful change from nothing to nothing. That left this the one tile in the
+ * row with nothing under its figure, so it sat a line shorter than the three
+ * beside it. The plain count is still a comparison, just not a percentage one.
+ */
+const todayHint = computed(() =>
+	(todayTrend.value ? null : `${props.summary.visits.yesterday.toLocaleString("en-GB")} yesterday`));
 
 const monthTrend = computed(() =>
 	trend(props.summary.visits.last30d, props.summary.visits.previous30d, "vs last month"));

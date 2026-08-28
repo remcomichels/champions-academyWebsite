@@ -266,9 +266,10 @@
         top: calc(100% + @vw6);
         left: 50%;
         transform: translateX(-50%);
-        // Above the account panel, which opens directly beneath this and would
-        // otherwise swallow the balloon belonging to the button that opened it.
-        z-index: 90;
+        // Above every panel in the bar. These all sit at 60; the balloon
+        // belongs to the button that opens one and has to stay in front of it,
+        // so it is put well clear rather than one step ahead.
+        z-index: 200;
         padding: @vw4 @vw8;
         border-radius: @dashRadiusInner;
         background-color: var(--surface-raised);
@@ -292,7 +293,7 @@
         top: calc(100% + @vw2);
         left: 50%;
         transform: translateX(-50%) rotate(45deg);
-        z-index: 91;
+        z-index: 201;
         width: @vw8;
         height: @vw8;
         background-color: var(--surface-raised);
@@ -300,25 +301,29 @@
         border-top: max(1px, @vw1) solid var(--border);
     }
 
+    // `visibility`, not `opacity`.
+    //
+    // Fading it in meant every frame of the transition drew a part-transparent
+    // balloon with the panel showing through it, which reads as a translucent
+    // tooltip rather than one arriving. There is nothing to animate here anyway
+    // — a label either applies to what the pointer is on or it does not.
     &::after,
     &::before {
-        opacity: 0;
+        visibility: hidden;
         // Never intercepts the pointer — a tooltip that can be hovered will
         // flicker as the pointer crosses onto it.
         pointer-events: none;
-        .transition();
-        transition-property: opacity;
     }
 
     // Keyboard users get it too: the balloon is the only visible label these
     // controls have, so tabbing to one has to show it.
     @media (hover: hover) {
         &:hover::after,
-        &:hover::before { opacity: 1; }
+        &:hover::before { visibility: visible; }
     }
 
     &:focus-visible::after,
-    &:focus-visible::before { opacity: 1; }
+    &:focus-visible::before { visibility: visible; }
 
     // The last control sits against the right edge of the viewport, where a
     // centred balloon would hang off it. This one grows leftward instead; the
@@ -1046,12 +1051,17 @@
         color: var(--text-tertiary);
     }
 
+    // The one piece of display type on the dashboard, and the only place the
+    // serif appears — worth the size, and worth some air around it. Everything
+    // else on the page is deliberately small, which is what lets this be large
+    // without shouting.
     &-title {
         font-family: @body;
-        font-size: max(1.45em, @vw28);
+        font-size: max(1.75em, @vw34);
         font-weight: @bold;
         line-height: 1.15;
         letter-spacing: -0.02em;
+        padding: @vw6 0 @vw10;
         color: var(--text);
     }
 
@@ -1376,7 +1386,10 @@
     // is why `.statGrid` had to grow a much larger gap at the same time — with
     // nothing drawing an edge, only space separates one reading from the next.
     display: flex;
-    align-items: flex-start;
+    // Centred, not top-aligned. Every card carries three lines now — label,
+    // figure, and a comparison under it — and a tile pinned to the top of that
+    // stack sat against the label rather than against the reading as a whole.
+    align-items: center;
     gap: @vw16;
     min-width: 0;
 
@@ -2053,24 +2066,6 @@
         color: var(--text);
     }
 
-    &-cta {
-        align-self: flex-start;
-        font-size: max(0.80em, @vw14);
-        font-weight: @medium;
-        color: var(--accent);
-        .transition();
-        transition-property: opacity;
-
-        @media (hover: hover) {
-            &:hover { opacity: 0.75; }
-        }
-
-        &:focus-visible {
-            outline: max(2px, @vw2) solid var(--accent);
-            outline-offset: @vw2;
-            border-radius: @dashRadius;
-        }
-    }
 }
 
 .checklist {
@@ -2097,6 +2092,9 @@
     // would out-shout the primary button in the hero beside it; they take the
     // row's own colour and announce themselves on hover instead.
     &-link {
+        display: flex;
+        align-items: center;
+        gap: @vw6;
         color: inherit;
         text-decoration: underline;
         text-decoration-color: transparent;
@@ -2108,6 +2106,10 @@
             &:hover {
                 color: var(--text);
                 text-decoration-color: currentColor;
+
+                // Nudges toward where it is pointing. The only motion in the
+                // card, and it is on the thing that moves you somewhere.
+                .checklist-arrow { transform: translateX(@vw2); }
             }
         }
 
@@ -2133,6 +2135,14 @@
     &-item.is-done &-mark {
         background-color: var(--accent);
         border-color: var(--accent);
+    }
+
+    &-arrow {
+        flex: none;
+        font-size: max(0.62em, @vw11);
+        color: var(--text-tertiary);
+        .transition();
+        transition-property: transform;
     }
 }
 
@@ -2311,7 +2321,7 @@
 
     &-panel {
         position: absolute;
-        top: calc(100% + @vw10);
+        top: calc(100% + @vw5);
         right: 0;
         z-index: 60;
         width: calc(@vw300 + @vw40);
@@ -2319,6 +2329,14 @@
         padding: @vw16;
         .dashSurface();
         box-shadow: var(--shadow-pop);
+
+        // Anchored the same way the account panel's is: this panel's right edge
+        // is flush with its @vw30 trigger's, so half that width in from the
+        // edge is the middle of the bell, less half the tail to centre it.
+        &::before {
+            .dashTail();
+            right: @vw10;
+        }
     }
 
     &-title {
@@ -3683,10 +3701,12 @@
         position: fixed;
         // Minus, not plus: the card tucks up under the bar's bottom edge
         // rather than floating clear of it.
-        // Clear of the bar now rather than tucked under its edge — the tail
-        // needs somewhere to point from, and the gap is what lets the trigger's
-        // own tooltip sit between the two instead of landing inside the panel.
-        top: calc(var(--alert-bar) + var(--top-bar) + @vw8);
+        // Back against the bar. It was pushed down to make room for the
+        // tooltip, which was the wrong fix — the balloon needed a z-index above
+        // the panel, not the panel moved out of its way. @vw5 rather than the
+        // original -@vw4 is the one concession: the tail stands @vw5 proud of
+        // the panel, and any less would bury it behind the bar.
+        top: calc(var(--alert-bar) + var(--top-bar) + @vw5);
         // The bar's own horizontal padding, so the panel's right edge lines up
         // with the avatar's rather than stopping a few pixels short of it.
         right: @vw12;
@@ -4444,7 +4464,7 @@
     .dashHero {
         gap: @vw24-1080;
 
-        &-title { font-size: max(1.45em, @vw28-1080); }
+        &-title { font-size: max(1.75em, @vw34-1080); padding: @vw6-1080 0 @vw10-1080; }
     }
 
     .dashPanel { padding: @vw16-1080; gap: @vw16-1080; }
@@ -4619,7 +4639,7 @@
         gap: @vw16-580;
         padding: @vw8-580 0 0;
 
-        &-title { font-size: max(1.45em, @vw28-580); }
+        &-title { font-size: max(1.75em, @vw30-580); padding: @vw4-580 0 @vw8-580; }
         &-sub { font-size: max(0.80em, @vw14-580); }
         &-actions { flex-direction: column; margin-top: @vw8-580; }
     }
