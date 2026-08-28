@@ -1067,11 +1067,16 @@
     // the sans around it, because a serif at matched point size reads smaller;
     // less of a bump than Newsreader wanted, Playfair's x-height being taller.
     //
+    // Upright. The change of family is enough to mark the name as the personal
+    // half of the line, and the italic on top of it was doing the same job
+    // twice. `font-style` is left to inherit rather than set to `normal`: the
+    // line around it is upright already, and the upright face is the only one
+    // now downloaded — see the note in nuxt.config.
+    //
     // Its own tracking because it is a different family mid-sentence: the -0.02em
     // on the sans is a correction for that face and this one does not want it.
     &-name {
         font-family: @serif;
-        font-style: italic;
         font-weight: @medium;
         font-size: 1.04em;
         letter-spacing: 0;
