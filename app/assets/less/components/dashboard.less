@@ -813,8 +813,21 @@
     // pressable without drawing a button around it permanently.
     &-text {
         flex: none;
-        padding: @vw6 @vw12;
-        border: none;
+        // Explicit height and centred contents, so this matches the three
+        // circles beside it rather than being sized by its own line box.
+        display: grid;
+        place-items: center;
+        height: @vw30;
+        padding: 0 @vw12;
+    // A transparent border, and it is load-bearing.
+    //
+    // The tooltip is absolutely positioned, and `top`/`100%` on an absolutely
+    // positioned child resolve against its containing block's *padding* box,
+    // not its border box. So a host with a 1px border puts its balloon at
+    // 1 + 29, and a host without one at 0 + 30 — a pixel apart, which is
+    // visible when four of them sit in a row. Every `.tip` host in the bar
+    // carries a 1px border now, visible or not, so all four measure the same.
+        border: max(1px, @vw1) solid transparent;
         border-radius: @dashRadiusPill;
         background: none;
         font-family: @body;
@@ -886,7 +899,15 @@
         width: @vw30;
         height: @vw30;
         padding: 0;
-        border: none;
+    // A transparent border, and it is load-bearing.
+    //
+    // The tooltip is absolutely positioned, and `top`/`100%` on an absolutely
+    // positioned child resolve against its containing block's *padding* box,
+    // not its border box. So a host with a 1px border puts its balloon at
+    // 1 + 29, and a host without one at 0 + 30 — a pixel apart, which is
+    // visible when four of them sit in a row. Every `.tip` host in the bar
+    // carries a 1px border now, visible or not, so all four measure the same.
+        border: max(1px, @vw1) solid transparent;
         border-radius: @dashRadiusPill;
         background-color: var(--text);
         color: var(--background);
