@@ -1,5 +1,5 @@
 <template>
-	<div class="dashLayout" :class="{ 'is-collapsed': collapsed, 'has-alertBar': vipLinkPending }">
+	<div class="dashLayout" :class="{ 'has-alertBar': vipLinkPending }">
 		<!-- Across the very top of the viewport, over the rail rather than
 		     beside it. This is an account-level warning, not an Overview one —
 		     sales are going uncredited on every page, so it follows the
@@ -151,7 +151,7 @@
 import { ADMIN_HOME, AFFILIATE_HOME, dashboardNav, isAdminRoute } from "~/composables/useDashboardNav";
 
 const { isAdmin, affiliate, viewingAs, stopViewingAs, fetchMe } = useAuth();
-const { collapsed, drawerOpen } = useDashboardNav();
+const { drawerOpen } = useDashboardNav();
 const { resolved: theme } = useTheme();
 
 // The auth middleware has already populated this, but a direct load of a

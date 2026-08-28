@@ -16,7 +16,12 @@
 export interface DashboardNavItem {
 	to: string;
 	label: string;
-	/** Inline SVG path data, drawn at 24×24 by NuxtDashboardIcon. */
+	/**
+	 * An Iconify name from `@iconify-json/material-symbols-light`, rendered by
+	 * `<Icon>`. The collection is bundled, not fetched — but see the note on
+	 * `icon.clientBundle.scan` in nuxt.config.ts before adding one: the scanner
+	 * has to be told to look in this file at all.
+	 */
 	icon: string;
 	/**
 	 * Draws a rule *above* this entry, splitting the list into groups. Sitting
@@ -29,23 +34,23 @@ export interface DashboardNavItem {
 
 /** An affiliate's own work, then the pages you visit once and leave again. */
 export const affiliateNav: DashboardNavItem[] = [
-	{ to: "/dashboard", label: "Overview", icon: "home" },
-	{ to: "/dashboard/analytics", label: "Analytics", icon: "chart" },
-	{ to: "/dashboard/sales", label: "Sales", icon: "tag" },
-	{ to: "/dashboard/links", label: "Links & Assets", icon: "link" },
+	{ to: "/dashboard", label: "Overview", icon: "material-symbols-light:home-outline" },
+	{ to: "/dashboard/analytics", label: "Analytics", icon: "material-symbols-light:monitoring" },
+	{ to: "/dashboard/sales", label: "Sales", icon: "material-symbols-light:sell-outline" },
+	{ to: "/dashboard/links", label: "Links & Assets", icon: "material-symbols-light:link" },
 	// Account and Settings used to sit here. Both moved into the profile menu
 	// in the top bar, which is where someone looks for their own account rather
 	// than in a rail of places to work.
-	{ to: "/dashboard/support", label: "Support", icon: "help", group: true },
+	{ to: "/dashboard/support", label: "Support", icon: "material-symbols-light:help-outline", group: true },
 ];
 
 /** Everything that reaches across affiliates rather than describing one. */
 export const adminNav: DashboardNavItem[] = [
-	{ to: "/dashboard/admin/analytics", label: "Analytics", icon: "chart" },
-	{ to: "/dashboard/admin/affiliates", label: "Affiliates", icon: "shield" },
-	{ to: "/dashboard/admin/activity", label: "Activity", icon: "history" },
-	{ to: "/dashboard/admin/feedback", label: "Feedback", icon: "feedback" },
-	{ to: "/dashboard/admin/changelog", label: "Changelog", icon: "changelog" },
+	{ to: "/dashboard/admin/analytics", label: "Analytics", icon: "material-symbols-light:monitoring" },
+	{ to: "/dashboard/admin/affiliates", label: "Affiliates", icon: "material-symbols-light:group-outline" },
+	{ to: "/dashboard/admin/activity", label: "Activity", icon: "material-symbols-light:history" },
+	{ to: "/dashboard/admin/feedback", label: "Feedback", icon: "material-symbols-light:chat-outline" },
+	{ to: "/dashboard/admin/changelog", label: "Changelog", icon: "material-symbols-light:receipt-long-outline" },
 ];
 
 /** Where the switch lands you. First entry, so reordering the rail moves it. */
@@ -58,27 +63,13 @@ export const dashboardNav: DashboardNavItem[] = [...affiliateNav, ...adminNav];
 /** True for any route the admin rail owns. */
 export const isAdminRoute = (path: string) => path.startsWith("/dashboard/admin");
 
-const COOKIE = "ca_nav";
-
 export function useDashboardNav() {
 	const { isAdmin } = useAuth();
 
-	// Cookie-backed for the same reason as the theme: the collapsed rail is a
-	// different width, so reading it only on the client would render the
-	// expanded sidebar first and then snap narrower after hydration.
-	const cookie = useCookie<"open" | "closed">(COOKIE, {
-		default: () => "open",
-		maxAge: 60 * 60 * 24 * 365,
-		sameSite: "lax",
-		path: "/",
-	});
-
-	const collapsed = useState<boolean>("ca-nav-collapsed", () => cookie.value === "closed");
-
-	const toggleCollapsed = () => {
-		collapsed.value = !collapsed.value;
-		cookie.value = collapsed.value ? "closed" : "open";
-	};
+	// There is no pinned-open rail and so no width to remember. The `ca_nav`
+	// cookie, the `ca-nav-collapsed` state and the toggle that wrote them are
+	// gone with it: the rail has one resting width and peeks open under the
+	// pointer, which is a CSS state that needs nothing on the server.
 
 	const route = useRoute();
 
@@ -107,8 +98,6 @@ export function useDashboardNav() {
 
 	return {
 		items,
-		collapsed,
-		toggleCollapsed,
 		drawerOpen,
 		adminMode: inAdminMode,
 		setAdminMode,

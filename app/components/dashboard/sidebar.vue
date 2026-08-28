@@ -1,35 +1,23 @@
 <template>
 	<aside
 		class="dashNav"
-		:class="{ 'is-collapsed': collapsed, 'is-open': drawerOpen }"
+		:class="{ 'is-open': drawerOpen }"
 		:aria-label="'Dashboard sections'"
 	>
-		<div class="dashNav-head">
-			<!-- The rail's own control, and the only thing showing once it is
-			     collapsed. Deliberately not a chevron: the glyph is a picture of
-			     a sidebar, so it reads the same whichever way the panel is about
-			     to move, and nothing has to flip mid-animation.
+		<!-- Mobile only, and hidden on desktop by `display: none`.
 
-			     On mobile the same button closes the drawer — see
-			     `onCollapseClick`. -->
-			<button
-				type="button"
-				class="dashNav-toggle"
-				:aria-label="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-				:aria-expanded="!collapsed"
-				:title="collapsed ? 'Expand sidebar' : undefined"
-				@click="onCollapseClick"
-			>
-				<NuxtDashboardIcon name="sidebar" />
-			</button>
-
-			<!-- The wordmark is decorative, so the link carries the name itself. -->
-			<NuxtLink to="/" class="dashNav-brand" aria-label="Champions Academy">
-				<span class="dashNav-brandText">
-					<span class="dashNav-logo" aria-hidden="true" />
-				</span>
-			</NuxtLink>
-		</div>
+		     The desktop rail has no control of its own any more — there is no
+		     pinned state left to toggle, so a button that opened one would have
+		     nothing to do. The drawer still needs a way out that is not "tap the
+		     scrim and hope", so the same element survives at drawer width. -->
+		<button
+			type="button"
+			class="dashNav-close"
+			aria-label="Close navigation"
+			@click="drawerOpen = false"
+		>
+			<Icon name="material-symbols-light:close" class="dashNav-glyph" />
+		</button>
 
 		<nav class="dashNav-list">
 			<template v-for="item in items" :key="item.to">
@@ -43,9 +31,8 @@
 					class="dashNav-item"
 					:class="{ 'is-active': isActive(item.to) }"
 					:aria-current="isActive(item.to) ? 'page' : undefined"
-					:title="collapsed ? item.label : undefined"
 				>
-					<NuxtDashboardIcon :name="item.icon" />
+					<Icon :name="item.icon" class="dashNav-glyph" />
 					<span class="dashNav-label">{{ item.label }}</span>
 				</NuxtLink>
 			</template>
@@ -55,7 +42,21 @@
 </template>
 
 <script setup lang="ts">
-const { items, collapsed, toggleCollapsed, drawerOpen } = useDashboardNav();
+/**
+ * The rail down the left of the dashboard.
+ *
+ * One width at rest — the top bar's height, so the two meet as a square in the
+ * corner — and it peeks open under the pointer. There is no pinned state: a
+ * rail that can be latched open has to push the page column sideways to make
+ * room for itself, and that shift was worth neither the code nor the cookie
+ * that remembered it. Peeking floats over the content instead, so nothing in
+ * the page moves at all.
+ *
+ * The labels are in the DOM at rest, merely transparent, so a screen reader
+ * reads a full set of names off a rail that looks like icons. Keyboard users
+ * get the real thing: the peek is on `:focus-within` as well as `:hover`.
+ */
+const { items, drawerOpen } = useDashboardNav();
 
 const route = useRoute();
 
@@ -66,13 +67,6 @@ const route = useRoute();
  */
 const isActive = (to: string) =>
 	to === "/dashboard" ? route.path === "/dashboard" : route.path.startsWith(to);
-
-
-// On mobile the same button closes the drawer; on desktop it collapses the rail.
-const onCollapseClick = () => {
-	if (drawerOpen.value) drawerOpen.value = false;
-	else toggleCollapsed();
-};
 
 // A drawer left open over the new page after navigating is the classic mobile
 // nav bug. Closing on path change costs one watcher.

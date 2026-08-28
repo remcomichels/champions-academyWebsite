@@ -86,11 +86,20 @@ export default defineNuxtConfig({
 	 * `scan` walks the source for the icons genuinely referenced and bundles
 	 * only those, so the pack can stay installed — and more of it can be used
 	 * later — without the whole thing shipping.
+	 *
+	 * `globInclude` is spelled out because the module's default list omits
+	 * `.ts`, and the sidebar's icon names live in `useDashboardNav.ts` rather
+	 * than in a template. An unscanned name is not a build error — it falls
+	 * through to a runtime fetch from the Iconify API, so the rail would
+	 * quietly depend on a third-party request per glyph. This is the module's
+	 * own default with `ts` added; adding a nav entry needs nothing here.
 	 * ----------------------------- */
 	icon: {
 		serverBundle: false,
 		clientBundle: {
-			scan: true,
+			scan: {
+				globInclude: ["**/*.{vue,jsx,tsx,ts,md,mdc,mdx,yml,yaml}"],
+			},
 			includeCustomCollections: true,
 		},
 	},
