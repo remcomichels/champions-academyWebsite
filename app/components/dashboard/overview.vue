@@ -146,11 +146,16 @@
 						<p class="miniCard-label">{{ card.label }}</p>
 
 						<p class="miniCard-value" :class="{ 'is-empty': !card.note }">
+							<!-- The mark is clipped to a disc rather than set loose
+							     as a bare emoji: the platform glyphs are flat
+							     rectangles at wildly different aspect ratios, and
+							     four of them in a row read as four different sizes.
+							     A disc gives every country the same footprint. -->
 							<span
 								v-if="card.flag"
-								class="miniCard-flag"
+								class="flagChip"
 								aria-hidden="true"
-							>{{ card.flag }}</span>{{ card.value }}
+							><span class="flagChip-mark">{{ card.flag }}</span></span>{{ card.value }}
 						</p>
 
 						<!-- One mark per card, and only where there is something

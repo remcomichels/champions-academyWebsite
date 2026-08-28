@@ -17,11 +17,17 @@
 				     gives a screen reader the same figures in order without the
 				     overhead of a grid the sighted view never renders. -->
 				<ul class="barChart-cols">
+					<!-- `--i` and `--n` are the column's index and the column
+					     count, and the readout's edge-pinning is computed from
+					     them: a bar near either end offsets its readout by the
+					     number of columns between it and the side of the plot,
+					     so it lands on the plot's edge rather than its own. -->
 					<li
 						v-for="(point, i) in scaled"
 						:key="point.label"
 						class="barChart-col"
-						:class="{ 'is-highlight': i === highlightIndex }"
+						:class="{ 'is-highlight': i === highlightIndex, 'is-empty': point.value === 0 }"
+						:style="{ '--i': i, '--n': scaled.length }"
 					>
 						<span class="barChart-track">
 							<!-- The readout lives inside the bar rather than beside it.
@@ -118,8 +124,10 @@ const scaled = computed(() => {
 	return props.points.map((point, index) => {
 		const unit = point.value === 1 && props.unitOne ? props.unitOne : props.unit;
 		// Near either end the centred readout hangs past the side of the plot,
-		// so it pins to that end of its bar and opens inwards. A fraction rather
-		// than a fixed index, because this draws a fortnight and a quarter.
+		// so it pins to that side instead — to the plot's edge, not the bar's,
+		// which is what keeps it still across the whole leading group rather
+		// than stepping a column at a time. A fraction rather than a fixed
+		// index, because this draws a fortnight and a quarter.
 		const position = last > 0 ? index / last : 0.5;
 
 		return {

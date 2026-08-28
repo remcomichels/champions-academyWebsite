@@ -47,6 +47,23 @@
 // and the timezone search field, and nowhere else.
 @dashRadiusInner: @vw4;
 
+// ── Chart bars ───────────────────────────────────────────────────────────────
+// The gutter between bars, and the cap on top of them. Tokens rather than two
+// literals repeated in four places: the bar chart, its x-axis labels and the
+// card sparklines all have to agree, and the axis in particular *must* — a
+// label row whose gutter differs from the columns' drifts a little further off
+// its own bar with every step across the chart.
+//
+// The gutter stays this small deliberately. At ninety days a wider one is
+// broader than the bars it separates, and a chart of hairlines in generous
+// white space reads as texture rather than as a series.
+//
+// The cap is two pixels, not the four a surface gets. A bar is often five or
+// six pixels wide; a 4px radius on that rounds the whole top into a dome and
+// the bar stops reading as a measured height.
+@chartBarGap: max(2px, @vw2);
+@chartBarCap: max(2px, @vw2);
+
 // ── Type ─────────────────────────────────────────────────────────────────────
 // Six rungs, and every `font-size` in this file lands on one of them:
 //
@@ -1369,8 +1386,13 @@
         height: @vw44;
         border-radius: @dashRadius;
         background-color: var(--surface-raised);
-        font-size: max(0.90em, @vw16);
         color: var(--text-tertiary);
+
+        // @vw18, the figure every glyph on the dashboard is drawn at — the
+        // rail, the two controls in the bar and the account face. These four
+        // were sized by the tile's font-size instead and came out smaller than
+        // all of them.
+        .icon { width: @vw18; height: @vw18; }
 
         // The tile is always in the layout even when a caller passes no icon,
         // just unpainted. Sales has one card without one, and letting that card
@@ -1577,10 +1599,47 @@
     // draws the two letters instead — "NL" rather than a Dutch flag. That is a
     // fine outcome and the reason the country name still sits beside it: the
     // flag is a second read of something already written, never the only one.
-    &-flag {
-        margin-right: @vw6;
-        font-size: max(0.90em, @vw16);
+}
+
+// ── Country mark ─────────────────────────────────────────────────────────────
+// The flag beside a country figure, clipped to a disc.
+//
+// Loose, the platform emoji are flat rectangles at whatever aspect ratio the
+// font feels like — a row of them reads as a row of different sizes, and none
+// of them look like they belong to this dashboard. A disc of a fixed size gives
+// every country the same footprint and the same weight beside its number.
+//
+// The mark is *not* scaled to fill the disc, deliberately. Windows ships no
+// glyph for the regional-indicator pairs and draws the two letters instead — so
+// on that platform this is a country code in a circle, which is a perfectly
+// good badge, and a scale-to-fill would have cropped it to one and a half
+// letters. Sized to sit inside the disc, it works out on both.
+.flagChip {
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    width: @vw20;
+    height: @vw20;
+    margin-right: @vw6;
+    border-radius: @dashRadiusPill;
+    // Clips whatever the platform draws to the disc.
+    overflow: hidden;
+    background-color: var(--surface-raised);
+    // Inset rather than a border: a border would sit outside the @vw20 and
+    // break the alignment with the digits beside it.
+    box-shadow: inset 0 0 0 max(1px, @vw1) var(--border);
+    // Sits the disc on the text baseline it interrupts.
+    vertical-align: -0.22em;
+
+    &-mark {
+        font-size: @vw14;
         line-height: 1;
+        // The two-letter fallback is set in the dashboard's own face rather
+        // than whatever the emoji font would have handed back.
+        font-family: @body;
+        font-weight: @semiBold;
+        letter-spacing: -0.04em;
+        color: var(--text-secondary);
     }
 }
 
@@ -1733,9 +1792,9 @@
     // which is a percentage of the slot: circular, and every bar collapses.
     // The bottom alignment lives on the slot, one level down.
     align-items: stretch;
-    // The house surface gap. Bars separate because of the space between them,
-    // never a stroke drawn around them.
-    gap: max(2px, @vw2);
+    // Bars separate because of the space between them, never a stroke drawn
+    // around them. Same token as the bar chart's, so the two read alike.
+    gap: @chartBarGap;
     height: @vw30;
     // The axis the bars stand on. Hairline, solid, one step off the surface, so
     // it reads as the baseline rather than as another mark — and an hour with
@@ -1758,11 +1817,9 @@
     &-bar {
         width: 100%;
         background-color: var(--chart-bar);
-        // Rounded at the data end, square at the baseline. The house spec is a
-        // 4px cap; at this scale the bars are about five pixels wide, where 4px
-        // would round the whole top into a dome, so it is stepped down to keep
-        // the same read a full-size bar has.
-        border-radius: 0;
+        // Rounded at the data end, square at the baseline — a bar grows out of
+        // its axis, so the axis end should not look detached from it.
+        border-radius: @chartBarCap @chartBarCap 0 0;
         .transition(height, @durationMedium, @easeOut);
         transition-property: height, background-color;
 
@@ -1875,12 +1932,7 @@
         inset: 0;
         display: flex;
         align-items: stretch;
-        // The house surface gap, and it has to be this small rather than @vw4:
-        // at ninety days the gutter was wider than the bars themselves, so a
-        // chart of hairlines separated by generous white space read as texture
-        // rather than as a series. Two pixels is enough to separate adjacent
-        // bars at any count, which is the only job it has.
-        gap: max(2px, @vw2);
+        gap: @chartBarGap;
         list-style: none;
     }
 
@@ -1905,8 +1957,18 @@
         display: block;
         width: 100%;
         background-color: var(--chart-bar);
-        border-radius: 0;
+        border-radius: @chartBarCap @chartBarCap 0 0;
         .transition(background-color, @durationFast, @ease);
+    }
+
+    // A column with no traffic has no bar, and a bar is what answers the
+    // pointer now — so a zero would be the one column on the chart that could
+    // not be asked what it was. It keeps a bar's worth of hit target sitting on
+    // the axis, painted with nothing, so the readout still comes up where the
+    // bar would have been.
+    &-col.is-empty &-fill {
+        min-height: max(4px, @vw4);
+        background-color: transparent;
     }
 
     // Exactly one bar carries the accent — the current period. A chart where
@@ -1933,39 +1995,61 @@
         font-variant-numeric: tabular-nums;
         color: var(--text);
         white-space: nowrap;
-        opacity: 0;
-        pointer-events: none;
-        .transition();
-        transition-property: opacity;
 
-        // Centred on the first or last bar the readout hangs past the side of
-        // the plot, where the panel's own padding is all that catches it. These
-        // pin it to that end of the bar so it opens inwards instead.
+        // `visibility`, not `opacity` — the same call `.tip` makes, for the
+        // same reason. Fading meant every frame drew a part-transparent
+        // readout with the chart showing through it, and sweeping quickly
+        // along a row left a trail of half-faded boxes behind the pointer.
+        // A figure either applies to the bar under the pointer or it does not.
+        visibility: hidden;
+        pointer-events: none;
+
+        // Pinned to the edge of the *plot*, not of its own bar.
+        //
+        // Centred, the readout on a leading bar hangs off the side of the
+        // chart; pinned to the bar it moved a full column every time the
+        // pointer stepped, which is a lot of motion for a box that says the
+        // same kind of thing each time. Pinned to the plot it does not move at
+        // all across the whole leading group — it sits as far out as it can go
+        // and stays there until there is room to centre it again.
+        //
+        // The offset is the column's own width times how many columns lie
+        // between it and the edge: `100%` here resolves against the bar, every
+        // column is the same width, and `--i` / `--n` come from the component.
         &.is-start {
-            left: 0;
+            left: calc(-1 * var(--i) * (100% + @chartBarGap));
             transform: translate(0, -@vw6);
         }
 
         &.is-end {
             left: auto;
-            right: 0;
+            right: calc(-1 * (var(--n) - 1 - var(--i)) * (100% + @chartBarGap));
             transform: translate(0, -@vw6);
         }
     }
 
+    // The bar answers the pointer, not the column.
+    //
+    // The column is the full height of the plot, so hovering the empty air a
+    // long way above a short bar was enough to bring its figure up — and on a
+    // chart of ninety columns that meant a readout was almost always showing,
+    // for whichever column the pointer happened to be over rather than for
+    // anything being looked at.
     @media (hover: hover) {
-        &-col:hover &-fill { background-color: var(--chart-bar-hover); }
-        &-col:hover &-value { opacity: 1; }
-        &-col.is-highlight:hover &-fill { background-color: var(--accent-hover); }
+        &-fill:hover { background-color: var(--chart-bar-hover); }
+        &-fill:hover &-value { visibility: visible; }
+        &-col.is-highlight &-fill:hover { background-color: var(--accent-hover); }
+        // The empty column's hit target paints nothing, hover included.
+        &-col.is-empty &-fill:hover { background-color: transparent; }
     }
 
     &-xAxis {
         grid-column: 2;
         grid-row: 2;
         display: flex;
-        // Matches the columns' gap exactly, or every label drifts off the bar
-        // it belongs to, further with each one across the chart.
-        gap: max(2px, @vw2);
+        // The columns' gutter, and it has to be the same token — see the note
+        // on @chartBarGap for what happens when the two drift apart.
+        gap: @chartBarGap;
         list-style: none;
     }
 
@@ -4450,7 +4534,8 @@
     .miniCard { padding: @vw16-1080; }
     .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
     .miniCard-meter { height: max(4px, @vw6-1080); }
-    .miniCard-flag { margin-right: @vw6-1080; font-size: max(0.90em, @vw16-1080); }
+    .flagChip { width: @vw20-1080; height: @vw20-1080; margin-right: @vw6-1080; }
+    .flagChip-mark { font-size: @vw14-1080; }
     .sparkbars { height: @vw30-1080; }
     .dashGrid { gap: @vw24-1080; }
 
@@ -4652,7 +4737,8 @@
     .miniCard { padding: @vw16-580; }
     .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
     .miniCard-meter { height: max(4px, @vw6-580); }
-    .miniCard-flag { margin-right: @vw6-580; font-size: max(0.90em, @vw16-580); }
+    .flagChip { width: @vw20-580; height: @vw20-580; margin-right: @vw6-580; }
+    .flagChip-mark { font-size: @vw14-580; }
     .sparkbars { height: @vw30-580; }
 
     .statCard {
