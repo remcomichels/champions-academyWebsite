@@ -75,7 +75,7 @@
 					data-tip="Help and FAQ"
 					aria-label="Help and FAQ"
 				>
-					<Icon name="material-symbols-light:help-outline" class="dashBar-glyph" />
+					<NuxtDashboardIcon name="help" class="dashBar-glyph" />
 				</NuxtLink>
 
 				<!-- Only mounted for accounts that actually have an affiliate:

@@ -96,6 +96,30 @@ const icons: Record<string, string[]> = {
 	feedback: [
 		"M20.5 15.2a2 2 0 0 1-2 2h-9L5 20.8V6.2a2 2 0 0 1 2-2h11.5a2 2 0 0 1 2 2v9Z",
 	],
+	// The notification bell. The body closes as one outline — dome, shoulders,
+	// then straight across the bottom — with the clapper as a separate arc, so
+	// the unread dot can sit over the top right without colliding with a stroke.
+	bell: [
+		"M12 3.2a5.6 5.6 0 0 1 5.6 5.6c0 4 1 5.4 1.9 6.4a.8.8 0 0 1-.6 1.3H5.1a.8.8 0 0 1-.6-1.3c.9-1 1.9-2.4 1.9-6.4A5.6 5.6 0 0 1 12 3.2Z",
+		"M10.2 19.4a2 2 0 0 0 3.6 0",
+	],
+	// A warning triangle. Same dot-and-stem construction as `help` — a stem
+	// stopping short of a `v.1` dot — so the two read as one family when they
+	// sit next to each other in the feedback picker.
+	warning: [
+		"M12 4.2 21.2 19.4a1.2 1.2 0 0 1-1 1.8H3.8a1.2 1.2 0 0 1-1-1.8L12 4.2Z",
+		"M12 9.6v4.3",
+		"M12 17.3v.1",
+	],
+	// A lit bulb — the other half of the feedback picker, where `warning` is
+	// "something is broken" and this is "something could be better". Glass,
+	// then two rungs for the base rather than a hatched screw thread, which
+	// turns to mud at 14px.
+	idea: [
+		"M12 3.6a5.8 5.8 0 0 0-3.4 10.5c.6.45.9 1.1.9 1.8v.6h5v-.6c0-.7.3-1.35.9-1.8A5.8 5.8 0 0 0 12 3.6Z",
+		"M9.5 18.7h5",
+		"M10.7 21h2.6",
+	],
 	// A plain magnifier for the timezone search field.
 	search: [
 		"M11 18.2a7.2 7.2 0 1 0 0-14.4 7.2 7.2 0 0 0 0 14.4Z",

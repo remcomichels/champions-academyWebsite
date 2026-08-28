@@ -16,7 +16,7 @@
 			aria-label="Close navigation"
 			@click="drawerOpen = false"
 		>
-			<Icon name="material-symbols-light:close" class="dashNav-glyph" />
+			<NuxtDashboardIcon name="close" class="dashNav-glyph" />
 		</button>
 
 		<nav class="dashNav-list">
@@ -32,7 +32,7 @@
 					:class="{ 'is-active': isActive(item.to) }"
 					:aria-current="isActive(item.to) ? 'page' : undefined"
 				>
-					<Icon :name="item.icon" class="dashNav-glyph" />
+					<NuxtDashboardIcon :name="item.icon" class="dashNav-glyph" />
 					<span class="dashNav-label">{{ item.label }}</span>
 				</NuxtLink>
 			</template>

@@ -6,7 +6,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
-    '@nuxt/icon',
     '@nuxt/image',
     '@nuxtjs/seo',
     '@nuxt/scripts',
@@ -78,31 +77,15 @@ export default defineNuxtConfig({
 	 * ----------------------------- */
 	/* -----------------------------
 	 * Icons
-	 * @nuxt/icon bundles whole collections by default, which is fine for a
-	 * small set and ruinous for a large one: adding material-symbols-light
-	 * (15,957 glyphs) put a 9.8 MB chunk into the server output to serve the
-	 * handful this dashboard actually draws.
+	 * There is no icon module. Every glyph in this project is drawn by
+	 * `NuxtDashboardIcon` — a `Record<string, string[]>` of path data rendered
+	 * through one `v-for` — so there is no collection to bundle, no scanner to
+	 * configure and no runtime that can fall through to a third-party fetch.
 	 *
-	 * `scan` walks the source for the icons genuinely referenced and bundles
-	 * only those, so the pack can stay installed — and more of it can be used
-	 * later — without the whole thing shipping.
-	 *
-	 * `globInclude` is spelled out because the module's default list omits
-	 * `.ts`, and the sidebar's icon names live in `useDashboardNav.ts` rather
-	 * than in a template. An unscanned name is not a build error — it falls
-	 * through to a runtime fetch from the Iconify API, so the rail would
-	 * quietly depend on a third-party request per glyph. This is the module's
-	 * own default with `ts` added; adding a nav entry needs nothing here.
+	 * @nuxt/icon and @iconify-json/material-symbols-light were both dropped
+	 * when the last six call sites moved onto that set. Adding a glyph means
+	 * adding an entry to `icon.vue`, not a dependency.
 	 * ----------------------------- */
-	icon: {
-		serverBundle: false,
-		clientBundle: {
-			scan: {
-				globInclude: ["**/*.{vue,jsx,tsx,ts,md,mdc,mdx,yml,yaml}"],
-			},
-			includeCustomCollections: true,
-		},
-	},
 
 	fonts: {
 		families: [

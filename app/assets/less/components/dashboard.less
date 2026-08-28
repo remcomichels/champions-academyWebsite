@@ -453,13 +453,14 @@
     // The horizontal figures are not a taste call, and the asymmetry is the
     // whole point of them.
     //
-    // @vw13 plus the row's own @vw8 puts the centre of a @vw14 glyph at @vw28,
-    // which is the middle of a @vw56 rail. But `border-box` counts the hairline
-    // on the right *inside* that 56, so a symmetric @vw13 leaves the row 29
-    // wide instead of 30 — one pixel short of the glyph, which then rendered a
-    // pixel narrower at rest than it did open and visibly resized as the rail
-    // moved. The right side gives that pixel back to the border it lost it to.
-    padding: @vw8 @vw12 @vw8 @vw13;
+    // The row is @vw34 across — an @vw18 glyph inside the @vw8 padding it
+    // shares with `.profileMenu-item` — and @vw11 of rail either side centres
+    // it at @vw28, the middle of a @vw56 rail. But `border-box` counts the
+    // hairline on the right *inside* that 56, so a symmetric @vw11 would leave
+    // the row a pixel short of its glyph, which then renders a pixel narrower
+    // at rest than it does open and visibly resizes as the rail moves. The
+    // right side gives that pixel back to the border it lost it to.
+    padding: @vw8 @vw10 @vw8 @vw11;
     background-color: var(--surface);
     border-right: max(1px, @vw1) solid var(--border);
     .transition(width, @durationFast, @ease);
@@ -535,14 +536,16 @@
     // No colour of its own — it takes the row's, so resting, hover and active
     // need one rule between them instead of three that can fall out of step.
     //
-    // Sized by `font-size` on a 1em box, which is how the inline SVG set it
-    // replaced was sized: the switch to Material Symbols changes the drawing
-    // and not a single measurement.
+    // @vw18, which is every glyph on the dashboard now — the rail, the two
+    // controls in the bar, and the account face. They had drifted to 14/18/24,
+    // and the face was not even applying: its rule had been written inside
+    // `.tzMenu` and was compiling to a class nothing wears, so it fell back to
+    // `.icon`'s 1em and rendered by *font size* while its neighbours rendered
+    // by vw. That is why the three never measured alike on a wide screen.
     &-glyph {
         flex: none;
-        font-size: max(0.80em, @vw14);
-        width: 1em;
-        height: 1em;
+        width: @vw18;
+        height: @vw18;
     }
 
     &-label {
@@ -724,11 +727,11 @@
     // Sized here rather than by font-size, so every glyph in the bar is the
     // same drawn size whatever its container inherits.
     //
-    // Smaller than the avatar's, and deliberately: Material's outline glyphs
-    // are drawn to the edge of their 24 box while `person-outline` keeps a
-    // margin inside its own. Matched by number they looked mismatched by eye,
-    // which is the only measure that counts — so these come down and the face
-    // goes up until the three read as one size.
+    // @vw18 — the figure the rail and the account face now share. It used to
+    // stand against the face's @vw24 as an optical correction: Material drew
+    // its outline glyphs hard to the edge of the box while `person-outline`
+    // kept a margin inside its own. One family draws all of them now, to the
+    // same 3–21 inside a 24 box, so there is nothing left to correct.
     &-glyph {
         width: @vw18;
         height: @vw18;
@@ -3650,6 +3653,20 @@
         cursor: pointer;
     }
 
+    // The glyph inside the avatar disc. Sized against the disc rather than
+    // inherited from the bar's font size — it is a shape here, not a piece of
+    // text beside one — and @vw18, the same as every other glyph.
+    //
+    // This block used to sit inside `.tzMenu`, where it compiled to
+    // `.tzMenu-face` and styled nothing at all. The face fell through to
+    // `.icon`'s `1em` instead, so it was the one glyph on the dashboard sized
+    // by font size: it tracked the body clamp and stuck at 21px on a wide
+    // viewport while its neighbours went on scaling.
+    &-face {
+        width: @vw18;
+        height: @vw18;
+    }
+
     // Hung off the avatar, exactly as the activity and feedback panels hang off
     // theirs — same `top: calc(100% + @vw5)`, same `right: 0`.
     //
@@ -3966,13 +3983,6 @@
             .transition();
             transition-property: background-color;
         }
-    }
-
-    // Sized against the disc rather than inherited from the bar's font size —
-    // it is a shape here, not a piece of text beside one.
-    &-face {
-        width: @vw24;
-        height: @vw24;
     }
 
     // Hovering anywhere on the panel, not only the list itself: the pointer is
@@ -4383,9 +4393,9 @@
         // The baseline's arithmetic, one tier down — border compensation and
         // all. The constants scale together and the hairline stays 1px, so the
         // icon stays centred without a second calculation.
-        padding: @vw8-1080 @vw12-1080 @vw8-1080 @vw13-1080;
+        padding: @vw8-1080 @vw10-1080 @vw8-1080 @vw11-1080;
         &-item { padding: @vw6-1080 @vw8-1080; gap: @vw8-1080; }
-        &-glyph { font-size: max(0.80em, @vw14-1080); }
+        &-glyph { width: @vw18-1080; height: @vw18-1080; }
         &-rule { margin: @vw6-1080 0; }
     }
 
@@ -4585,7 +4595,7 @@
     // Padding comes from the drawer rule above; only the type grows here.
     .dashNav {
         &-item { font-size: max(0.80em, @vw14-580); }
-        &-glyph { font-size: max(0.90em, @vw16-580); }
+        &-glyph { width: @vw18-580; height: @vw18-580; }
         &-rule { margin: @vw8-580 0; }
     }
 

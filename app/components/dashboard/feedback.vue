@@ -33,7 +33,7 @@
 					:class="`is-${option.value}`"
 					@click="choose(option.value)"
 				>
-					<Icon :name="option.icon" class="feedbackCard-icon" />
+					<NuxtDashboardIcon :name="option.icon" class="feedbackCard-icon" />
 					<span class="feedbackCard-label">{{ option.label }}</span>
 					<span class="feedbackCard-note">{{ option.note }}</span>
 				</button>
@@ -92,13 +92,13 @@ const options = [
 		value: "issue" as const,
 		label: "Issue",
 		note: "with my account",
-		icon: "material-symbols-light:warning-outline-rounded",
+		icon: "warning",
 	},
 	{
 		value: "idea" as const,
 		label: "Idea",
 		note: "to improve the dashboard",
-		icon: "material-symbols-light:lightbulb-2-outline-rounded",
+		icon: "idea",
 	},
 ];
 
