@@ -69,8 +69,8 @@ export const password = (): Check<string> =>
  * accents and non-Latin scripts all pass — the point is markup, not ASCII.
  */
 export const displayName = (opts: { min?: number; max?: number } = {}): Check<string> => (value, field) => {
-	// eslint-disable-next-line no-control-regex -- stripping them is the point
 	const s = str({ ...opts, trim: false })(value, field)
+		// eslint-disable-next-line no-control-regex -- stripping them is the point
 		.replace(/[\u0000-\u001F\u007F\u200B-\u200F\u2028\u2029\uFEFF]/g, "")
 		// Collapse runs of whitespace so a name cannot be padded into a column
 		// of its own, then trim.

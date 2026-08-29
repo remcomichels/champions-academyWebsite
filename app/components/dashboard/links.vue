@@ -15,6 +15,7 @@
 				>
 				<div class="qr-side">
 					<p class="dashPanel-note">Point a phone camera at this and it opens your link. Good for stories, slides and print.</p>
+					<!-- eslint-disable-next-line link-checker/valid-route, link-checker/valid-sitemap-link -- server route (server/api/affiliate/qr.get.ts), not a page; the checker only knows the page router -->
 					<a class="qr-download" href="/api/affiliate/qr" download>Download SVG</a>
 				</div>
 			</div>
