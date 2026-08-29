@@ -12,14 +12,41 @@ export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 
 	const body = await readValidatedBody(event, object({
-		displayName: optional(displayName({ min: 1, max: 80 })),
+		firstName: optional(displayName({ max: 80 })),
+		lastName: optional(displayName({ max: 80 })),
 		timezone: optional(str({ max: 64 })),
 		locale: optional(str({ max: 10 })),
 	}));
 
 	const update: Record<string, unknown> = {};
 
-	if (body.displayName) update.display_name = body.displayName;
+	// The two parts are written together, and `display_name` is composed from
+	// them rather than sent by the client.
+	//
+	// Composed here rather than in the browser because it is the column half the
+	// dashboard reads, and a client that posted its own version could put
+	// anything in it — a name that does not match the parts beside it, or an
+	// empty string into a NOT NULL column. Reading the missing half off the
+	// current row means sending only a last name still produces a whole name.
+	if (body.firstName !== undefined || body.lastName !== undefined) {
+		const first = (body.firstName ?? affiliate.first_name ?? "").trim();
+		const last = (body.lastName ?? affiliate.last_name ?? "").trim();
+
+		// `display_name` is NOT NULL and at least one character, so there has to
+		// be something to build it from. The last name is optional — plenty of
+		// people have one name — but the first cannot be.
+		if (!first) {
+			throw createError({
+				statusCode: 400,
+				statusMessage: "A first name is required",
+				data: { field: "firstName", message: "Tell us what to call you" },
+			});
+		}
+
+		update.first_name = first;
+		update.last_name = last || null;
+		update.display_name = last ? `${first} ${last}` : first;
+	}
 
 	if (body.timezone) {
 		// Asked of ICU rather than matched against a pattern. The old regex

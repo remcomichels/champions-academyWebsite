@@ -12,6 +12,8 @@ import { useAsyncData, useRequestHeaders } from "#imports";
 export interface SettingsData {
 	profile: {
 		displayName: string;
+		firstName: string;
+		lastName: string;
 		slug: string;
 		timezone: string;
 		locale: string;
@@ -71,7 +73,8 @@ export async function useSettings() {
 	// this form would mean `saveProfile` posting a stale zone back over a fresh
 	// one whenever somebody changed it in the menu and then saved their name.
 	const profile = reactive({
-		displayName: data.value?.profile.displayName ?? "",
+		firstName: data.value?.profile.firstName ?? "",
+		lastName: data.value?.profile.lastName ?? "",
 	});
 
 	const slug = ref(data.value?.profile.slug ?? "");

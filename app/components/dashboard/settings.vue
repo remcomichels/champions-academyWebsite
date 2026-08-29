@@ -22,12 +22,24 @@
 
 			<div class="dashPanel">
 				<form class="dashForm dashForm--split" novalidate @submit.prevent="saveProfile">
-					<NuxtAuthField v-model="profile.displayName" label="Name" :error="errors.displayName" required />
+					<NuxtAuthField v-model="profile.firstName" label="First name" :error="errors.firstName" required />
+					<NuxtAuthField v-model="profile.lastName" label="Last name" :error="errors.lastName" />
 
 					<div class="readonlyField">
 						<span class="field-label">Email</span>
 						<code class="readonlyField-value">{{ data.profile.email ?? "—" }}</code>
 						<p class="field-message">Message us to change this — we can't verify a new address automatically yet.</p>
+					</div>
+
+					<!-- Read-only here on purpose. This is the `?r=` handle, and
+					     changing it is rate-limited with a grace period on the old
+					     one — not something that belongs among plain text fields
+					     where one Save covers everything. Its own card, below,
+					     says what changing it costs. -->
+					<div class="readonlyField">
+						<span class="field-label">Username</span>
+						<code class="readonlyField-value">{{ data.profile.slug }}</code>
+						<p class="field-message">Your public handle. Change it under Your link, below.</p>
 					</div>
 
 					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'profile'">

@@ -53,6 +53,8 @@ export default defineEventHandler(async (event) => {
 	return {
 		profile: {
 			displayName: affiliate.display_name,
+			firstName: affiliate.first_name ?? "",
+			lastName: affiliate.last_name ?? "",
 			slug: affiliate.slug,
 			timezone: affiliate.timezone,
 			locale: affiliate.locale,

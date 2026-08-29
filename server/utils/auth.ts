@@ -29,7 +29,13 @@ import type { SessionUser } from "./session";
 export interface AffiliateRow {
 	id: string;
 	slug: string;
+	/**
+	 * Composed from the two parts below on every profile save, not typed. Kept
+	 * because half the dashboard reads it — see migration 20260829000014.
+	 */
 	display_name: string;
+	first_name: string | null;
+	last_name: string | null;
 	status: AffiliateStatus;
 	whop_affiliate_id: string | null;
 	whop_username: string | null;
@@ -48,7 +54,7 @@ export interface AffiliateRow {
 }
 
 const AFFILIATE_COLUMNS = `
-	id, slug, display_name, status,
+	id, slug, display_name, first_name, last_name, status,
 	whop_affiliate_id, whop_username, whop_checkout_configuration_id,
 	vip_checkout_url, lite_telegram_url, calendly_url,
 	user_id, avatar_path, timezone, locale, slug_changed_at,
