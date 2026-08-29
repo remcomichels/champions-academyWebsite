@@ -13,9 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # 24, not 22, because the lockfile is written by npm 11 and Node 22 ships
+      # npm 10. The two disagree about which transitive entries belong in the
+      # tree — npm 10 rejects an npm 11 lockfile as out of sync, naming packages
+      # that are present — so `npm ci` failed here while passing locally.
+      #
+      # Matching CI to the version the lockfile is generated with is the fix;
+      # regenerating the lockfile under npm 10 only moves the disagreement to
+      # whoever next runs `npm install`.
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
       # `npm ci` runs the postinstall (`nuxt prepare`), which generates the
