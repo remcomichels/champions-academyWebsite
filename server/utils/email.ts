@@ -84,6 +84,20 @@ async function send(mail: Mail): Promise<void> {
 	// inline. Anything else is a real failure worth surfacing.
 	if (!response.ok) {
 		const detail = await response.text().catch(() => "");
+
+		// A provider that refuses us must not also stop the flow being worked
+		// on. In development the message is printed so the reset link is still
+		// reachable — the send is still treated as failed, and still audited,
+		// so this cannot quietly mask an outage in production.
+		if (import.meta.dev) {
+			console.warn(
+				`[email] provider refused this message — printing it so you can carry on.\n`
+				+ `        to: ${mail.to}\n`
+				+ `        subject: ${mail.subject}\n`
+				+ `${mail.text}`,
+			);
+		}
+
 		throw new Error(`MailerSend ${response.status}: ${detail.slice(0, 300)}`);
 	}
 }
