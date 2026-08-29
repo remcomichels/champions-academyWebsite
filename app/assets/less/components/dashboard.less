@@ -947,6 +947,38 @@
     .dashPanel-note { margin-top: 0; }
 }
 
+// ── Settings: the Account half ───────────────────────────────────────────────
+// One centred column, not two.
+//
+// Two columns are right for Settings, where the panels are unrelated knobs and
+// reading order barely matters. Account is the opposite: name, then password,
+// then where you are signed in, then your data — four steps through the same
+// account, and the last two are the ones somebody scrolls to in a hurry.
+// Splitting that into two columns gives the page two places to start reading,
+// and puts half the sequence where nobody looks first.
+//
+// Capped at 768 and centred rather than left in the 1280 the page allows: a
+// form is read one line at a time, and a name field two-thirds of a monitor
+// wide is a worse target than a short one, not a better one. Centring keeps
+// the column under the eye instead of hard against the rail.
+.dashSettings--stack {
+    column-count: 1;
+    width: 100%;
+    // 768. Written from the constants rather than as a flat pixel so it tracks
+    // the viewport like everything else on the page.
+    max-width: calc(@vw300 + @vw300 + @vw168);
+    margin-inline: auto;
+
+    // The horizontal gutter is `.dashLayout-main`'s padding, not a second one
+    // declared here — it is already 40 at this width, and nesting another would
+    // inset the column twice for no reason a reader could see.
+
+    // The two-column cap exists because a panel is half the page there and a
+    // full-width input inside it still ran long. Here the panel *is* the
+    // measure, so the fields take it.
+    .dashForm { max-width: none; }
+}
+
 .dash-loading {
     padding: @vw32 0;
     color: var(--text-secondary);
@@ -4505,6 +4537,16 @@
         .dashForm { max-width: calc(@vw300-1080 + @vw60-1080); }
     }
 
+    // Restated rather than inherited: the baseline cap is a vw length, so at
+    // this width it would land on 576 instead of 768. The `.dashForm` override
+    // is restated for a different reason — the rule just above it here carries
+    // the same specificity and would otherwise win on source order.
+    .dashSettings--stack {
+        max-width: calc(@vw300-1080 + @vw300-1080 + @vw168-1080);
+
+        .dashForm { max-width: none; }
+    }
+
     .statGrid {
         gap: @vw32-1080 @vw24-1080;
         grid-template-columns: repeat(auto-fit, minmax(@vw200-1080, 1fr));
@@ -4571,6 +4613,12 @@
 
         .dashForm { max-width: none; }
     }
+
+    // Account's cap is a share of the viewport rather than a flat 768, so past
+    // this point it stops holding a wide column back and starts squeezing a
+    // narrow one — 71% of a phone screen, with the rest spent on margins the
+    // page cannot afford. Down here the viewport is the measure.
+    .dashSettings--stack { max-width: none; }
 
     .dashHero {
         flex-direction: column;
