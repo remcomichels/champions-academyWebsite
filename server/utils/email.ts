@@ -7,10 +7,11 @@ import type { H3Event } from "h3";
  * official SDK is a wrapper around exactly that. Adding it would buy nothing
  * and pull a dependency into the one code path that handles account recovery.
  *
- * Nothing here is ever called with content a user supplied. The only variable
- * that reaches a template is a URL we minted ourselves, so there is no HTML
- * injection surface — and if that ever stops being true, escape at the call
- * site rather than trusting the template.
+ * Most values reaching a template are URLs we minted ourselves. The welcome
+ * mail is the exception — it interpolates an affiliate's display name — so
+ * everything user-supplied goes through `escape()` below. validate.ts already
+ * rejects `<` and `>` in a display name, but a template that depends on a
+ * validator three files away is one refactor from being an injection point.
  */
 
 const MAILERSEND_ENDPOINT = "https://api.mailersend.com/v1/email";
@@ -31,6 +32,22 @@ interface Mail {
 	subject: string;
 	html: string;
 	text: string;
+}
+
+/**
+ * Escapes a value for interpolation into an HTML template.
+ *
+ * Quotes included: a display name is currently only ever placed in element
+ * content, but the day one lands in an attribute is not the day to discover
+ * this only handled angle brackets.
+ */
+function escape(value: string): string {
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+		.replace(/"/g, "&quot;")
+		.replace(/'/g, "&#39;");
 }
 
 /**
@@ -215,6 +232,54 @@ export async function sendPasswordChangedEmail(event: H3Event, to: string): Prom
 			"",
 			"Wasn't you? Get in touch straight away — whoever did this has access right now.",
 			SUPPORT_URL,
+			"",
+			"— Champions Academy",
+		].join("\n"),
+	});
+}
+
+/**
+ * "Your account is ready."
+ *
+ * Sent once, when an invite code is redeemed. It leads with the referral link
+ * rather than with a welcome: that link is the entire job, and an affiliate
+ * who reads no further than the first screen still has the one thing they
+ * came for. The dashboard is the second call to action, not the first.
+ */
+export async function sendWelcomeEmail(
+	event: H3Event,
+	to: string,
+	displayName: string,
+	slug: string,
+): Promise<void> {
+	const origin = siteOrigin(event);
+	const link = referralUrl(event, slug);
+	const name = escape(displayName);
+
+	await send({
+		to,
+		subject: "Your Champions Academy affiliate account is ready",
+		html: layout(origin, `Welcome, ${name}`, `
+      <p style="margin:0;">Your account is set up. This is your referral link — everyone who arrives through it is tracked to you:</p>
+      <p style="margin:20px 0;padding:14px 16px;background:${PAGE};border:1px solid ${RULE};border-radius:8px;font:600 15px/1.5 -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};word-break:break-all;">${link}</p>
+      <p style="margin:0;">Put it in a bio, a video description, a story — anywhere your audience already is. Visits and sales show up on your dashboard.</p>
+      ${button(`${origin}/dashboard`, "Open your dashboard")}
+      <p style="margin:0;">Questions, or something looks wrong? <a href="${SUPPORT_URL}" style="color:${INK};">Message us on Telegram</a>.</p>
+    `),
+		text: [
+			`Welcome, ${displayName}`,
+			"",
+			"Your account is set up. This is your referral link — everyone who",
+			"arrives through it is tracked to you:",
+			"",
+			link,
+			"",
+			"Put it in a bio, a video description, a story — anywhere your audience",
+			"already is. Visits and sales show up on your dashboard.",
+			"",
+			`Your dashboard: ${origin}/dashboard`,
+			"",
+			`Questions, or something looks wrong? ${SUPPORT_URL}`,
 			"",
 			"— Champions Academy",
 		].join("\n"),

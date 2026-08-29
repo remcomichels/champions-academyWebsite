@@ -145,6 +145,27 @@ export default defineEventHandler(async (event) => {
 		meta: {},
 	});
 
+	// Best effort, and deliberately last. The account exists, the invite is
+	// spent and the session cookie is already set — failing the request now
+	// because a mail provider is down would tell someone their account was not
+	// created when it was, and their code cannot be redeemed twice to retry.
+	// They are signed in and looking at the dashboard either way; the email is
+	// a convenience, not the handover.
+	try {
+		await sendWelcomeEmail(event, body.email, affiliate.display_name as string, affiliate.slug as string);
+	}
+	catch (error) {
+		console.error("[email] welcome send failed:", error);
+
+		await audit(event, {
+			actorKind: "system",
+			action: "invite.welcome_email_failed",
+			actorUserId: userId,
+			subjectAffiliateId: affiliateId,
+			meta: { error: error instanceof Error ? error.message.slice(0, 200) : "unknown" },
+		});
+	}
+
 	setResponseStatus(event, 204);
 	return null;
 });
