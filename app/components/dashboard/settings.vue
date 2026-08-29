@@ -1,124 +1,158 @@
 <template>
 	<!-- One centred column, in source order. Nothing is reordered to make the
-	     heights line up: these panels are read top to bottom the first time
+	     heights line up: these blocks are read top to bottom the first time
 	     somebody opens the page, and pairing them by height would shuffle that
 	     for a tidier bottom edge, which is the wrong trade. -->
 	<div v-if="data" class="dashSettings">
+		<header class="settingsHead">
+			<h1 class="settingsHead-title">{{ page.title }}</h1>
+			<p class="settingsHead-text">{{ page.text }}</p>
+		</header>
+
 		<NuxtAlertBanner v-if="banner" :variant="banner.variant">
 			{{ banner.text }}
 		</NuxtAlertBanner>
 
 		<!-- Preferences ─────────────────────────────────────────────────── -->
-		<section v-if="isPreferences" class="dashPanel">
-			<h2 class="dashPanel-title">Profile</h2>
-			<form class="dashForm" novalidate @submit.prevent="saveProfile">
-				<NuxtAuthField v-model="profile.displayName" label="Name" :error="errors.displayName" required />
+		<section v-if="isPreferences" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Profile information</h2>
+				<p class="settingsBlock-text">The name we show on your dashboard, and the address we reach you at.</p>
+			</header>
 
-				<div class="readonlyField">
-					<span class="field-label">Email</span>
-					<code class="readonlyField-value">{{ data.profile.email ?? "—" }}</code>
-					<p class="field-message">Message us to change this — we can't verify a new address automatically yet.</p>
-				</div>
+			<div class="dashPanel">
+				<form class="dashForm dashForm--split" novalidate @submit.prevent="saveProfile">
+					<NuxtAuthField v-model="profile.displayName" label="Name" :error="errors.displayName" required />
 
-				<NuxtDashboardTimezoneField
-					v-model="profile.timezone"
-					label="Timezone"
-					:error="errors.timezone"
-					hint="Used for dates and times on your dashboard."
-				/>
+					<div class="readonlyField">
+						<span class="field-label">Email</span>
+						<code class="readonlyField-value">{{ data.profile.email ?? "—" }}</code>
+						<p class="field-message">Message us to change this — we can't verify a new address automatically yet.</p>
+					</div>
 
-				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'profile'">
-					{{ busy === "profile" ? "Saving…" : "Save profile" }}
-				</button>
-			</form>
+					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'profile'">
+						{{ busy === "profile" ? "Saving…" : "Save profile" }}
+					</button>
+				</form>
+			</div>
 		</section>
 
-		<section v-if="isPreferences" class="dashPanel">
-			<h2 class="dashPanel-title">Your link</h2>
-			<p class="dashPanel-note">
-				Changing this changes your <code>?r=</code> link. Your old one keeps working
-				for 90 days, so anything already printed or posted stays live — but you can
-				only change it once every {{ data.slugChange.cooldownDays }} days.
-			</p>
+		<section v-if="isPreferences" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Your link</h2>
+				<p class="settingsBlock-text">The handle that credits a referral to you.</p>
+			</header>
 
-			<NuxtAlertBanner v-if="data.slugChange.nextAllowedAt" variant="info">
-				You can change this again on {{ formatDate(data.slugChange.nextAllowedAt) }}.
-			</NuxtAlertBanner>
+			<div class="dashPanel">
+				<p class="dashPanel-note">
+					Changing this changes your <code>?r=</code> link. Your old one keeps working
+					for 90 days, so anything already printed or posted stays live — but you can
+					only change it once every {{ data.slugChange.cooldownDays }} days.
+				</p>
 
-			<form v-else class="dashForm" novalidate @submit.prevent="saveSlug">
-				<NuxtAuthField v-model="slug" label="Link" :error="errors.slug" hint="Lowercase letters, numbers and dashes." />
-				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'slug'">
-					{{ busy === "slug" ? "Changing…" : "Change link" }}
-				</button>
-			</form>
+				<NuxtAlertBanner v-if="data.slugChange.nextAllowedAt" variant="info">
+					You can change this again on {{ formatDate(data.slugChange.nextAllowedAt) }}.
+				</NuxtAlertBanner>
+
+				<form v-else class="dashForm dashForm--split" novalidate @submit.prevent="saveSlug">
+					<NuxtAuthField v-model="slug" label="Link" :error="errors.slug" hint="Lowercase letters, numbers and dashes." />
+					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'slug'">
+						{{ busy === "slug" ? "Changing…" : "Change link" }}
+					</button>
+				</form>
+			</div>
 		</section>
 
 		<!-- Your data sits with Preferences rather than Security. Exporting or
 		     deleting your own account is not a defence against anybody — it is
 		     the last thing you are free to decide about it, which is what the
 		     rest of this tab is. -->
-		<section v-if="isPreferences" class="dashPanel">
-			<h2 class="dashPanel-title">Your data</h2>
-			<p class="dashPanel-note">
-				Download everything we hold about you, or ask us to delete the account.
-				Deletion waits 14 days before anything is removed, so it can be undone.
-			</p>
+		<section v-if="isPreferences" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Your data</h2>
+				<p class="settingsBlock-text">Take a copy of everything we hold, or ask us to remove it.</p>
+			</header>
 
-			<NuxtAlertBanner v-if="pendingDelete" variant="warning">
-				Deletion requested — scheduled for {{ formatDate(pendingDelete.executeAfter) }}.
-				<button type="button" class="linkButton" @click="gdpr('cancel')">Cancel it</button>
-			</NuxtAlertBanner>
+			<div class="dashPanel">
+				<p class="dashPanel-note">
+					Deletion waits 14 days before anything is removed, so it can be undone.
+				</p>
 
-			<div class="dangerRow">
-				<button type="button" class="linkButton" :disabled="busy === 'gdpr'" @click="exportData">
-					Download my data
-				</button>
-				<button
-					v-if="!pendingDelete"
-					type="button"
-					class="linkButton is-danger"
-					:disabled="busy === 'gdpr'"
-					@click="confirmDelete"
-				>Delete my account</button>
+				<NuxtAlertBanner v-if="pendingDelete" variant="warning">
+					Deletion requested — scheduled for {{ formatDate(pendingDelete.executeAfter) }}.
+					<button type="button" class="linkButton" @click="gdpr('cancel')">Cancel it</button>
+				</NuxtAlertBanner>
+
+				<div class="dangerRow">
+					<button type="button" class="linkButton" :disabled="busy === 'gdpr'" @click="exportData">
+						Download my data
+					</button>
+					<button
+						v-if="!pendingDelete"
+						type="button"
+						class="linkButton is-danger"
+						:disabled="busy === 'gdpr'"
+						@click="confirmDelete"
+					>Delete my account</button>
+				</div>
 			</div>
 		</section>
 
 		<!-- Security ────────────────────────────────────────────────────── -->
-		<section v-if="isSecurity" class="dashPanel">
-			<h2 class="dashPanel-title">Password</h2>
-			<form class="dashForm" novalidate @submit.prevent="savePassword">
-				<NuxtAuthField
-					v-model="passwords.currentPassword"
-					label="Current password"
-					type="password"
-					autocomplete="current-password"
-					:error="errors.currentPassword"
-				/>
-				<NuxtAuthField
-					v-model="passwords.newPassword"
-					label="New password"
-					type="password"
-					autocomplete="new-password"
-					:error="errors.newPassword"
-					hint="At least 12 characters."
-				/>
-				<NuxtAuthField
-					v-model="passwords.newPasswordConfirm"
-					label="Confirm new password"
-					type="password"
-					autocomplete="new-password"
-					:error="errors.newPasswordConfirm"
-				/>
-				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'password'">
-					{{ busy === "password" ? "Changing…" : "Change password" }}
-				</button>
-			</form>
-			<p class="dashPanel-note">Changing your password signs you out everywhere else.</p>
+		<section v-if="isSecurity" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Password</h2>
+				<p class="settingsBlock-text">Used with your email to sign in. Changing it signs you out everywhere else.</p>
+			</header>
+
+			<div class="dashPanel">
+				<form class="dashForm dashForm--split" novalidate @submit.prevent="savePassword">
+					<NuxtAuthField
+						v-model="passwords.currentPassword"
+						label="Current password"
+						type="password"
+						autocomplete="current-password"
+						:error="errors.currentPassword"
+					/>
+					<NuxtAuthField
+						v-model="passwords.newPassword"
+						label="New password"
+						type="password"
+						autocomplete="new-password"
+						:error="errors.newPassword"
+						hint="At least 12 characters."
+					/>
+					<NuxtAuthField
+						v-model="passwords.newPasswordConfirm"
+						label="Confirm new password"
+						type="password"
+						autocomplete="new-password"
+						:error="errors.newPasswordConfirm"
+					/>
+					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'password'">
+						{{ busy === "password" ? "Changing…" : "Change password" }}
+					</button>
+				</form>
+			</div>
 		</section>
 
-		<section v-if="isSecurity" class="dashPanel">
-			<div class="dashPanel-head">
-				<h2 class="dashPanel-title">Where you're signed in</h2>
+		<section v-if="isSecurity" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Where you're signed in</h2>
+				<p class="settingsBlock-text">Every session currently open on this account.</p>
+			</header>
+
+			<div class="dashPanel">
+				<ul class="sessionList">
+					<li v-for="session in data.sessions" :key="session.id" class="sessionList-row">
+						<span class="sessionList-device">
+							{{ session.device }}
+							<span v-if="session.current" class="sessionList-current">This device</span>
+						</span>
+						<span class="sessionList-meta">last used {{ formatWhen(session.lastSeenAt) }}</span>
+					</li>
+				</ul>
+
 				<button
 					v-if="data.sessions.length > 1"
 					type="button"
@@ -127,32 +161,24 @@
 					@click="signOutOthers"
 				>Sign out everywhere else</button>
 			</div>
-
-			<ul class="sessionList">
-				<li v-for="session in data.sessions" :key="session.id" class="sessionList-row">
-					<span class="sessionList-device">
-						{{ session.device }}
-						<span v-if="session.current" class="sessionList-current">This device</span>
-					</span>
-					<span class="sessionList-meta">last used {{ formatWhen(session.lastSeenAt) }}</span>
-				</li>
-			</ul>
 		</section>
 
 		<!-- Logs ────────────────────────────────────────────────────────── -->
-		<section v-if="isLogs" class="dashPanel">
-			<h2 class="dashPanel-title">Audit log</h2>
-			<p class="dashPanel-note">
-				Everything recorded against your account, most recent first. Showing the
-				last {{ data.recentActivity.length }}.
-			</p>
-			<ul v-if="data.recentActivity.length" class="activity">
-				<li v-for="(row, i) in data.recentActivity" :key="i" class="activity-row">
-					<span class="activity-day">{{ describeAction(row.action) }}</span>
-					<span class="activity-count">{{ formatWhen(row.at) }}</span>
-				</li>
-			</ul>
-			<p v-else class="dashPanel-empty">Nothing recorded yet.</p>
+		<section v-if="isLogs" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Audit log</h2>
+				<p class="settingsBlock-text">The most recent entries, newest first.</p>
+			</header>
+
+			<div class="dashPanel">
+				<ul v-if="data.recentActivity.length" class="activity">
+					<li v-for="(row, i) in data.recentActivity" :key="i" class="activity-row">
+						<span class="activity-day">{{ describeAction(row.action) }}</span>
+						<span class="activity-count">{{ formatWhen(row.at) }}</span>
+					</li>
+				</ul>
+				<p v-else class="dashPanel-empty">Nothing recorded yet.</p>
+			</div>
 		</section>
 	</div>
 
@@ -185,6 +211,31 @@ const props = withDefaults(defineProps<{
 const isPreferences = computed(() => props.section === "preferences");
 const isSecurity = computed(() => props.section === "security");
 const isLogs = computed(() => props.section === "logs");
+
+/**
+ * The page's own heading, printed at the top of the column.
+ *
+ * Here rather than in the three page files because the heading and the blocks
+ * under it are one piece of writing — the standfirst says what the tab covers
+ * and each block heading names one part of it, and splitting the two apart is
+ * how they drift into repeating each other.
+ */
+const HEADINGS = {
+	preferences: {
+		title: "Preferences",
+		text: "Your name, the link people arrive on, and what happens to the data we hold about you.",
+	},
+	security: {
+		title: "Security",
+		text: "Your password, and every device currently signed in as you.",
+	},
+	logs: {
+		title: "Audit Logs",
+		text: "What has happened to this account, and when it happened.",
+	},
+} as const;
+
+const page = computed(() => HEADINGS[props.section]);
 
 const {
 	data, banner, busy, errors,

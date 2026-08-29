@@ -19,11 +19,9 @@ export interface DashboardNavItem {
 	/**
 	 * A key into the dashboard's own icon set — see `NuxtDashboardIcon`.
 	 *
-	 * Optional, because the account rail has none. The two main rails are
-	 * icon-first out of necessity: they sit at @vw56 at rest, where the glyph is
-	 * the only thing visible. The account rail is always open, so its entries
-	 * are read as words, and a column of four decorative glyphs beside four
-	 * short labels is furniture rather than information.
+	 * Optional because nothing forces an entry to carry one, though every entry
+	 * currently does. The two main rails need theirs: they sit at @vw56 at rest,
+	 * where the glyph is the only thing visible.
 	 */
 	icon?: string;
 	/**
@@ -66,9 +64,9 @@ export const affiliateNav: DashboardNavItem[] = [
  * swaps out entirely and offers one way back instead.
  */
 export const accountNav: DashboardNavItem[] = [
-	{ to: "/dashboard/account", label: "Preferences", group: true, heading: "Account settings" },
-	{ to: "/dashboard/account/security", label: "Security" },
-	{ to: "/dashboard/account/logs", label: "Audit Logs", group: true, heading: "Logs" },
+	{ to: "/dashboard/account", label: "Preferences", icon: "cog", group: true, heading: "Account settings" },
+	{ to: "/dashboard/account/security", label: "Security", icon: "shield" },
+	{ to: "/dashboard/account/logs", label: "Audit Logs", icon: "history", group: true, heading: "Logs" },
 ];
 
 /** Everything that reaches across affiliates rather than describing one. */

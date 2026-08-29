@@ -1018,6 +1018,74 @@
     .dashPanel-note { margin-top: 0; }
 }
 
+// The page's own heading, and the block headings under it.
+//
+// Two levels, and the gap between them is the whole point: the page heading
+// says what the tab is for, each block heading names one part of it. They are
+// set a clear step apart in size and a clear step apart in weight of colour, so
+// the eye can tell which of the two it is looking at without reading either.
+//
+// Both sit outside the cards rather than inside them. A heading printed inside
+// the box it describes has to compete with the controls beside it for the same
+// attention; out here it is unambiguously a label for what follows.
+.settingsHead {
+    display: flex;
+    flex-direction: column;
+    gap: @vw6;
+
+    &-title {
+        font-family: @body;
+        font-size: max(1.15em, @vw22);
+        font-weight: @bold;
+        letter-spacing: 0.01em;
+        line-height: 1.2;
+        color: var(--text);
+    }
+
+    // Quieter than the title in both size and colour. `white-space: normal`
+    // because `_general.less` sets `pre-line` on every `p`, which would honour
+    // the newlines the template's own indentation puts in this string.
+    &-text {
+        max-width: @vw300 + @vw180;
+        font-size: max(0.80em, @vw14);
+        line-height: 1.5;
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+}
+
+.settingsBlock {
+    display: flex;
+    flex-direction: column;
+    gap: @vw10;
+
+    &-head {
+        display: flex;
+        flex-direction: column;
+        gap: @vw3;
+    }
+
+    // One step down from `.settingsHead-title` on both axes — smaller, and
+    // sitting at the weight of colour the page standfirst uses. That is what
+    // keeps the two levels legible as levels rather than as two sizes of the
+    // same thing.
+    &-title {
+        font-family: @body;
+        font-size: max(0.90em, @vw16);
+        font-weight: @semiBold;
+        letter-spacing: 0.01em;
+        line-height: 1.3;
+        color: var(--text);
+    }
+
+    &-text {
+        font-size: max(0.68em, @vw12);
+        line-height: 1.5;
+        white-space: normal;
+        color: var(--text-tertiary);
+    }
+}
+
 .dash-loading {
     padding: @vw32 0;
     color: var(--text-secondary);
@@ -2340,6 +2408,65 @@
     &-submit {
         align-self: flex-start;
     }
+}
+
+// Label beside the control rather than above it, 60/40.
+//
+// The ratio is doing real work and is not a taste call. A settings form is read
+// down the labels — you are looking for the one row you came to change — and a
+// label column that wide lets every label be a phrase rather than a word. The
+// control keeping only 40 is the point rather than a side effect: a name is a
+// dozen characters and an input three times longer than its contents reads as
+// an unfinished layout, not a generous one.
+//
+// `fr` rather than percentages, so the column gap comes out of the track sizes
+// instead of overflowing the row by its width.
+.dashForm--split {
+    gap: @vw16;
+
+    .field,
+    .readonlyField {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        align-items: center;
+        column-gap: @vw20;
+        row-gap: @vw6;
+    }
+
+    // Sentence case, not the uppercase the shared field uses. Uppercase reads
+    // as a category heading, which is right for a label sitting above its
+    // control and wrong for one sitting beside it in a row of them.
+    .field-label {
+        font-size: max(0.80em, @vw14);
+        font-weight: @medium;
+        text-transform: none;
+        letter-spacing: 0;
+        color: var(--text);
+    }
+
+    // Auto-placement would drop these into column 1 of the next row, under the
+    // label, where they read as a second label.
+    .field-control,
+    .readonlyField-value,
+    .field-message { grid-column: 2; }
+
+    // Smaller than the shared field, and a flat pixel rather than a vw.
+    //
+    // `max(1em, @vw16)` resolves to about 21px on a 1920 monitor — display type
+    // inside a form control. A control's size is ergonomic rather than
+    // proportional: it is set by what is comfortable to read and to hit, and
+    // neither changes because the monitor got wider.
+    .field-input,
+    .readonlyField-value {
+        padding: @vw7 @vw10;
+        font-size: 14px;
+        border-radius: @vw6;
+    }
+
+    // Under the controls it submits rather than under the labels, which is
+    // where `.dashForm`'s own `flex-start` would leave it — at the far left of
+    // a 60% column with nothing above it.
+    .dashForm-submit { align-self: flex-end; }
 }
 
 .readonlyField {
@@ -4570,6 +4697,42 @@
 
     .dashSettings { gap: @vw16-1080; }
 
+    .settingsHead {
+        gap: @vw6-1080;
+
+        &-title { font-size: max(1.15em, @vw22-1080); }
+        &-text {
+            max-width: @vw300-1080 + @vw180-1080;
+            font-size: max(0.80em, @vw14-1080);
+        }
+    }
+
+    .settingsBlock {
+        gap: @vw10-1080;
+
+        &-head { gap: @vw3-1080; }
+        &-title { font-size: max(0.90em, @vw16-1080); }
+        &-text { font-size: max(0.68em, @vw12-1080); }
+    }
+
+    .dashForm--split {
+        gap: @vw16-1080;
+
+        .field,
+        .readonlyField {
+            column-gap: @vw20-1080;
+            row-gap: @vw6-1080;
+        }
+
+        .field-label { font-size: max(0.80em, @vw14-1080); }
+
+        .field-input,
+        .readonlyField-value {
+            padding: @vw7-1080 @vw10-1080;
+            border-radius: @vw6-1080;
+        }
+    }
+
     .statGrid {
         gap: @vw32-1080 @vw24-1080;
         grid-template-columns: repeat(auto-fit, minmax(@vw200-1080, 1fr));
@@ -4592,6 +4755,28 @@
 @media (max-width: 768px) {
     // The rail is an overlay drawer here, so the column takes the full width.
     .dashLayout-body { margin-left: 0; }
+
+    // The 60/40 split needs both halves to be worth having. Down here 60% of
+    // the column is too narrow to hold a label as a phrase and 40% is too
+    // narrow to hold a name, so the row becomes two rows and the label goes
+    // back above its control.
+    .dashForm--split {
+        .field,
+        .readonlyField { grid-template-columns: minmax(0, 1fr); }
+
+        .field-control,
+        .readonlyField-value,
+        .field-message { grid-column: 1; }
+
+        // 16 exactly, and a flat pixel because that is the number iOS Safari
+        // measures: it zooms the viewport whenever a focused input computes
+        // under 16px, and nothing zooms it back out afterwards.
+        .field-input,
+        .readonlyField-value { font-size: 16px; }
+
+        // Nothing to line up with once the controls are full width.
+        .dashForm-submit { align-self: flex-start; }
+    }
 
     .dashNav {
         position: fixed;
@@ -4685,6 +4870,35 @@
     .dash { gap: @vw40-580; }
     .dashSection { gap: @vw24-580; }
     .dashSettings { gap: @vw16-580; }
+
+    .settingsHead {
+        gap: @vw4-580;
+
+        &-title { font-size: max(1.15em, @vw20-580); }
+        &-text {
+            max-width: none;
+            font-size: max(0.80em, @vw14-580);
+        }
+    }
+
+    .settingsBlock {
+        gap: @vw8-580;
+
+        &-title { font-size: max(0.90em, @vw16-580); }
+        &-text { font-size: max(0.68em, @vw12-580); }
+    }
+
+    .dashForm--split {
+        gap: @vw14-580;
+
+        .field-label { font-size: max(0.80em, @vw14-580); }
+
+        .field-input,
+        .readonlyField-value {
+            padding: @vw10-580 @vw12-580;
+            border-radius: @vw8-580;
+        }
+    }
     // Four range tabs plus a title do not fit across a phone, and the tabs are
     // the part that must not shrink.
     .dashHead {

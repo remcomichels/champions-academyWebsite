@@ -59,8 +59,13 @@
 			<!-- The title is hidden rather than deleted. It was the only h1
 			     on every tab, and a page with no h1 loses its place in the
 			     heading outline that screen readers navigate by. Visually
-			     the tab is already named by the active item in the sidebar. -->
-			<h1 class="sr-only">{{ pageTitle }}</h1>
+			     the tab is already named by the active item in the sidebar.
+
+			     Suppressed in the account area, where the page prints its own
+			     heading at the top of the column. Two h1s is worse than a
+			     hidden one: the outline gains a second top-level entry naming
+			     the same page. -->
+			<h1 v-if="!accountMode" class="sr-only">{{ pageTitle }}</h1>
 
 			<div class="dashBar-right">
 				<!-- Before the bell, so the two things that change what the

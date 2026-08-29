@@ -65,9 +65,13 @@ export async function useSettings() {
 	const busy = ref<Busy>(null);
 	const errors = ref<Record<string, string | undefined>>({});
 
+	// Timezone is not here, deliberately. It is set from the profile menu, which
+	// writes it on its own and then reloads the page data — every figure on the
+	// dashboard was bucketed by the old zone server-side. Carrying a copy in
+	// this form would mean `saveProfile` posting a stale zone back over a fresh
+	// one whenever somebody changed it in the menu and then saved their name.
 	const profile = reactive({
 		displayName: data.value?.profile.displayName ?? "",
-		timezone: data.value?.profile.timezone ?? "UTC",
 	});
 
 	const slug = ref(data.value?.profile.slug ?? "");
