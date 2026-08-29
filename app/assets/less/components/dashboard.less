@@ -1016,7 +1016,52 @@
     // sit *between* things — under a heading, above the form they explain — so
     // they belong where the markup puts them.
     .dashPanel-note { margin-top: 0; }
+
+    // One size for everything inside a card, scoped to this column on purpose.
+    // `.dashPanel-note`, `.activity` and `.sessionList` are all shared with
+    // Overview and Sales, where they are sized against the figures beside them
+    // and have no reason to change.
+    .dashPanel-note,
+    .dashPanel-empty,
+    .field-message,
+    .activity-row,
+    .sessionList-row,
+    .sessionList-meta,
+    .linkButton,
+    .dashPanel-cta { font-size: @settingsBody; }
+
+    // The button comes with them. `.btn` is `max(0.80em, @vw14)`, which is
+    // nearly 19px on a wide monitor — a Save sitting beside a 13px field and
+    // reading half again as large as the thing it saves. Its padding comes down
+    // with the type, or a short word ends up in a very tall box.
+    .btn {
+        padding: @vw7 @vw14;
+        font-size: @settingsBody;
+    }
 }
+
+// ── Settings type scale ──────────────────────────────────────────────────────
+// Four sizes, in pixels, and the pixels are the point.
+//
+// Everything else on this page is a vw constant because it is a proportion.
+// Type is not. `max(0.90em, @vw16)` is a *floor* — it stops text shrinking on a
+// narrow screen, which is worth having, but nothing above it caps the growth:
+// that card heading is 16px at a 1440 viewport, 21px at 1920 and 28px at 2560.
+// Every level did the same thing by a different amount, so the four stopped
+// reading as four levels and the whole page ran a third too large on any
+// monitor wider than the one it was designed on.
+//
+// A reading size is set by how far the eye is from the screen, and that does
+// not change when the screen gets wider. Same argument as the 768 measure and
+// the form controls — this is the third time it has come up, so it is written
+// down as a scale rather than settled again per rule.
+//
+// Stated together because they *are* a set: 22 / 18 / 15 / 13 are ratios, and
+// changing one on its own is what flattens the hierarchy.
+@settingsTitle: 22px;      // the page heading
+@settingsStandfirst: 15px; // the line under it
+@settingsCardTitle: 18px;  // each card's heading
+@settingsBody: 13px;       // card subtext, and everything inside a card
 
 // The page's own heading, and the block headings under it.
 //
@@ -1035,7 +1080,7 @@
 
     &-title {
         font-family: @body;
-        font-size: max(1.15em, @vw22);
+        font-size: @settingsTitle;
         font-weight: @bold;
         letter-spacing: 0.01em;
         line-height: 1.2;
@@ -1047,7 +1092,7 @@
     // the newlines the template's own indentation puts in this string.
     &-text {
         max-width: @vw300 + @vw180;
-        font-size: max(0.80em, @vw14);
+        font-size: @settingsStandfirst;
         line-height: 1.5;
         white-space: normal;
         color: var(--text-secondary);
@@ -1071,7 +1116,7 @@
     // same thing.
     &-title {
         font-family: @body;
-        font-size: max(0.90em, @vw16);
+        font-size: @settingsCardTitle;
         font-weight: @semiBold;
         letter-spacing: 0.01em;
         line-height: 1.3;
@@ -1079,7 +1124,7 @@
     }
 
     &-text {
-        font-size: max(0.68em, @vw12);
+        font-size: @settingsBody;
         line-height: 1.5;
         white-space: normal;
         color: var(--text-tertiary);
@@ -2437,7 +2482,7 @@
     // as a category heading, which is right for a label sitting above its
     // control and wrong for one sitting beside it in a row of them.
     .field-label {
-        font-size: max(0.80em, @vw14);
+        font-size: @settingsBody;
         font-weight: @medium;
         text-transform: none;
         letter-spacing: 0;
@@ -2459,7 +2504,7 @@
     .field-input,
     .readonlyField-value {
         padding: @vw7 @vw10;
-        font-size: 14px;
+        font-size: @settingsBody;
         border-radius: @vw6;
     }
 
@@ -4697,22 +4742,18 @@
 
     .dashSettings { gap: @vw16-1080; }
 
+    // Spacing only. The four type sizes are flat pixels and stay put across
+    // every tier — that is the whole reason they are pixels.
     .settingsHead {
         gap: @vw6-1080;
 
-        &-title { font-size: max(1.15em, @vw22-1080); }
-        &-text {
-            max-width: @vw300-1080 + @vw180-1080;
-            font-size: max(0.80em, @vw14-1080);
-        }
+        &-text { max-width: @vw300-1080 + @vw180-1080; }
     }
 
     .settingsBlock {
         gap: @vw10-1080;
 
         &-head { gap: @vw3-1080; }
-        &-title { font-size: max(0.90em, @vw16-1080); }
-        &-text { font-size: max(0.68em, @vw12-1080); }
     }
 
     .dashForm--split {
@@ -4723,8 +4764,6 @@
             column-gap: @vw20-1080;
             row-gap: @vw6-1080;
         }
-
-        .field-label { font-size: max(0.80em, @vw14-1080); }
 
         .field-input,
         .readonlyField-value {
@@ -4874,24 +4913,13 @@
     .settingsHead {
         gap: @vw4-580;
 
-        &-title { font-size: max(1.15em, @vw20-580); }
-        &-text {
-            max-width: none;
-            font-size: max(0.80em, @vw14-580);
-        }
+        &-text { max-width: none; }
     }
 
-    .settingsBlock {
-        gap: @vw8-580;
-
-        &-title { font-size: max(0.90em, @vw16-580); }
-        &-text { font-size: max(0.68em, @vw12-580); }
-    }
+    .settingsBlock { gap: @vw8-580; }
 
     .dashForm--split {
         gap: @vw14-580;
-
-        .field-label { font-size: max(0.80em, @vw14-580); }
 
         .field-input,
         .readonlyField-value {
