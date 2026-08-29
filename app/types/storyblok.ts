@@ -1,5 +1,7 @@
 // types/storyblok.ts
 
+import type { LinkRoleField } from "#shared/types/affiliate"
+
 export type StoryblokLinkType = "story" | "url" | "email" | "asset"
 
 export interface StoryblokMultilink {
@@ -39,6 +41,12 @@ export interface MenuLinkItem {
   component?: "menu_link"
   label?: string
   link?: StoryblokMultilink
+  /**
+   * Marks this link as centrally managed. When set, the href comes from the
+   * referring affiliate or the config-story default for that role, and the
+   * `link` field above is ignored. See `useRoleHref`.
+   */
+  link_role?: LinkRoleField
 }
 
 export interface LogoItem {
@@ -317,4 +325,10 @@ export interface ButtonBlok {
   title?: string
   link?: StoryblokMultilink
   variant?: ButtonVariant
+  /**
+   * Marks this button as centrally managed. When set, the href comes from the
+   * referring affiliate or the config-story default for that role, and the
+   * `link` field above is ignored. See `useRoleHref`.
+   */
+  link_role?: LinkRoleField
 }

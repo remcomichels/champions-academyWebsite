@@ -19,9 +19,10 @@
 						<ul class="footer-column-links">
 							<li v-for="link in column.links" :key="link._uid">
 								<NuxtLink
-									v-if="linkPath(link.link)"
-									:to="linkPath(link.link)!"
-									v-bind="storyblokLinkAttrs(link.link)"
+									v-if="linkHref(link)"
+									:to="linkHref(link)!"
+									v-bind="linkAttrs(link)"
+									@click="onLinkClick(link)"
 									class="footer-link parent-line"
 								>
 									{{ link.label }}
@@ -36,6 +37,14 @@
 
 			<div class="footer-sub">
 				<p class="footer-copyright">&copy; {{ year }} Champions Academy</p>
+				<!-- Withdrawing consent has to be as easy as giving it, so this sits
+				     on every page rather than only in the policy. Its own component
+				     inside ClientOnly: the composable reads a cookie, and calling it
+				     from this file's setup would put consent state in the SSR payload
+				     and make the page vary by cookie. -->
+				<ClientOnly>
+					<NuxtCookieSettingsButton />
+				</ClientOnly>
 				<p class="footer-disclaimer">{{ footer.subFooter_text }}</p>
 				<p class="footer-credit">
 					Crafted with care by
@@ -59,9 +68,10 @@ import { useFooter } from "~/assets/js/components/footer";
 
 const { footer } = useFooter();
 
-// Resolves a Storyblok multilink to a localized href, keeping any section
-// anchor set in the CMS (e.g. /about#pricing).
-const linkPath = useStoryblokLink();
+// Resolves each column link, applying link_role for the centrally managed ones
+// (Academy VIP / Academy LITE) and normal localised multilink resolution for
+// the rest.
+const { href: linkHref, attrs: linkAttrs, onClick: onLinkClick } = useMenuLink();
 
 const year = new Date().getFullYear();
 

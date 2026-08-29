@@ -1,3 +1,30 @@
+// Consent withdrawal, on every page. Sits quietly next to the copyright rather
+// than shouting — but is never hidden, since withdrawing has to be as reachable
+// as the banner that asked in the first place.
+.footer-cookieSettings {
+    background: none;
+    border: none;
+    padding: 0;
+    font-family: @body;
+    font-size: inherit;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    .transition();
+    transition-property: opacity, color;
+
+    @media (hover: hover) {
+        &:hover { opacity: 1; color: @primary; }
+    }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid @primary;
+        outline-offset: @vw4;
+    }
+}
+
 .footer {
     margin-top: auto; // stick to the bottom of the page
 

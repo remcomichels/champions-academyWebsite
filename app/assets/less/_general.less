@@ -150,13 +150,15 @@ p {
   }
 }
 
-::-moz-selection {
+html:not([data-theme]) ::-moz-selection {
   background-color: @primary; /* Background color */
   color: @text; /* Text color */
 }
 
-/* For Chrome, Safari, and Opera */
-::selection {
+/* For Chrome, Safari, and Opera.
+   Scoped away from the dashboard and login for the reason given in
+   _reset.less — those surfaces use the browser's own selection colour. */
+html:not([data-theme]) ::selection {
   background-color: @primary;
   color: @text;
 }

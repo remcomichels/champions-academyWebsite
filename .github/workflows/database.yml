@@ -1,0 +1,89 @@
+name: Database
+
+# Migrations used to be applied by hand, one at a time, against production.
+# That held until it didn't: a column was referenced in code before its
+# migration was applied, getAuthSession() started returning null for everyone,
+# and the whole dashboard was locked out with no useful error. The schema has
+# to move with the code, not alongside it and hopefully in the same week.
+#
+# It also let a change be applied to production that was never written down at
+# all — see 20260824184309_traffic_breakdowns_bounded_window.sql, recovered
+# from the database months later.
+#
+# Required secrets (Settings -> Secrets and variables -> Actions):
+#   SUPABASE_ACCESS_TOKEN  supabase.com/dashboard/account/tokens
+#   SUPABASE_DB_PASSWORD   the project's database password
+#
+# The project ref below is not a credential — it is in every API URL this app
+# already uses — so it is inline rather than a secret you have to keep in sync.
+
+on:
+  push:
+    branches: [main]
+    paths: ['supabase/migrations/**']
+  pull_request:
+    paths: ['supabase/migrations/**']
+
+env:
+  SUPABASE_PROJECT_REF: crrwzbjfvjenjycbaovx
+
+jobs:
+  # On a PR: report only. A PR that adds a migration is *supposed* to show one
+  # as pending, so this must never fail on that — it exists so the diff between
+  # the branch and production is visible in the checks tab before merge, rather
+  # than discovered afterwards.
+  pending:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Show local vs applied migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          supabase migration list
+
+  # On main: actually apply them.
+  #
+  # This races Vercel, which builds from the same push. In practice the push
+  # finishes in seconds and a Nuxt build takes minutes, so the schema lands
+  # first — but it is a race, not a guarantee. Making it one means taking the
+  # deploy off Vercel's git integration and running it from this workflow after
+  # this job. Worth doing if a migration ever loses that race.
+  apply:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Apply pending migrations
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: |
+          supabase link --project-ref "$SUPABASE_PROJECT_REF"
+          supabase db push
+
+      # `db push` exits non-zero when it fails, and that is the check — this
+      # step only leaves a record in the log of what the schema looked like
+      # afterwards, so a later "when did this diverge?" has an answer.
+      #
+      # Deliberately not a grep over the table `migration list` prints: it is
+      # drawn with box characters for humans, its wording is not a contract,
+      # and a brittle assertion here either fails on a formatting change or
+      # passes over a real one. Neither is worth having.
+      - name: Record the resulting migration state
+        if: always()
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+        run: supabase migration list

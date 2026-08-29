@@ -1,0 +1,244 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Dashboard colour tokens — dual theme.
+//
+// The marketing site keeps its green `@primary` / `@secondary` Less variables
+// untouched. Nothing in this file is imported by a marketing component, and
+// nothing here changes a Less variable, so the two systems cannot bleed.
+//
+// Colour moves to custom properties because a light/dark surface needs *two*
+// bases: the site-wide `fade(@white, N%)` ladder only works when you are always
+// fading toward white. Everything that is not colour — the @vwN scale, the
+// spacing rhythm, the radius ladder, `.transition()`, the focus patterns — is
+// inherited from the base system unchanged.
+//
+// The attribute lands on <html>, set by useTheme() from a cookie during SSR so
+// there is no flash. It is only ever set on /login and /dashboard/**, both of
+// which are `no-store`, so the varying markup is never cached.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Dark ─────────────────────────────────────────────────────────────────────
+// Lifted off black. The previous values started the page at #0A0A0C with panels
+// at #131316 — a 9-point gap between the page and the thing sitting on it, at
+// the bottom of the range where displays and eyes both separate tones worst.
+// Panel edges disappeared on anything but a good monitor, and long stretches of
+// secondary text sat under it.
+//
+// Everything moves up together so the *relationships* survive: the page is a
+// dark grey rather than near-black, surfaces keep a readable step above it, and
+// the borders and muted text gain a few points of alpha since a lighter ground
+// gives white less to push against. The old values are still here, exactly, as
+// `classic` below.
+[data-theme="dark"] {
+    --background: #16161A;
+    --surface: #1E1E23;
+    --surface-raised: #2A2A31;
+    --surface-hover: #27272E;
+
+    --border: rgba(255, 255, 255, 0.11);
+    --border-strong: rgba(255, 255, 255, 0.18);
+
+    --text: #F4F4F6;
+    --text-secondary: rgba(255, 255, 255, 0.66);
+    --text-tertiary: rgba(255, 255, 255, 0.46);
+    --text-disabled: rgba(255, 255, 255, 0.28);
+
+    --chart-bar: rgba(255, 255, 255, 0.20);
+    --chart-bar-hover: rgba(255, 255, 255, 0.32);
+    --chart-grid: rgba(255, 255, 255, 0.08);
+
+    // Categorical slots — see the note under the light theme's copy.
+    --series-2: #199E70;
+    --series-3: #D95926;
+    --series-4: #3987E5;
+    --series-5: #D55181;
+
+    // ── Popovers ─────────────────────────────────────────────────────────
+    // Tooltips and readouts, and the one rule about them is that they are
+    // opaque. Every other surface draws its edge with the shared `--border`,
+    // which is an rgba — fine on a panel sitting on a known background, wrong
+    // on a box that floats over charts and bars, where a part-transparent edge
+    // reads as a translucent tooltip. These are the flat equivalents, with
+    // nothing left to see through.
+    --popover: #2A2A31;
+    --popover-border: #414148;
+
+    // Only overlays cast a shadow — see the note under the light theme's copy.
+    --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+// ── Classic dark ─────────────────────────────────────────────────────────────
+// The near-black the dashboard shipped with, kept as a choice for anyone who
+// prefers it. Byte-for-byte the old `dark` block — if the two ever need to
+// diverge further, this is the one that stays still.
+[data-theme="classic"] {
+    --background: #0A0A0C;
+    --surface: #131316;
+    --surface-raised: #1C1C20;
+    --surface-hover: #1A1A1E;
+
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.14);
+
+    --text: #F2F2F4;
+    --text-secondary: rgba(255, 255, 255, 0.58);
+    --text-tertiary: rgba(255, 255, 255, 0.38);
+    --text-disabled: rgba(255, 255, 255, 0.22);
+
+    --chart-bar: rgba(255, 255, 255, 0.16);
+    --chart-bar-hover: rgba(255, 255, 255, 0.28);
+    --chart-grid: rgba(255, 255, 255, 0.06);
+
+    --series-2: #199E70;
+    --series-3: #D95926;
+    --series-4: #3987E5;
+    --series-5: #D55181;
+
+    --popover: #1C1C20;
+    --popover-border: #2E2E32;
+
+    --shadow-pop: 0 8px 24px rgba(0, 0, 0, 0.55);
+}
+
+[data-theme="light"] {
+    --background: #F7F7F8;
+    --surface: #FFFFFF;
+    --surface-raised: #F1F1F3;
+    --surface-hover: #EFEFF1;
+
+    --border: rgba(10, 10, 12, 0.08);
+    --border-strong: rgba(10, 10, 12, 0.16);
+
+    --text: #0A0A0C;
+    --text-secondary: rgba(10, 10, 12, 0.58);
+    --text-tertiary: rgba(10, 10, 12, 0.40);
+    --text-disabled: rgba(10, 10, 12, 0.24);
+
+    --chart-bar: rgba(10, 10, 12, 0.16);
+    --chart-bar-hover: rgba(10, 10, 12, 0.28);
+    --chart-grid: rgba(10, 10, 12, 0.06);
+
+    // ── Categorical slots ────────────────────────────────────────────────
+    // The one place on this dashboard that needs more than one colour at a
+    // time: a part-to-whole chart has to tell its slices apart, and the
+    // monochrome-plus-accent rule everything else follows cannot do that.
+    //
+    // Slot 1 is the accent itself (`--series-1` below), so the largest share
+    // is the colour this product already uses for "the one that matters" —
+    // the same rule the breakdown rows follow, where only the top row is
+    // tinted. The four below it exist solely inside that chart.
+    //
+    // Not eyeballed. The set was checked with the data-viz validator against
+    // both surfaces in this order — the order is the palette, since it fixes
+    // which pairs end up adjacent — and clears the lightness band, the chroma
+    // floor, colourblind separation (worst adjacent ΔE 9.2 light / 9.4 dark
+    // against a target of 8) and the normal-vision floor (24.5 light / 25.4
+    // dark against a floor of 15). Reordering or substituting a hue means
+    // re-running it; a pair that looks fine can fail deuteranopia badly.
+    //
+    // Aqua and magenta sit under 3:1 against white. That is a documented WARN
+    // rather than a failure, and it obliges the chart to carry visible labels
+    // — which is why the donut always ships with its ranked legend and never
+    // as a bare ring.
+    --series-2: #1BAF7A;
+    --series-3: #EB6834;
+    --series-4: #2A78D6;
+    --series-5: #E87BA4;
+
+    // ── Popovers ─────────────────────────────────────────────────────────
+    // Tooltips and readouts, and the one rule about them is that they are
+    // opaque. Every other surface draws its edge with the shared `--border`,
+    // which is an rgba — fine on a panel sitting on a known background, wrong
+    // on a box that floats over charts and bars, where a part-transparent edge
+    // reads as a translucent tooltip. These are the flat equivalents, with
+    // nothing left to see through.
+    // White, a step above the raised surface these sit over, so a readout
+    // never dissolves into the card behind it.
+    --popover: #FFFFFF;
+    --popover-border: #DFDFE1;
+
+    // ── Shadow ───────────────────────────────────────────────────────────
+    // One shadow, and it never touches a resting surface.
+    //
+    // There used to be a `--shadow-panel` under every card and a top-of-page
+    // accent wash behind them. Neither reference dashboard has either: Vercel
+    // and Supabase separate surfaces with a single hairline border and nothing
+    // else, and that flatness is most of what reads as "clean". A shadow here
+    // now means the element is genuinely floating above the page — a tooltip,
+    // the inbox dropdown, a toast, a modal, the hover-peek rail.
+    --shadow-pop: 0 8px 24px rgba(10, 10, 12, 0.10);
+}
+
+// ── Accent ───────────────────────────────────────────────────────────────────
+// One accent, deliberately rationed: the primary action, the active nav item,
+// the focus ring, links, and the one mark in a chart worth calling out. If it
+// turns up on more than about one element per screen it has stopped being an
+// accent.
+//
+// This rule was written here first and the file did not follow it — the accent
+// had spread to the page wash, the hero eyebrow, the panel count chip, the
+// avatar, the "current session" tag and several status badges, none of which
+// is an action. Those are neutral now.
+//
+// The division that keeps it honest: **accent means interactive**, and a state
+// that is genuinely good or bad takes a *status* colour instead. So a live
+// link and an active invite are `--success` (pairing with the `--error` their
+// revoked twin already used), which keeps real signal on the screen without
+// spending the accent on it.
+//
+// The same hex in both themes — violet at this saturation holds its own against
+// both #0A0A0C and #FFFFFF, so there is nothing to keep in sync.
+[data-theme] {
+    --accent: #7C5CFC;
+    --accent-hover: #8F73FF;
+    --accent-pressed: #6647E0;
+    --accent-subtle: rgba(124, 92, 252, 0.12);
+    --accent-ring: rgba(124, 92, 252, 0.28);
+    --on-accent: #FFFFFF;
+
+    --chart-bar-highlight: var(--accent);
+    --chart-axis-text: var(--text-tertiary);
+
+    // Slot 1 is the accent, in both themes, for the reason given above.
+    --series-1: var(--accent);
+    // Everything past the slots named above is folded into one "Other" share
+    // rather than given a generated hue — a palette that cycles stops being an
+    // identity channel the moment it repeats.
+    --series-other: var(--chart-bar);
+
+    // Status colours come from the base system. Restated as custom properties
+    // so a component can use one token vocabulary rather than mixing
+    // `var(--text)` with `@error` in the same rule.
+    --error: @error;
+    --success: @success;
+    --warning: @warning;
+    // Same 12% tint as --accent-subtle, so a warning panel sits at the same
+    // weight as an accented one rather than shouting louder by accident.
+    --warning-subtle: rgba(243, 156, 18, 0.12);
+}
+
+// `_general.less` pins `color-scheme: light !important` on both `:root` and
+// `html` to stop Chrome's forced dark mode repainting the marketing site.
+// A dashboard in dark mode needs the opposite, or the scrollbars and native
+// form controls render light against a near-black page. `html[data-theme]`
+// is (0,1,1), which outranks both `:root` (0,1,0) and `html` (0,0,1), so this
+// wins the !important tie on specificity.
+html[data-theme="dark"],
+html[data-theme="classic"] {
+    color-scheme: dark !important;
+}
+
+html[data-theme="light"] {
+    color-scheme: light !important;
+}
+
+// The page background has to sit on <html>, not on the layout wrapper: an
+// overscroll bounce reveals whatever is behind the wrapper, which would be the
+// marketing site's black body under the light theme.
+html[data-theme] {
+    background-color: var(--background);
+
+    body {
+        background-color: var(--background);
+        color: var(--text);
+    }
+}

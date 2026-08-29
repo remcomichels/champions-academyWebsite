@@ -1,0 +1,88 @@
+export interface AffiliateSummary {
+	affiliate: {
+		slug: string;
+		displayName: string;
+		timezone: string;
+		memberSince: string;
+	};
+	referralUrl: string;
+	links: {
+		vip: string | null;
+		lite: string | null;
+		calendly: string | null;
+	};
+	vipLinkPending: boolean;
+	/**
+	 * All-time conversions. Only the total: the Sales tab owns the windowed
+	 * figures and the buyer list, and Overview needs one number beside the
+	 * visit counts so the row is not three readings of the same thing.
+	 */
+	sales: {
+		total: number;
+	};
+	visits: {
+		today: number;
+		/** Comparison window for the trend shown under "Today". */
+		yesterday: number;
+		last30d: number;
+		/** Days 31–60, so "vs last month" compares equal-length windows. */
+		previous30d: number;
+		total: number;
+		byDay: { day: string; count: number }[];
+	};
+	/**
+	 * The four "what's working" figures on Overview, over a fixed 30-day window.
+	 * Each is null when nothing is behind it — a new affiliate has no best day.
+	 */
+	highlights: {
+		days: number;
+		/** The affiliate's own zone, which `bestHour` is expressed in. */
+		timezone: string;
+		/** ISO weekday, 1 = Monday. */
+		bestDay: { dow: number; visits: number } | null;
+		bestHour: { hour: number; visits: number } | null;
+		/** A null host is direct traffic, not an unknown one. */
+		topSource: { host: string | null; visits: number } | null;
+		topCountry: { country: string; visits: number } | null;
+		/** Visits per weekday, Monday first. Dense — a quiet day is a 0. */
+		dowTotals: number[];
+		/** Visits per hour, 00:00 first. Dense, same reason. */
+		hourTotals: number[];
+		/** Visits in the window, the denominator behind the share figures. */
+		total: number;
+	};
+	onboarding: {
+		steps: {
+			liteTelegramAdded: boolean;
+			calendlyAdded: boolean;
+			linkShared: boolean;
+			firstVisitReceived: boolean;
+		};
+		completed: number;
+		total: number;
+	};
+}
+
+/**
+ * The affiliate's own figures, shared by every dashboard section.
+ *
+ * One `useAsyncData` key so switching tabs does not refetch, and `refresh()`
+ * is available to the sections that change something (saving a link, copying
+ * the referral URL) and need the onboarding strip to catch up.
+ */
+export function useAffiliateSummary(options: { immediate?: boolean } = {}) {
+	return useAsyncData<AffiliateSummary>("affiliate-summary", () =>
+		$fetch<AffiliateSummary>("/api/affiliate/summary", {
+			// The session cookie is httpOnly so it has to be forwarded explicitly
+			// during SSR. host and x-forwarded-* go with it because an internal
+			// $fetch carries no real Host header, which otherwise leaves any
+			// server-side URL building seeing `http://localhost` with no port.
+			headers: import.meta.server
+				? useRequestHeaders(["cookie", "host", "x-forwarded-host", "x-forwarded-proto"])
+				: undefined,
+		}), {
+		// Skipped for accounts with no affiliate profile — an admin-only login
+		// would otherwise fire a request that can only ever 403.
+		immediate: options.immediate ?? true,
+	});
+}

@@ -1,0 +1,115 @@
+import { int, object, oneOf, optional } from "../../utils/validate";
+
+interface TrafficBreakdowns {
+	total: number;
+	country_count: number;
+	click_total: number;
+	sources: { host: string | null; visits: number }[];
+	countries: { country: string; visits: number }[];
+	clicks: { role: string; clicks: number }[];
+	heatmap: { dow: number; hour: number; visits: number }[];
+}
+
+/**
+ * Where an affiliate's traffic came from, landed, and when it arrived.
+ *
+ * Every figure comes from `referral_visits`, which the referral middleware has
+ * been writing since day one — referrer host, country, landing path and a
+ * timestamp, recorded server-side on the `?r=` hit. Nothing new is collected
+ * for this route, and nothing here is measured in the browser, so ad blockers
+ * cannot suppress any of it.
+ *
+ * The affiliate comes from requireAffiliate(); `days` is the only thing the
+ * caller controls and it is bounded. There is no way to ask this route about
+ * anybody else's traffic — see the note at the top of server/utils/auth.ts.
+ */
+export default defineEventHandler(async (event) => {
+	const affiliate = await requireAffiliate(event);
+
+	const query = await getValidatedQuery(event, object({
+		days: optional(int({ min: 1, max: 365 })),
+		range: optional(oneOf("all")),
+	}));
+
+	// "All time" is bounded by the account's own age — there is no traffic of
+	// theirs before it existed.
+	const daysSinceJoined = Math.ceil(
+		(Date.now() - new Date(affiliate.created_at).getTime()) / (24 * 60 * 60 * 1000),
+	);
+
+	const days = query.range === "all"
+		? Math.min(Math.max(daysSinceJoined, 1), 3650)
+		: (query.days ?? 30);
+
+	const timezone = safeTimezone(affiliate.timezone);
+	const windowMs = days * 24 * 60 * 60 * 1000;
+
+	const since = new Date(Date.now() - windowMs).toISOString();
+	const until = new Date().toISOString();
+	// The equally long window immediately before, which is what the trend under
+	// each figure compares against.
+	const priorSince = new Date(Date.now() - windowMs * 2).toISOString();
+
+	const [current, prior] = await Promise.all([
+		db().rpc("affiliate_traffic", {
+			p_affiliate_id: affiliate.id,
+			p_since: since,
+			p_until: until,
+			p_timezone: timezone,
+		}),
+		db().rpc("affiliate_traffic", {
+			p_affiliate_id: affiliate.id,
+			p_since: priorSince,
+			p_until: since,
+			p_timezone: timezone,
+		}),
+	]);
+
+	const { data, error } = current;
+
+	if (error) {
+		throw createError({
+			statusCode: 503,
+			statusMessage: "Traffic figures are temporarily unavailable",
+		});
+	}
+
+	const breakdowns = (data ?? {}) as Partial<TrafficBreakdowns>;
+	// A failed comparison query is not worth failing the page over — the tiles
+	// simply show no trend.
+	const previous = (prior.error ? {} : (prior.data ?? {})) as Partial<TrafficBreakdowns>;
+
+	return {
+		days,
+		timezone,
+		total: breakdowns.total ?? 0,
+		countryCount: breakdowns.country_count ?? 0,
+		clickTotal: breakdowns.click_total ?? 0,
+		sources: breakdowns.sources ?? [],
+		countries: breakdowns.countries ?? [],
+		clicks: breakdowns.clicks ?? [],
+		heatmap: breakdowns.heatmap ?? [],
+
+		previous: {
+			total: previous.total ?? 0,
+			countryCount: previous.country_count ?? 0,
+			clickTotal: previous.click_total ?? 0,
+			// The prior window's ranked sources, so each row on "Where they came
+			// from" can carry its own change rather than only the page total
+			// doing so. Already fetched — the RPC above returns the whole
+			// breakdown for the prior window and this was the one part of it
+			// being dropped on the floor.
+			sources: previous.sources ?? [],
+		},
+	};
+});
+
+/**
+ * The timezone is affiliate-editable free text on the Settings form, and
+ * Postgres raises on an unknown name in `at time zone` — which would turn a
+ * typo in someone's profile into a 503 on their own dashboard. Falling back to
+ * UTC keeps the page working; the hours are just less useful until they fix it.
+ */
+function safeTimezone(value: string | null | undefined): string {
+	return canonicalTimezone(value) ?? "UTC";
+}

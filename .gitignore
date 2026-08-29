@@ -26,3 +26,5 @@ logs
 # Https localhost development keys
 .keys
 .keys.*
+# Claude Code checks worktrees out in-repo; they are local scratch, never committed.
+.claude/worktrees/

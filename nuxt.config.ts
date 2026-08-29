@@ -6,7 +6,6 @@ export default defineNuxtConfig({
   modules: [
     '@nuxt/eslint',
     '@nuxt/fonts',
-    '@nuxt/icon',
     '@nuxt/image',
     '@nuxtjs/seo',
     '@nuxt/scripts',
@@ -76,8 +75,29 @@ export default defineNuxtConfig({
 	 * would fetch weight 400 only, and the 500/700 the design system uses would
 	 * be synthesised — while also duplicating what fonts.css already loads.
 	 * ----------------------------- */
+	/* -----------------------------
+	 * Icons
+	 * There is no icon module. Every glyph in this project is drawn by
+	 * `NuxtDashboardIcon` — a `Record<string, string[]>` of path data rendered
+	 * through one `v-for` — so there is no collection to bundle, no scanner to
+	 * configure and no runtime that can fall through to a third-party fetch.
+	 *
+	 * @nuxt/icon and @iconify-json/material-symbols-light were both dropped
+	 * when the last six call sites moved onto that set. Adding a glyph means
+	 * adding an entry to `icon.vue`, not a dependency.
+	 * ----------------------------- */
+
 	fonts: {
-		families: [{ name: "Plus Jakarta Sans", provider: "none" }],
+		families: [
+			{ name: "Plus Jakarta Sans", provider: "none" },
+			// Declared rather than left to resolve, for the reason in the note
+			// above: the module fetches weight 400 only unless told otherwise.
+			// The one place it is used — the affiliate's name on Overview — is
+			// medium upright and nothing else, so that is all that gets
+			// downloaded. The italic came out when the name did: leaving it
+			// declared would have kept fetching a second face nothing sets.
+			{ name: "Playfair Display", weights: [500], styles: ["normal"] },
+		],
 	},
 
 	/* -----------------------------
@@ -85,8 +105,8 @@ export default defineNuxtConfig({
 	 * ----------------------------- */
 	site: {
 		url: process.env.NUXT_PUBLIC_SITE_URL || "https://localhost:3000/",
-		name: "Nuxt Template",
-		description: "Nuxt Template for building applications with Storyblok.",
+		name: "Champions Academy",
+		description: "A trading community built on real education, live mentorship, and proven SMC strategy — as one connected system.",
 	},
 
 	ogImage: {
@@ -124,10 +144,6 @@ export default defineNuxtConfig({
 			],
 			meta: [
 				{
-					name: "Nuxt Site Name",
-					content: "Nuxt Site Name",
-				},
-				{
 					name: "color-scheme",
 					content: "light",
 				},
@@ -146,13 +162,56 @@ export default defineNuxtConfig({
 		bunnyStreamApiKey: process.env.BUNNY_STREAM_API_KEY,
     	bunnyStreamLibraryId: process.env.BUNNY_STREAM_LIBRARY_ID,
 
+		// Supabase is server-only. Nothing in the browser talks to it — the
+		// affiliate dashboard reads through /api/* and gets realtime over SSE —
+		// so no Supabase value belongs in `public`. Anything placed there is
+		// serialised into window.__NUXT__ in the SSR'd HTML of every page.
+		supabaseUrl: process.env.SUPABASE_URL || "",
+		// Publishable key (sb_publishable_…): RLS applies. Used server-side only,
+		// by the throwaway client that verifies passwords.
+		supabasePublishableKey: process.env.SUPABASE_PUBLISHABLE_KEY || "",
+		// Secret key (sb_secret_…): bypasses RLS. Never leaves the server.
+		supabaseSecretKey: process.env.SUPABASE_SECRET_KEY || "",
+
+		// Peppers for one-way hashes. Kept in env, not the DB, so a database
+		// leak on its own doesn't make the hashes reversible.
+		otpPepper: process.env.OTP_PEPPER || "",
+		visitPepper: process.env.VISIT_PEPPER || "",
+
+		// Outbound mail (MailerSend). Server-side only: the token can send as
+		// our verified domain, so it never belongs anywhere the browser can
+		// read it. From-address and name are config rather than constants so a
+		// staging deploy can send from somewhere else without a code change.
+		mailersendApiKey: process.env.MAILERSEND_API_KEY || "",
+		mailFromEmail: process.env.MAIL_FROM_EMAIL || "no-reply@mail.jointhevips.com",
+		mailFromName: process.env.MAIL_FROM_NAME || "Champions Academy",
+
+		// Whop — server-side only. The API key can read every payment the
+		// company has ever taken, so it never leaves the server and is only
+		// used through server/utils/whop.ts (affiliate-scoped) and
+		// server/utils/whopAdmin.ts (admin routes only).
+		whopApiKey: process.env.WHOP_API_KEY || "",
+		whopCompanyId: process.env.WHOP_BIZ_KEY || "",
+		whopWebhookSecret: process.env.WHOP_WEBHOOK_SECRET || "",
+		whopVipPlanId: process.env.WHOP_PLAN_ID || "",
+		// Whop's sandbox is a separate host and sandbox keys only work against
+		// it. Leave unset in production to use https://api.whop.com/api/v1.
+		whopBaseUrl: process.env.WHOP_BASE_URL || "",
+
+		// No PostHog *query* credentials here on purpose. Collection still runs
+		// in the browser with the write-only project key below; nothing reads
+		// back. The personal API key that used to sit here could read every
+		// visitor event in the project, and the only route using it had already
+		// been replaced by first-party counting. See the note in the deletion
+		// commit for how to restore it if the Query API is ever wanted again.
+
 		public: {
-			supabaseUrl: process.env.SUPABASE_URL || "",
-			supabaseAnonKey: process.env.SUPABASE_ANON_KEY || "",
-			supabaseServiceRoleKey: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
+			// Write-only project key — safe in the browser, which is the whole
+			// point of it being a separate key from the personal one above.
+			posthogKey: process.env.POSTHOG_PROJECT_API_KEY || "",
+			posthogHost: process.env.POSTHOG_HOST || "",
 			storyblokApiKey: process.env.STORYBLOK_DELIVERY_API_TOKEN || "",
 			bunnyStreamHostname: process.env.BUNNY_STREAM_HOSTNAME || "",
-			googleAnalyticsId: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID || "",
 		},
 	},
 
@@ -227,21 +286,22 @@ export default defineNuxtConfig({
 	schemaOrg: {
 		identity: {
 			type: "Organization",
-			name: "Website Name",
-			logo: "/images/logo.png", //Routes to public/images
-			description: "Website description here",
-			telephone: "+310612345678",
-			email: "email@example.com",
-			address: {
-				streetAddress: "street 1",
-				postalCode: "1234 AB",
-				addressLocality: "City",
-				addressCountry: "NL",
-			},
+			// Champions Lifestyle is the organisation; Champions Academy is this
+			// site's product. Structured data describes the organisation.
+			name: "Champions Lifestyle",
+			// Google's Organization guidance lists JPG/PNG/WebP and not SVG, so
+			// this may simply be ignored for the search logo. Harmless either way,
+			// and it beats the previous /images/logo.png which no longer exists.
+			// Swap in a PNG if a logo ever needs to appear in a knowledge panel.
+			logo: "/images/logo.svg",
+			description: "A trading community built on real education, live mentorship, and proven SMC strategy — as one connected system.",
+			email: "thechampionslifestyle@gmail.com",
+			// No telephone or postal address, by choice.
+			// Telegram is deliberately excluded: it points at a personal account
+			// rather than a brand profile, which is not what sameAs is for.
 			sameAs: [
-				"https://www.linkedin.com/company/templatelink/",
-				"https://www.instagram.com/templatelink/",
-				"https://www.facebook.com/templatelink",
+				"https://youtube.com/@championslifestyleofficial",
+				"https://www.instagram.com/thechampionslifestyle/",
 			],
 		},
 	},
@@ -277,18 +337,38 @@ export default defineNuxtConfig({
 				'cache-control': 'no-store'
 			}
 			},
-		}
-	},
-
-    /* -----------------------------
-	 * Scripts
-	 * ----------------------------- */
-	scripts: {
-		registry: {
-			googleAnalytics: {
-      			id: process.env.NUXT_PUBLIC_GOOGLE_ANALYTICS_ID,
+			// Authenticated surfaces. Without these they inherit the '/**' rule
+			// above and a CDN would cache one affiliate's dashboard and serve it
+			// to the next visitor. More specific paths win and merge over '/**',
+			// so the security headers there still apply.
+			'/api/**': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
 			},
-		},
+			'/login': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
+			// Both spellings on purpose: whether '/dashboard/**' also matches the
+			// bare '/dashboard' is a radix3 detail, and this is a security
+			// control — not somewhere to rely on wildcard semantics.
+			'/dashboard': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
+			'/dashboard/**': {
+			headers: {
+				'cache-control': 'private, no-store, max-age=0, must-revalidate',
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
+		}
 	},
 
 	/* -----------------------------
@@ -299,8 +379,8 @@ export default defineNuxtConfig({
 			{
 				userAgent: ['*'],
 				disallow: process.env.NUXT_PUBLIC_SITE_URL === 'https://localhost:3000/'
-					? ['/api/', '/login']
-					: ['/', '/login'],
+					? ['/api/', '/login', '/dashboard']
+					: ['/', '/login', '/dashboard'],
 			},
 		],
 	},

@@ -1,0 +1,141 @@
+// Analytics consent banner. EEA/UK/CH visitors only — see useConsent().
+.consent {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 9999;
+    padding: @vw16 @vw32;
+    background-color: @secondary;
+    border-top: max(1px, @vw1) solid @border;
+
+    &-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: @vw16;
+        margin: 0 auto;
+        max-width: calc(@vw300 + @vw300 + @vw300);
+    }
+
+    &-text {
+        flex: 1 1 @vw300;
+        font-size: max(0.8em, @vw14);
+        line-height: 1.5;
+        white-space: normal;
+        color: fade(@white, 75%);
+    }
+
+    &-link {
+        color: @primary;
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+    }
+
+    &-actions {
+        display: flex;
+        gap: @vw8;
+        flex: none;
+    }
+
+    &-button {
+        padding: @vw10 @vw20;
+        border: max(1px, @vw1) solid @border;
+        border-radius: @vw4;
+        background: none;
+        font-family: @body;
+        font-size: clamp(12px, @vw14, 14px);
+        font-weight: @bold;
+        text-transform: uppercase;
+        color: @text;
+        cursor: pointer;
+        white-space: nowrap;
+        .transition();
+        transition-property: color, border-color, background-color;
+
+        @media (hover: hover) {
+            &:hover { border-color: @primary; color: @primary; }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid @primary;
+            outline-offset: @vw2;
+        }
+
+        // Accept is the affirmative action, but Decline is given equal visual
+        // weight and is never hidden or greyed. A banner where refusing is
+        // harder than accepting does not collect valid consent.
+        &.is-primary {
+            background-color: @primary;
+            border-color: @primary;
+            color: @black;
+
+            @media (hover: hover) {
+                &:hover { opacity: 0.85; color: @black; }
+            }
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .consent {
+        padding: @vw16-580 @vw24-580;
+
+        &-inner { gap: @vw12-580; }
+        &-actions { width: 100%; }
+        &-button { flex: 1; }
+    }
+}
+
+// Inline status messages, on the dashboard and auth surfaces only. Themed with
+// the dashboard custom properties; the consent banner above is marketing
+// furniture and stays on the green system.
+
+.alert {
+    display: flex;
+    gap: @vw12;
+    padding: @vw12 @vw14;
+    border-radius: @dashRadius;
+    border: max(1px, @vw1) solid var(--border);
+    background-color: var(--surface-raised);
+
+    // The status colour is carried by a full-height rule down the leading edge
+    // rather than by tinting the text, which keeps the message at full
+    // contrast in both themes.
+    &::before {
+        content: '';
+        flex: none;
+        width: max(2px, @vw3);
+        border-radius: @dashRadiusPill;
+        background-color: currentColor;
+    }
+
+    &-text {
+        font-size: max(0.8em, @vw14);
+        line-height: 1.45;
+        // Body copy inherits `white-space: pre-line` from _general.less, which
+        // would turn wrapped message strings into stray line breaks.
+        white-space: normal;
+        color: var(--text);
+    }
+
+    &--error   { color: var(--error); }
+    &--success { color: var(--success); }
+    &--warning { color: var(--warning); }
+    &--info    { color: var(--accent); }
+}
+
+@media (max-width: 1080px) {
+    .alert {
+        gap: @vw12-1080;
+        padding: @vw12-1080 @vw14-1080;
+    }
+}
+
+@media (max-width: 600px) {
+    .alert {
+        gap: @vw10-580;
+        padding: @vw12-580 @vw14-580;
+    }
+}
