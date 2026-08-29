@@ -178,6 +178,14 @@ export default defineNuxtConfig({
 		otpPepper: process.env.OTP_PEPPER || "",
 		visitPepper: process.env.VISIT_PEPPER || "",
 
+		// Outbound mail (MailerSend). Server-side only: the token can send as
+		// our verified domain, so it never belongs anywhere the browser can
+		// read it. From-address and name are config rather than constants so a
+		// staging deploy can send from somewhere else without a code change.
+		mailersendApiKey: process.env.MAILERSEND_API_KEY || "",
+		mailFromEmail: process.env.MAIL_FROM_EMAIL || "no-reply@mail.jointhevips.com",
+		mailFromName: process.env.MAIL_FROM_NAME || "Champions Academy",
+
 		// Whop — server-side only. The API key can read every payment the
 		// company has ever taken, so it never leaves the server and is only
 		// used through server/utils/whop.ts (affiliate-scoped) and

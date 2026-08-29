@@ -60,6 +60,25 @@ export const RATE_LIMITS = {
 	 * backfill reconciles anything that burns its retry budget.
 	 */
 	webhookIp: { limit: 600, windowSeconds: 60, lockSeconds: 60 },
+	/**
+	 * Password reset requests from one IP.
+	 *
+	 * Mirrors loginIp: the two are the same shape of abuse from the same
+	 * direction, and someone working through a list of addresses is the case
+	 * both exist to blunt.
+	 */
+	resetIp: { limit: 10, windowSeconds: 900, lockSeconds: 1800 },
+	/**
+	 * Password reset requests for one account, cleared on a completed reset.
+	 *
+	 * Deliberately loose. A tight bucket here is a way to lock somebody out of
+	 * their *own* recovery — burn their allowance from anywhere and the real
+	 * owner cannot get a link — which is the same trap otpGlobal exists to
+	 * avoid, in a place where the victim has no other way in. Five an hour is
+	 * enough to survive a mail that lands slowly and be re-tried, and still
+	 * caps how much mail one address can be sent.
+	 */
+	resetUser: { limit: 5, windowSeconds: 3600, lockSeconds: 3600 },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Hashes identifying values into bucket keys so the table holds no PII. */
@@ -78,6 +97,8 @@ export const feedbackBucket = (affiliateId: string) => bucketKey("feedback:aff",
 // is meant to hold no raw addresses at all and one exception is how that stops
 // being true.
 export const webhookIpBucket = (ip: string) => bucketKey("whop:ip", ip);
+export const resetIpBucket = (ip: string) => bucketKey("reset:ip", ip);
+export const resetUserBucket = (email: string) => bucketKey("reset:user", email);
 export const OTP_GLOBAL_BUCKET = "otp:global";
 
 /**

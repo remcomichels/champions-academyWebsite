@@ -48,7 +48,7 @@
 					inputmode="email"
 					autocomplete="email"
 					:error="errors.emailConfirm"
-					hint="A typo here locks you out — we can't email you a reset."
+					hint="This is how you sign in, and where a reset link would be sent."
 					required
 				/>
 
@@ -85,8 +85,8 @@
 						? "I have an invite code"
 						: "I already have an account" }}
 				</button>
-				<p class="auth-help">
-					Lost your password? Ask for a new invite code — that's the reset.
+				<p v-if="mode === 'login'" class="auth-help">
+					<NuxtLink to="/forgot-password">Forgot your password?</NuxtLink>
 				</p>
 			</footer>
 		</div>
