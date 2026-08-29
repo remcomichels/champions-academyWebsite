@@ -964,9 +964,19 @@
 .dashSettings--stack {
     column-count: 1;
     width: 100%;
-    // 768. Written from the constants rather than as a flat pixel so it tracks
-    // the viewport like everything else on the page.
-    max-width: calc(@vw300 + @vw300 + @vw168);
+    // A flat pixel, and the one place on this page that wants one.
+    //
+    // Every other length here is a vw constant because it is a proportion —
+    // padding, gaps and type should all grow with the screen. A measure is not
+    // a proportion. It is the number of characters the eye can track before it
+    // loses the start of the next line, and that number does not change when
+    // somebody plugs in a bigger monitor. Written as `@vw300 + @vw300 + @vw168`
+    // it was 768 only at a 1440 viewport — 1024 at 1920, which is the wide
+    // column this rule exists to prevent.
+    //
+    // No media queries below: `max-width` is a ceiling, so once the viewport is
+    // narrower than 768 the column simply takes the width it is given.
+    max-width: 768px;
     margin-inline: auto;
 
     // The horizontal gutter is `.dashLayout-main`'s padding, not a second one
@@ -4537,15 +4547,10 @@
         .dashForm { max-width: calc(@vw300-1080 + @vw60-1080); }
     }
 
-    // Restated rather than inherited: the baseline cap is a vw length, so at
-    // this width it would land on 576 instead of 768. The `.dashForm` override
-    // is restated for a different reason — the rule just above it here carries
-    // the same specificity and would otherwise win on source order.
-    .dashSettings--stack {
-        max-width: calc(@vw300-1080 + @vw300-1080 + @vw168-1080);
-
-        .dashForm { max-width: none; }
-    }
+    // Restated because the two-column rule just above carries the same
+    // specificity and would otherwise win on source order. The cap itself needs
+    // no restating — it is a flat pixel now, so it holds at every width.
+    .dashSettings--stack .dashForm { max-width: none; }
 
     .statGrid {
         gap: @vw32-1080 @vw24-1080;
@@ -4613,12 +4618,6 @@
 
         .dashForm { max-width: none; }
     }
-
-    // Account's cap is a share of the viewport rather than a flat 768, so past
-    // this point it stops holding a wide column back and starts squeezing a
-    // narrow one — 71% of a phone screen, with the rest spent on margins the
-    // page cannot afford. Down here the viewport is the measure.
-    .dashSettings--stack { max-width: none; }
 
     .dashHero {
         flex-direction: column;
