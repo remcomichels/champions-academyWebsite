@@ -25,12 +25,17 @@
 			     wider than it to the right — an address is longer than the 40%
 			     column the control sits in, and truncating the list is what makes
 			     a picker impossible to pick from. -->
+			<!-- `mouseleave` on the list, not on each row: leaving one option for
+			     the next fires a leave before the next enter, so clearing it per
+			     row would flicker the highlight off between them. Leaving the
+			     list is the only time nothing should be lit. -->
 			<ul
 				v-if="open"
 				class="selectMenu"
 				role="listbox"
 				:aria-labelledby="`${id}-label`"
-				:aria-activedescendant="`${id}-opt-${activeIndex}`"
+				:aria-activedescendant="activeIndex >= 0 ? `${id}-opt-${activeIndex}` : undefined"
+				@mouseleave="activeIndex = -1"
 			>
 				<li
 					v-for="(option, i) in options"

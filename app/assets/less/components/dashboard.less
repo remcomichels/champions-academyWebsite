@@ -2584,6 +2584,19 @@
         margin-top: @vw16;
     }
 
+    // Under the pointer the edge comes up one step — `--border-strong` is
+    // exactly that, the same white at 18% where the resting edge is 11%, and it
+    // is already what `.btn--subtle` does on hover. Full contrast was too loud
+    // for a state you enter by accident on the way past.
+    //
+    // The select trigger is a `.field-input` too, so it takes the same step.
+    // `:not(:focus)` so this cannot paint over the accent border of the field
+    // you are actually in, whichever rule happens to land last.
+    @media (hover: hover) {
+        .field-input:hover:not(:disabled):not(:focus),
+        .readonlyField-value:hover { border-color: var(--border-strong); }
+    }
+
     // No ring on focus in here, only the accent border. The glow is a second
     // thing saying what the border already says, and at this size — a 13px
     // control in a ruled row — it reads as the field having gone fuzzy.
@@ -2655,8 +2668,12 @@
         overflow-y: auto;
         padding: @vw4;
         list-style: none;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
+        // Popover tokens, not surface ones. This floats over the page, and
+        // `--border` is an rgba — fine on a panel sitting on a known
+        // background, wrong on a box with content sliding under it, where a
+        // part-transparent edge reads as a translucent menu.
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
         border-radius: @dashRadius;
         box-shadow: var(--shadow-pop);
 
@@ -2674,8 +2691,14 @@
 
             // Driven by `activeIndex` rather than `:hover`, so the keyboard and
             // the pointer light the same row and only ever one of them.
+            //
+            // `--popover-border`, which is the one opaque colour in the set that
+            // is a real step away from `--popover` in all three themes.
+            // `--surface-hover` was the obvious choice and the wrong one: at
+            // #27272E against a #2A2A31 menu it is *darker* by three points and
+            // reads as nothing at all.
             &.is-active {
-                background-color: var(--surface-hover);
+                background-color: var(--popover-border);
                 color: var(--text);
             }
 
