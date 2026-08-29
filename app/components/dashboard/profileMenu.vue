@@ -23,19 +23,18 @@
 
 			<hr class="profileMenu-rule">
 
+			<!-- One entry, not the two this menu used to carry. Account and
+			     Settings are a single area with its own tabs now, so offering
+			     both here would be two doors into the same room — and the menu
+			     cannot say which tab you want anyway. -->
 			<NuxtLink to="/dashboard/account" class="profileMenu-item" role="menuitem" @click="close">
-				<NuxtDashboardIcon name="user" />
-				<span>Account</span>
+				<NuxtDashboardIcon name="cog" />
+				<span>Account settings</span>
 			</NuxtLink>
 
 			<NuxtLink to="/dashboard/changelog" class="profileMenu-item" role="menuitem" @click="close">
 				<NuxtDashboardIcon name="changelog" />
 				<span>Changelog</span>
-			</NuxtLink>
-
-			<NuxtLink to="/dashboard/settings" class="profileMenu-item" role="menuitem" @click="close">
-				<NuxtDashboardIcon name="cog" />
-				<span>Settings</span>
 			</NuxtLink>
 
 			<hr class="profileMenu-rule">

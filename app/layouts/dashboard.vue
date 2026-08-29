@@ -1,5 +1,5 @@
 <template>
-	<div class="dashLayout" :class="{ 'has-alertBar': vipLinkPending }">
+	<div class="dashLayout" :class="{ 'has-alertBar': vipLinkPending, 'is-accountNav': accountMode }">
 		<!-- Across the very top of the viewport, over the rail rather than
 		     beside it. This is an account-level warning, not an Overview one —
 		     sales are going uncredited on every page, so it follows the
@@ -148,10 +148,10 @@
 </template>
 
 <script setup lang="ts">
-import { ADMIN_HOME, AFFILIATE_HOME, dashboardNav, isAdminRoute } from "~/composables/useDashboardNav";
+import { ADMIN_HOME, AFFILIATE_HOME, isAdminRoute, matchNavItem } from "~/composables/useDashboardNav";
 
 const { isAdmin, affiliate, viewingAs, stopViewingAs, fetchMe } = useAuth();
-const { drawerOpen } = useDashboardNav();
+const { drawerOpen, accountMode } = useDashboardNav();
 const { resolved: theme } = useTheme();
 
 // The auth middleware has already populated this, but a direct load of a
@@ -201,14 +201,10 @@ useHead({
 	}],
 });
 
-// Longest match wins, so /dashboard/analytics doesn't resolve to Overview.
-const pageTitle = computed(() => {
-	const match = [...dashboardNav]
-		.sort((a, b) => b.to.length - a.to.length)
-		.find(item => route.path === item.to || route.path.startsWith(`${item.to}/`));
-
-	return match?.label ?? "Dashboard";
-});
+// Longest match wins, so /dashboard/analytics doesn't resolve to Overview and
+// /dashboard/account/security doesn't resolve to Preferences. The rail runs the
+// same rule over the set it is drawing.
+const pageTitle = computed(() => matchNavItem(route.path)?.label ?? "Dashboard");
 
 
 // An admin-only login has nothing to show on an affiliate page, but every

@@ -16,8 +16,16 @@
 export interface DashboardNavItem {
 	to: string;
 	label: string;
-/** A key into the dashboard's own icon set — see `NuxtDashboardIcon`. */
-	icon: string;
+	/**
+	 * A key into the dashboard's own icon set — see `NuxtDashboardIcon`.
+	 *
+	 * Optional, because the account rail has none. The two main rails are
+	 * icon-first out of necessity: they sit at @vw56 at rest, where the glyph is
+	 * the only thing visible. The account rail is always open, so its entries
+	 * are read as words, and a column of four decorative glyphs beside four
+	 * short labels is furniture rather than information.
+	 */
+	icon?: string;
 	/**
 	 * Draws a rule *above* this entry, splitting the list into groups. Sitting
 	 * on the item rather than between two of them means a group whose opening
@@ -25,6 +33,13 @@ export interface DashboardNavItem {
 	 * hanging over nothing.
 	 */
 	group?: boolean;
+	/**
+	 * Names the group this entry opens, drawn above it and below any `group`
+	 * rule. On the item for the same reason `group` is: the title belongs to the
+	 * entries under it, so dropping the first one should take the title with it
+	 * rather than leave it captioning the next group down.
+	 */
+	heading?: string;
 }
 
 /** An affiliate's own work, then the pages you visit once and leave again. */
@@ -41,6 +56,21 @@ export const affiliateNav: DashboardNavItem[] = [
 	{ to: "/dashboard/support", label: "Support", icon: "help", group: true },
 ];
 
+/**
+ * The account area's own rail, which replaces the affiliate one while you are
+ * inside it rather than nesting under it.
+ *
+ * Settings are not a place you work — they are somewhere you go, change one
+ * thing, and leave. Keeping the main rail visible alongside them offers five
+ * destinations that are all "stop doing this", which is why the sidebar here
+ * swaps out entirely and offers one way back instead.
+ */
+export const accountNav: DashboardNavItem[] = [
+	{ to: "/dashboard/account", label: "Preferences", group: true, heading: "Account settings" },
+	{ to: "/dashboard/account/security", label: "Security" },
+	{ to: "/dashboard/account/logs", label: "Audit Logs", group: true, heading: "Logs" },
+];
+
 /** Everything that reaches across affiliates rather than describing one. */
 export const adminNav: DashboardNavItem[] = [
 	{ to: "/dashboard/admin/analytics", label: "Analytics", icon: "chart" },
@@ -54,11 +84,29 @@ export const adminNav: DashboardNavItem[] = [
 export const ADMIN_HOME = adminNav[0]!.to;
 export const AFFILIATE_HOME = affiliateNav[0]!.to;
 
-/** Both sets, for anything resolving a path to a label. */
-export const dashboardNav: DashboardNavItem[] = [...affiliateNav, ...adminNav];
+/** Every set, for anything resolving a path to a label. */
+export const dashboardNav: DashboardNavItem[] = [...affiliateNav, ...adminNav, ...accountNav];
 
 /** True for any route the admin rail owns. */
 export const isAdminRoute = (path: string) => path.startsWith("/dashboard/admin");
+
+/** True for any route the account rail owns. */
+export const isAccountRoute = (path: string) => path.startsWith("/dashboard/account");
+
+/**
+ * Which entry a path belongs to, by longest match.
+ *
+ * A plain `startsWith` cannot answer this: every dashboard path starts with
+ * `/dashboard`, so Overview would claim all of them, and `/dashboard/account`
+ * would claim Security and Audit Logs on top of its own page. Taking the
+ * longest `to` that the path sits under settles both without either entry
+ * needing to know the others exist.
+ */
+export function matchNavItem(path: string, items: DashboardNavItem[] = dashboardNav) {
+	return items
+		.filter(item => path === item.to || path.startsWith(`${item.to}/`))
+		.sort((a, b) => b.to.length - a.to.length)[0] ?? null;
+}
 
 export function useDashboardNav() {
 	const { isAdmin } = useAuth();
@@ -84,6 +132,12 @@ export function useDashboardNav() {
 	 */
 	const inAdminMode = computed(() => isAdmin.value && isAdminRoute(route.path));
 
+	/**
+	 * Read off the URL for the same reason admin mode is, and not gated on a
+	 * role: the account pages are every affiliate's own.
+	 */
+	const inAccountMode = computed(() => isAccountRoute(route.path));
+
 	/** Switching modes is just going somewhere; the rail follows the route. */
 	const setAdminMode = (on: boolean) => navigateTo(on ? ADMIN_HOME : AFFILIATE_HOME);
 
@@ -91,12 +145,17 @@ export function useDashboardNav() {
 	// on arrival covers the page for no reason.
 	const drawerOpen = useState<boolean>("ca-nav-drawer", () => false);
 
-	const items = computed(() => (inAdminMode.value ? adminNav : affiliateNav));
+	// Account first: an admin reading their own account settings is in the
+	// account area, not the admin one, and `/dashboard/account` is not an admin
+	// route anyway — so the two tests cannot both pass.
+	const items = computed(() =>
+		inAccountMode.value ? accountNav : inAdminMode.value ? adminNav : affiliateNav);
 
 	return {
 		items,
 		drawerOpen,
 		adminMode: inAdminMode,
+		accountMode: inAccountMode,
 		setAdminMode,
 	};
 }

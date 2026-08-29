@@ -24,11 +24,17 @@ export default defineEventHandler(async (event) => {
 			.select("at, action, ip")
 			.eq("subject_affiliate_id", affiliate.id)
 			.order("at", { ascending: false })
-			// Five. This panel answers "has anything happened to my account
-			// that I did not do", which the most recent handful settles — a
-			// twenty-row log makes the card the tallest thing on the page and
-			// still is not a real audit trail.
-			.limit(5),
+			// Thirty. This was five while the log was a card on the Account
+			// page, where the question it answered was the narrow one — "has
+			// anything happened that I did not do" — and any more rows made it
+			// the tallest thing on the page. It has its own tab now, so the
+			// height is no longer somebody else's problem and the question can
+			// be the real one: what has happened to this account lately.
+			//
+			// Still a cap, not a page: thirty is enough to cover the recent
+			// past without this becoming a list that needs paging before it has
+			// been asked for.
+			.limit(30),
 
 		db().from("gdpr_requests")
 			.select("id, kind, status, execute_after, created_at")

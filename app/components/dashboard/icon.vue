@@ -143,6 +143,11 @@ const icons: Record<string, string[]> = {
 	],
 	moon: ["M20.5 14.6A8.6 8.6 0 1 1 9.4 3.5a7 7 0 0 0 11.1 11.1Z"],
 	menu: ["M3.5 6.5h17", "M3.5 12h17", "M3.5 17.5h17"],
+	// A shaft with a head, not a chevron. The chevrons are for stepping through
+	// a series — a page at a time, a month at a time — and this one means
+	// leaving, which is a different thing and should not look like the same
+	// control pointed the same way.
+	arrowLeft: ["M20 12H4", "M10 6 4 12l6 6"],
 	chevronLeft: ["M14.5 5.5 8 12l6.5 6.5"],
 	chevronRight: ["M9.5 5.5 16 12l-6.5 6.5"],
 	copy: [

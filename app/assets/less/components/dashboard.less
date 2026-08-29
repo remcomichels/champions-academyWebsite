@@ -180,6 +180,13 @@
 
     &.has-alertBar { --alert-bar: @vw36; }
 
+    // The account rail does not peek — it is open and stays open. Overriding the
+    // resting width is the whole mechanism: the rail reads `--rail-shut` for its
+    // width and the column reads it for its offset, so one line here moves both
+    // and they cannot disagree. The peek rules still apply and simply have
+    // nothing left to do, since the width they animate to is already in place.
+    &.is-accountNav { --rail-shut: var(--rail-open); }
+
     &-body {
         position: relative;
         flex: 1;
@@ -587,6 +594,52 @@
         transition-property: opacity, transform;
     }
 
+    // The account rail's way out. Shares the row geometry of `-item` but not its
+    // states: it is not one of the sections, so it never goes active, and
+    // colouring it like one would put a second "you are here" on the screen.
+    &-back {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        padding: @vw6 @vw8;
+        border-radius: @dashRadiusInner;
+        overflow: hidden;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+    }
+
+    // Names a group of entries. Small, uppercase and tertiary — it has to read
+    // as a label for the rows under it rather than as a row you can click,
+    // which at this size is the only thing separating the two.
+    //
+    // Inset by the row's own horizontal padding so its first letter lines up
+    // with the labels it introduces.
+    &-heading {
+        flex: none;
+        padding: @vw8 @vw8 @vw4;
+        font-size: max(0.60em, @vw10);
+        font-weight: @semiBold;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
     // Mobile only — see the note in the component. The desktop rail has no
     // control of its own: there is no pinned state left for one to toggle.
     &-close {
@@ -651,6 +704,27 @@
             transition-delay: 0.04s;
 
             .dashNav-label { transition-delay: 0.04s; }
+        }
+    }
+
+    // Static — the account rail, open at full width and staying there.
+    //
+    // Last in this block on purpose: it carries the same specificity as
+    // `.dashNav:hover`, so source order is what decides, and this has to be the
+    // one that wins. Otherwise pointing at a rail that is already open would
+    // drop a shadow on it as though it had just moved.
+    //
+    // Inside the media query for a second reason, and it is not cosmetic. Below
+    // 769 the rail is an off-canvas drawer that *wants* the pop shadow, and
+    // `.dashNav.is-static` outranks the plain `.dashNav` rule that gives it one
+    // — so left at the top level this would quietly flatten the drawer against
+    // the page on every account screen on a phone.
+    .dashNav.is-static {
+        box-shadow: none;
+
+        .dashNav-label {
+            opacity: 1;
+            transform: none;
         }
     }
 }
@@ -893,76 +967,20 @@
 }
 
 // ── Settings ─────────────────────────────────────────────────────────────────
-// Two columns. Stacked, every panel here ran the full width of the page and a
-// name field was an eleven-hundred-pixel input — usable, but it reads as a page
-// nobody finished, and it made the form roughly twice as long to scroll as it
-// needed to be.
+// One centred column at a fixed measure.
+//
+// This was two columns while Settings and Account were one long page each, and
+// the split was doing real work there — stacked, a name field was an
+// eleven-hundred-pixel input. Three tabs solved the same problem better: there
+// is no longer enough on any one of them to need columns, and a column count
+// was the wrong tool anyway. These panels are steps through one account, so two
+// columns gave the page two places to start reading and put half the sequence
+// where nobody looks first.
 .dashSettings {
-    // Columns, not a grid, and this is the whole point: a grid has rows, and a
-    // row makes two unrelated panels share a height. Whichever way that is
-    // resolved it looks wrong — stretched, a short panel is a mostly-empty box;
-    // sized to content, the shorter one leaves a hole beside it. Here each
-    // panel is exactly as tall as what is in it, and the only thing being
-    // equalised is the two columns, which is the part a reader actually sees.
-    column-count: 2;
-    column-gap: @vw20;
-    // The default, stated on purpose: it is what evens the two columns up by
-    // moving panels between them, rather than filling the first and leaving
-    // the second short.
-    column-fill: balance;
+    display: flex;
+    flex-direction: column;
+    gap: @vw20;
 
-    > * {
-        // Column layout has no block-axis `gap`, so the rhythm is a margin.
-        margin-bottom: @vw20;
-        // Without this a panel is free to be cut in half at the column
-        // boundary and continue at the top of the next one.
-        -webkit-column-break-inside: avoid;
-        break-inside: avoid;
-    }
-
-    // A banner speaks for the whole page rather than for the column it landed
-    // in, so it takes the full width and the balancing restarts under it.
-    &-wide { column-span: all; }
-
-    // Scoped to this page on purpose.
-    //
-    // `.dashForm`, `.readonlyField` and `.field-label` are shared: the Links
-    // page uses the first two, and `.field-label` comes from NuxtAuthField,
-    // which is what the login and invite screens are built from. Capping the
-    // width on those classes themselves would narrow a form on three other
-    // screens that never asked for it. Nesting the cap inside this wrapper
-    // keeps it here.
-    //
-    // The panel is already about half the page, so this only bites on a wide
-    // monitor — enough to stop an input growing past the length of the thing
-    // it holds, without leaving an obvious band of dead space beside it.
-    .dashForm { max-width: calc(@vw300 + @vw120); }
-
-    // `.dashPanel-note` pins itself to the bottom of its card, so that two
-    // panels sharing a row on the dashboard line their notes up. These notes
-    // sit *between* things — under a heading, above the form they explain — so
-    // they belong where the markup puts them. Inert while the panels are sized
-    // to their content, and the rule that keeps it that way if one ever gains
-    // a minimum height.
-    .dashPanel-note { margin-top: 0; }
-}
-
-// ── Settings: the Account half ───────────────────────────────────────────────
-// One centred column, not two.
-//
-// Two columns are right for Settings, where the panels are unrelated knobs and
-// reading order barely matters. Account is the opposite: name, then password,
-// then where you are signed in, then your data — four steps through the same
-// account, and the last two are the ones somebody scrolls to in a hurry.
-// Splitting that into two columns gives the page two places to start reading,
-// and puts half the sequence where nobody looks first.
-//
-// Capped at 768 and centred rather than left in the 1280 the page allows: a
-// form is read one line at a time, and a name field two-thirds of a monitor
-// wide is a worse target than a short one, not a better one. Centring keeps
-// the column under the eye instead of hard against the rail.
-.dashSettings--stack {
-    column-count: 1;
     width: 100%;
     // A flat pixel, and the one place on this page that wants one.
     //
@@ -970,9 +988,9 @@
     // padding, gaps and type should all grow with the screen. A measure is not
     // a proportion. It is the number of characters the eye can track before it
     // loses the start of the next line, and that number does not change when
-    // somebody plugs in a bigger monitor. Written as `@vw300 + @vw300 + @vw168`
-    // it was 768 only at a 1440 viewport — 1024 at 1920, which is the wide
-    // column this rule exists to prevent.
+    // somebody plugs in a bigger monitor. Written from the constants it was 768
+    // only at a 1440 viewport — 1024 at 1920, which is the wide column this cap
+    // exists to prevent.
     //
     // No media queries below: `max-width` is a ceiling, so once the viewport is
     // narrower than 768 the column simply takes the width it is given.
@@ -983,10 +1001,21 @@
     // declared here — it is already 40 at this width, and nesting another would
     // inset the column twice for no reason a reader could see.
 
-    // The two-column cap exists because a panel is half the page there and a
-    // full-width input inside it still ran long. Here the panel *is* the
-    // measure, so the fields take it.
+    // The fields take the panel's width. There was a cap here while a panel was
+    // half the page; now the panel *is* the measure, and capping inside it
+    // would leave a band of dead space down the right of every form.
+    //
+    // Scoped to this page either way. `.dashForm`, `.readonlyField` and
+    // `.field-label` are shared — the Links page uses the first two, and
+    // `.field-label` comes from NuxtAuthField, which is what the login and
+    // invite screens are built from.
     .dashForm { max-width: none; }
+
+    // `.dashPanel-note` pins itself to the bottom of its card, so that two
+    // panels sharing a row on the dashboard line their notes up. These notes
+    // sit *between* things — under a heading, above the form they explain — so
+    // they belong where the markup puts them.
+    .dashPanel-note { margin-top: 0; }
 }
 
 .dash-loading {
@@ -4539,18 +4568,7 @@
     .sparkbars { height: @vw30-1080; }
     .dashGrid { gap: @vw24-1080; }
 
-    .dashSettings {
-        column-gap: @vw16-1080;
-
-        > * { margin-bottom: @vw16-1080; }
-
-        .dashForm { max-width: calc(@vw300-1080 + @vw60-1080); }
-    }
-
-    // Restated because the two-column rule just above carries the same
-    // specificity and would otherwise win on source order. The cap itself needs
-    // no restating — it is a flat pixel now, so it holds at every width.
-    .dashSettings--stack .dashForm { max-width: none; }
+    .dashSettings { gap: @vw16-1080; }
 
     .statGrid {
         gap: @vw32-1080 @vw24-1080;
@@ -4612,13 +4630,6 @@
 
     .dashGrid { grid-template-columns: 1fr; }
 
-    // Below this a half-width panel is narrower than the field inside it.
-    .dashSettings {
-        column-count: 1;
-
-        .dashForm { max-width: none; }
-    }
-
     .dashHero {
         flex-direction: column;
         align-items: stretch;
@@ -4673,7 +4684,7 @@
 
     .dash { gap: @vw40-580; }
     .dashSection { gap: @vw24-580; }
-    .dashSettings > * { margin-bottom: @vw16-580; }
+    .dashSettings { gap: @vw16-580; }
     // Four range tabs plus a title do not fit across a phone, and the tabs are
     // the part that must not shrink.
     .dashHead {
