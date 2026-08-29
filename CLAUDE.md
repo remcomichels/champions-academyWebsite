@@ -55,6 +55,26 @@ npm run generate   # Static site generation
 npm run preview    # Preview production build locally
 ```
 
+## Database migrations
+
+Every schema change is a file in `supabase/migrations/`. **Never apply one by
+hand to production** — `.github/workflows/database.yml` applies them on push to
+`main`, and a change made outside that is invisible to every other environment.
+That is not hypothetical: it is how `affiliate_traffic` ended up with a
+different signature in production than in this repo for two months, and how a
+column reference once shipped ahead of its migration and locked everyone out of
+the dashboard.
+
+```bash
+supabase migration new <name>   # create one
+supabase db push --dry-run      # what would be applied
+supabase migration list         # local vs applied, side by side
+```
+
+A migration filename's timestamp is its identity — it is what the remote
+history table matches on, so **never rename or edit one that has been applied**.
+Fix a mistake with a new migration.
+
 ## Environment variables
 
 Set in `.env` (never commit). All are consumed via `nuxt.config.ts` runtime config.
