@@ -22,13 +22,36 @@
 
 			<div class="dashPanel">
 				<form class="dashForm dashForm--split" novalidate @submit.prevent="saveProfile">
-					<NuxtAuthField v-model="profile.firstName" label="First name" :error="errors.firstName" required />
-					<NuxtAuthField v-model="profile.lastName" label="Last name" :error="errors.lastName" />
+					<NuxtAuthField
+						v-model="profile.firstName"
+						label="First name"
+						placeholder="First name"
+						:error="errors.firstName"
+						required
+					/>
+					<NuxtAuthField
+						v-model="profile.lastName"
+						label="Last name"
+						placeholder="Last name"
+						:error="errors.lastName"
+					/>
 
-					<div class="readonlyField">
-						<span class="field-label">Email</span>
-						<code class="readonlyField-value">{{ data.profile.email ?? "—" }}</code>
-						<p class="field-message">Message us to change this — we can't verify a new address automatically yet.</p>
+					<!-- A select with one option today, because one address is all
+					     an account has. It is the right control for what this is
+					     rather than for what it currently holds: the moment a
+					     second address exists it needs no rebuilding, and picking
+					     which of several is primary is the only interaction this
+					     row will ever want. -->
+					<div class="field">
+						<label class="field-label" for="primary-email">Primary email</label>
+						<p class="field-message">Used for account notifications.</p>
+
+						<div class="field-control">
+							<select id="primary-email" class="field-input field-input--select">
+								<option>{{ data.profile.email ?? "—" }}</option>
+							</select>
+							<NuxtDashboardIcon name="chevronDown" class="field-caret" />
+						</div>
 					</div>
 
 					<!-- Read-only here on purpose. This is the `?r=` handle, and

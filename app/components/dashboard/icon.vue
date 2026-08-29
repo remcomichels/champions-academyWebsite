@@ -148,6 +148,9 @@ const icons: Record<string, string[]> = {
 	// leaving, which is a different thing and should not look like the same
 	// control pointed the same way.
 	arrowLeft: ["M20 12H4", "M10 6 4 12l6 6"],
+	// The third of the set. Same geometry as the other two turned a quarter,
+	// so a select's caret and the pagination arrows read as one family.
+	chevronDown: ["M5.5 9.5 12 16l6.5-6.5"],
 	chevronLeft: ["M14.5 5.5 8 12l6.5 6.5"],
 	chevronRight: ["M9.5 5.5 16 12l-6.5 6.5"],
 	copy: [

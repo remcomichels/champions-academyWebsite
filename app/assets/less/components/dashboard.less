@@ -2467,7 +2467,11 @@
 // `fr` rather than percentages, so the column gap comes out of the track sizes
 // instead of overflowing the row by its width.
 .dashForm--split {
-    gap: @vw16;
+    // No gap. Each row carries its own padding and a rule above it, so the
+    // rhythm comes from the dividers rather than from space between them —
+    // a gap on top of that would read as two different separations doing the
+    // same job.
+    gap: 0;
 
     .field,
     .readonlyField {
@@ -2475,7 +2479,16 @@
         grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
         align-items: center;
         column-gap: @vw20;
-        row-gap: @vw6;
+        row-gap: @vw4;
+        padding: @vw14 0;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    // The first row opens the form, so a rule above it would be drawn against
+    // the card's own padding with nothing on the other side of it.
+    > *:first-child {
+        border-top: none;
+        padding-top: 0;
     }
 
     // Sentence case, not the uppercase the shared field uses. Uppercase reads
@@ -2489,11 +2502,24 @@
         color: var(--text);
     }
 
-    // Auto-placement would drop these into column 1 of the next row, under the
-    // label, where they read as a second label.
+    // Placed rather than flowed, because the two columns hold different kinds
+    // of thing: the left one is what the row is *about* — its name and the
+    // sentence explaining it — and the right one is the control you act on.
+    //
+    // The hint sits under the label rather than under the input. Under the
+    // input it was the widest thing in a 40% column and pushed every row apart;
+    // under the label it has 60% to run in and reads as part of the label,
+    // which is what it is.
+    .field-label { grid-column: 1; grid-row: 1; }
+    .field-message { grid-column: 1; grid-row: 2; }
+
+    // Row 1 only, so a long hint grows the row downwards under the label and
+    // leaves the control where it is, level with the name of its own row.
     .field-control,
-    .readonlyField-value,
-    .field-message { grid-column: 2; }
+    .readonlyField-value {
+        grid-column: 2;
+        grid-row: 1;
+    }
 
     // Smaller than the shared field, and a flat pixel rather than a vw.
     //
@@ -2510,8 +2536,33 @@
 
     // Under the controls it submits rather than under the labels, which is
     // where `.dashForm`'s own `flex-start` would leave it — at the far left of
-    // a 60% column with nothing above it.
-    .dashForm-submit { align-self: flex-end; }
+    // a 60% column with nothing above it. The margin replaces the gap the form
+    // no longer has; without it the button sits flush against the last rule.
+    .dashForm-submit {
+        align-self: flex-end;
+        margin-top: @vw16;
+    }
+
+    // Native select chrome varies by platform and none of it matches the
+    // inputs beside it, so it is replaced with the set's own chevron.
+    .field-input--select {
+        appearance: none;
+        padding-right: @vw32;
+        cursor: pointer;
+    }
+
+    .field-caret {
+        position: absolute;
+        top: 50%;
+        right: @vw10;
+        width: @vw14;
+        height: @vw14;
+        transform: translateY(-50%);
+        color: var(--text-tertiary);
+        // The caret is decoration over a control that is itself clickable —
+        // without this, clicking the arrow does nothing.
+        pointer-events: none;
+    }
 }
 
 .readonlyField {
@@ -4801,11 +4852,24 @@
     // back above its control.
     .dashForm--split {
         .field,
-        .readonlyField { grid-template-columns: minmax(0, 1fr); }
+        .readonlyField {
+            grid-template-columns: minmax(0, 1fr);
+            row-gap: @vw6-580;
+        }
+
+        // One column, so the three parts stack in the order they are read:
+        // what the row is called, what it means, then the control. The rows are
+        // stated rather than left to auto-placement because the baseline layout
+        // pins the control to row 1, and that pin has to be undone here or the
+        // input would sit above its own hint.
+        .field-label { grid-row: 1; }
+        .field-message { grid-row: 2; }
 
         .field-control,
-        .readonlyField-value,
-        .field-message { grid-column: 1; }
+        .readonlyField-value {
+            grid-column: 1;
+            grid-row: 3;
+        }
 
         // 16 exactly, and a flat pixel because that is the number iOS Safari
         // measures: it zooms the viewport whenever a focused input computes
