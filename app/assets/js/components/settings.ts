@@ -88,6 +88,26 @@ export async function useSettings() {
 	const pendingDelete = computed(() =>
 		data.value?.gdprRequests.find(r => r.kind === "delete" && r.status === "pending") ?? null);
 
+	/**
+	 * Whether the profile form holds anything not yet saved.
+	 *
+	 * Compared against `data` rather than tracked with a flag on every input:
+	 * a flag says "somebody typed", which stays true after they type a letter
+	 * and delete it again, and would leave Save lit for a form that matches
+	 * what is already stored. This asks the only question worth asking — is
+	 * what is on screen different from what the server has.
+	 */
+	const profileDirty = computed(() =>
+		profile.firstName !== (data.value?.profile.firstName ?? "")
+		|| profile.lastName !== (data.value?.profile.lastName ?? ""));
+
+	/** Puts the form back to what is stored. The Cancel next to Save. */
+	function resetProfile() {
+		profile.firstName = data.value?.profile.firstName ?? "";
+		profile.lastName = data.value?.profile.lastName ?? "";
+		errors.value = {};
+	}
+
 	/** Surfaces the field-level message when the API named one. */
 	function handle(error: unknown, fallback: string) {
 		const payload = (error as { data?: { data?: { field?: string; message?: string }; statusMessage?: string } })?.data;
@@ -217,6 +237,7 @@ export async function useSettings() {
 	return {
 		data, banner, busy, errors,
 		profile, slug, passwords, pendingDelete,
+		profileDirty, resetProfile,
 		saveProfile, saveSlug, savePassword,
 		signOutOthers, gdpr, confirmDelete, exportData,
 		formatDate, formatWhen, describeAction,

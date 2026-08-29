@@ -36,23 +36,18 @@
 						:error="errors.lastName"
 					/>
 
-					<!-- A select with one option today, because one address is all
-					     an account has. It is the right control for what this is
-					     rather than for what it currently holds: the moment a
-					     second address exists it needs no rebuilding, and picking
-					     which of several is primary is the only interaction this
-					     row will ever want. -->
-					<div class="field">
-						<label class="field-label" for="primary-email">Primary email</label>
-						<p class="field-message">Used for account notifications.</p>
-
-						<div class="field-control">
-							<select id="primary-email" class="field-input field-input--select">
-								<option>{{ data.profile.email ?? "—" }}</option>
-							</select>
-							<NuxtDashboardIcon name="chevronDown" class="field-caret" />
-						</div>
-					</div>
+					<!-- One option today, because one address is all an account
+					     has. It is the right control for what this row is rather
+					     than for what it currently holds: the moment a second
+					     address exists it needs no rebuilding, and picking which
+					     of several is primary is the only interaction it will
+					     ever want. -->
+					<NuxtDashboardSelectField
+						:model-value="data.profile.email ?? ''"
+						:options="emailOptions"
+						label="Primary email"
+						hint="Used for account notifications."
+					/>
 
 					<!-- Read-only here on purpose. This is the `?r=` handle, and
 					     changing it is rate-limited with a grace period on the old
@@ -65,9 +60,26 @@
 						<p class="field-message">Your public handle. Change it under Your link, below.</p>
 					</div>
 
-					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'profile'">
-						{{ busy === "profile" ? "Saving…" : "Save profile" }}
-					</button>
+					<!-- Cancel only exists while there is something to cancel.
+					     A permanent one next to a disabled Save is two dead
+					     controls where the form should be showing none. -->
+					<div class="dashForm-actions">
+						<button
+							v-if="profileDirty"
+							type="button"
+							class="btn btn--ghost"
+							:disabled="busy === 'profile'"
+							@click="resetProfile"
+						>Cancel</button>
+
+						<button
+							type="submit"
+							class="btn btn--primary"
+							:disabled="busy === 'profile' || !profileDirty"
+						>
+							{{ busy === "profile" ? "Saving…" : "Save profile" }}
+						</button>
+					</div>
 				</form>
 			</div>
 		</section>
@@ -272,9 +284,20 @@ const HEADINGS = {
 
 const page = computed(() => HEADINGS[props.section]);
 
+/**
+ * One entry, and it is the account's own address. A list rather than a bare
+ * value because the control is a picker: when recovery addresses land, they
+ * join this array and nothing else here changes.
+ */
+const emailOptions = computed(() => {
+	const address = data.value?.profile.email;
+	return address ? [{ value: address, label: address }] : [];
+});
+
 const {
 	data, banner, busy, errors,
 	profile, slug, passwords, pendingDelete,
+	profileDirty, resetProfile,
 	saveProfile, saveSlug, savePassword,
 	signOutOthers, gdpr, confirmDelete, exportData,
 	formatDate, formatWhen, describeAction,

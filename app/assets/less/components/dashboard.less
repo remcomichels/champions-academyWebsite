@@ -1061,6 +1061,7 @@
 @settingsTitle: 22px;      // the page heading
 @settingsStandfirst: 15px; // the line under it
 @settingsCardTitle: 18px;  // each card's heading
+@settingsLabel: 15px;      // what a form row is called — the standfirst's step
 @settingsBody: 13px;       // card subtext, and everything inside a card
 
 // The page's own heading, and the block headings under it.
@@ -2477,29 +2478,42 @@
     .readonlyField {
         display: grid;
         grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-        align-items: center;
+        // `start`, not `center`. Centred, row 1 was as tall as the input and the
+        // label floated in the middle of it — which put a visible gap between a
+        // label and the sentence explaining it, two things that belong together.
+        // Aligned to the top they sit as one block, and the label's own padding
+        // below puts it back on the input's line.
+        align-items: start;
         column-gap: @vw20;
-        row-gap: @vw4;
-        padding: @vw14 0;
-        border-top: max(1px, @vw1) solid var(--border);
+        row-gap: @vw2;
+
+        // Ruled edge to edge. The negative margin takes the row out past
+        // `.dashPanel`'s @vw16 padding and the matching inline padding puts the
+        // content back where it was, so the line spans the card while the text
+        // stays on the same left edge as everything above it.
+        margin-inline: -@vw16;
+        padding: @vw14 @vw16;
+        border-bottom: max(1px, @vw1) solid var(--border);
     }
 
-    // The first row opens the form, so a rule above it would be drawn against
-    // the card's own padding with nothing on the other side of it.
-    > *:first-child {
-        border-top: none;
-        padding-top: 0;
-    }
+    // A rule under every row, including the last — it is what closes the set off
+    // from the buttons under it. The first row loses only its top padding,
+    // which would otherwise stack on the card's own.
+    > *:first-child { padding-top: 0; }
 
     // Sentence case, not the uppercase the shared field uses. Uppercase reads
     // as a category heading, which is right for a label sitting above its
     // control and wrong for one sitting beside it in a row of them.
     .field-label {
-        font-size: @settingsBody;
+        font-size: @settingsLabel;
         font-weight: @medium;
         text-transform: none;
         letter-spacing: 0;
         color: var(--text);
+        // Drops the label onto the input's own line, which `align-items: start`
+        // above gave up in exchange for pinning the hint directly beneath it.
+        // Matches the control's top padding plus its border.
+        padding-top: calc(@vw7 + max(1px, @vw1));
     }
 
     // Placed rather than flowed, because the two columns hold different kinds
@@ -2543,12 +2557,42 @@
         margin-top: @vw16;
     }
 
-    // Native select chrome varies by platform and none of it matches the
-    // inputs beside it, so it is replaced with the set's own chevron.
+    // Cancel and Save, under the controls they act on. Cancel first in the
+    // markup and so on the left: the safe one is the one a mis-aim should hit.
+    .dashForm-actions {
+        display: flex;
+        align-self: flex-end;
+        align-items: center;
+        gap: @vw8;
+        margin-top: @vw16;
+    }
+
+    // The trigger. A button rather than a `<select>` — the native popup is
+    // drawn by the operating system, which will not put it under the field, let
+    // it run wider than the field, or make it look like the rest of this form.
     .field-input--select {
         appearance: none;
+        display: flex;
+        align-items: center;
         padding-right: @vw32;
+        text-align: left;
+        font-family: @body;
         cursor: pointer;
+
+        &.is-open {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 max(2px, @vw2) var(--accent-ring);
+        }
+    }
+
+    // The value inside it. Its own element so a long address is clipped by the
+    // control rather than pushing the caret out of the box.
+    .field-input-value {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .field-caret {
@@ -2562,6 +2606,70 @@
         // The caret is decoration over a control that is itself clickable —
         // without this, clicking the arrow does nothing.
         pointer-events: none;
+    }
+
+    // The popup.
+    //
+    // Under the trigger and pinned to its left edge, free to run wider than it
+    // to the right. That asymmetry is the point: the control lives in the 40%
+    // column and an email address is longer than that, so a menu held to the
+    // trigger's width would truncate every option and leave a picker you cannot
+    // pick from. Left edge fixed so the list opens where the eye already is.
+    //
+    // `max-content` with a floor of the trigger's own width: never narrower
+    // than what it hangs from, never wider than it needs, and capped so a long
+    // address cannot run it off the side of the page.
+    .selectMenu {
+        position: absolute;
+        top: calc(100% + @vw6);
+        left: 0;
+        z-index: 20;
+        min-width: 100%;
+        width: max-content;
+        max-width: @vw300 + @vw60;
+        max-height: @vw240;
+        overflow-y: auto;
+        padding: @vw4;
+        list-style: none;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        box-shadow: var(--shadow-pop);
+
+        &-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: @vw10;
+            padding: @vw7 @vw10;
+            border-radius: @dashRadiusInner;
+            font-size: @settingsBody;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            cursor: pointer;
+
+            // Driven by `activeIndex` rather than `:hover`, so the keyboard and
+            // the pointer light the same row and only ever one of them.
+            &.is-active {
+                background-color: var(--surface-hover);
+                color: var(--text);
+            }
+
+            &.is-chosen { color: var(--text); }
+        }
+
+        &-label {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        &-tick {
+            flex: none;
+            width: @vw14;
+            height: @vw14;
+            color: var(--accent);
+        }
     }
 }
 
@@ -4808,12 +4916,28 @@
     }
 
     .dashForm--split {
-        gap: @vw16-1080;
-
         .field,
         .readonlyField {
             column-gap: @vw20-1080;
-            row-gap: @vw6-1080;
+            row-gap: @vw2-1080;
+            // Tracks `.dashPanel`'s padding at this tier, or the rule stops
+            // short of the card edge by the difference.
+            margin-inline: calc(@vw16-1080 * -1);
+            padding: @vw14-1080 @vw16-1080;
+        }
+
+        .field-label { padding-top: calc(@vw7-1080 + max(1px, @vw1)); }
+
+        .dashForm-actions { gap: @vw8-1080; margin-top: @vw16-1080; }
+
+        .selectMenu {
+            top: calc(100% + @vw6-1080);
+            max-width: @vw300-1080 + @vw60-1080;
+            max-height: @vw240-1080;
+            padding: @vw4-1080;
+
+            &-item { padding: @vw7-1080 @vw10-1080; gap: @vw10-1080; }
+            &-tick { width: @vw14-1080; height: @vw14-1080; }
         }
 
         .field-input,
@@ -4862,7 +4986,13 @@
         // stated rather than left to auto-placement because the baseline layout
         // pins the control to row 1, and that pin has to be undone here or the
         // input would sit above its own hint.
-        .field-label { grid-row: 1; }
+        // The offset exists to drop the label onto the input's line. Stacked,
+        // there is no input beside it and the padding is just a gap.
+        .field-label {
+            grid-row: 1;
+            padding-top: 0;
+        }
+
         .field-message { grid-row: 2; }
 
         .field-control,
@@ -4983,12 +5113,26 @@
     .settingsBlock { gap: @vw8-580; }
 
     .dashForm--split {
-        gap: @vw14-580;
+        .field,
+        .readonlyField {
+            margin-inline: calc(@vw16-580 * -1);
+            padding: @vw14-580 @vw16-580;
+        }
 
         .field-input,
         .readonlyField-value {
             padding: @vw10-580 @vw12-580;
             border-radius: @vw8-580;
+        }
+
+        .dashForm-actions { gap: @vw8-580; margin-top: @vw16-580; }
+
+        .selectMenu {
+            top: calc(100% + @vw6-580);
+            max-width: none;
+            max-height: @vw240-580;
+
+            &-item { padding: @vw10-580 @vw12-580; }
         }
     }
     // Four range tabs plus a title do not fit across a phone, and the tabs are
