@@ -1,4 +1,4 @@
-import { displayName, object, optional, str } from "../../utils/validate";
+import { displayName, object, optional, str, whenPresent } from "../../utils/validate";
 
 /**
  * Profile and notification preferences.
@@ -12,14 +12,23 @@ export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 
 	const body = await readValidatedBody(event, object({
-		firstName: optional(displayName({ max: 80 })),
-		lastName: optional(displayName({ max: 80 })),
+		// `whenPresent`, not `optional`: a surname is a thing people drop, and
+		// `optional` reports an emptied box as an absent one — which this route
+		// would then fill back in from the stored row, so clearing it would look
+		// like it saved and then come back.
+		firstName: whenPresent(displayName({ max: 80 })),
+		lastName: whenPresent(displayName({ max: 80 })),
 		timezone: optional(str({ max: 64 })),
 		locale: optional(str({ max: 10 })),
 	}));
 
 	const update: Record<string, unknown> = {};
 
+	// Skipped entirely when neither part was sent — which is the profile menu
+	// saving a timezone on its own. Before `whenPresent` this test could never
+	// be false, so every timezone change also rewrote all three name columns and
+	// logged them as edited.
+	//
 	// The two parts are written together, and `display_name` is composed from
 	// them rather than sent by the client.
 	//

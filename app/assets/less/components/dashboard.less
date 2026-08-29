@@ -2478,14 +2478,9 @@
     .readonlyField {
         display: grid;
         grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
-        // `start`, not `center`. Centred, row 1 was as tall as the input and the
-        // label floated in the middle of it — which put a visible gap between a
-        // label and the sentence explaining it, two things that belong together.
-        // Aligned to the top they sit as one block, and the label's own padding
-        // below puts it back on the input's line.
-        align-items: start;
+        align-items: center;
         column-gap: @vw20;
-        row-gap: @vw2;
+        row-gap: 0;
 
         // Ruled edge to edge. The negative margin takes the row out past
         // `.dashPanel`'s @vw16 padding and the matching inline padding puts the
@@ -2509,11 +2504,33 @@
         font-weight: @medium;
         text-transform: none;
         letter-spacing: 0;
+        line-height: 1.25;
         color: var(--text);
-        // Drops the label onto the input's own line, which `align-items: start`
-        // above gave up in exchange for pinning the hint directly beneath it.
-        // Matches the control's top padding plus its border.
-        padding-top: calc(@vw7 + max(1px, @vw1));
+    }
+
+    .field-message { line-height: 1.25; }
+
+    // A label and its hint, centred against the control as one block, in a row
+    // that stays the height of a row with no hint at all.
+    //
+    // The control spans both tracks, so it — not the text — is what sets the
+    // row's height. With no hint the second track collapses and the label
+    // centres against the control on its own. With one, the label sits at the
+    // bottom of the first track and the hint at the top of the second, so the
+    // two meet on the boundary between them, which is the control's middle: the
+    // label rises by exactly half the hint rather than the row growing under it.
+    //
+    // `:has()` because this cannot be asked of the markup. The label and the
+    // hint are siblings either side of the control in the DOM — that order is
+    // right for the stacked layout the login and invite screens use, and is not
+    // this page's to rearrange.
+    // On the row, not on `&` — `&` here is the form, and scoped to that this
+    // read "if any row anywhere has a hint, shift every label in the form",
+    // which is emphatically not the question being asked.
+    .field:has(.field-message),
+    .readonlyField:has(.field-message) {
+        .field-label { align-self: end; }
+        .field-message { align-self: start; }
     }
 
     // Placed rather than flowed, because the two columns hold different kinds
@@ -2527,12 +2544,12 @@
     .field-label { grid-column: 1; grid-row: 1; }
     .field-message { grid-column: 1; grid-row: 2; }
 
-    // Row 1 only, so a long hint grows the row downwards under the label and
-    // leaves the control where it is, level with the name of its own row.
+    // Both tracks, which is what makes the control the thing that sets the row
+    // height — see the note on the pairing above.
     .field-control,
     .readonlyField-value {
         grid-column: 2;
-        grid-row: 1;
+        grid-row: 1 / span 2;
     }
 
     // Smaller than the shared field, and a flat pixel rather than a vw.
@@ -2567,6 +2584,16 @@
         margin-top: @vw16;
     }
 
+    // No ring on focus in here, only the accent border. The glow is a second
+    // thing saying what the border already says, and at this size — a 13px
+    // control in a ruled row — it reads as the field having gone fuzzy.
+    //
+    // Scoped to this form: the login and invite screens keep theirs. They are
+    // the two places somebody arrives cold, often on a phone, and a 1px change
+    // of border colour is a thin thing to hang a focus indicator on.
+    .field-input:focus-visible,
+    .readonlyField-value:focus-visible { box-shadow: none; }
+
     // The trigger. A button rather than a `<select>` — the native popup is
     // drawn by the operating system, which will not put it under the field, let
     // it run wider than the field, or make it look like the rest of this form.
@@ -2579,10 +2606,7 @@
         font-family: @body;
         cursor: pointer;
 
-        &.is-open {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 max(2px, @vw2) var(--accent-ring);
-        }
+        &.is-open { border-color: var(--accent); }
     }
 
     // The value inside it. Its own element so a long address is clipped by the
@@ -2801,14 +2825,64 @@
     pointer-events: none;
 }
 
+// The inbox's own toasts pass straight through to the page — they are read,
+// not acted on. One with a close button cannot, so the container it sits in
+// takes its clicks back.
+.toasts--interactive { pointer-events: auto; }
+
 .toast {
+    display: flex;
+    align-items: flex-start;
+    gap: @vw12;
     padding: @vw12 @vw16;
     .dashSurface();
     box-shadow: var(--shadow-pop);
-    font-size: max(0.80em, @vw14);
+    font-size: @settingsBody;
     color: var(--text);
     white-space: normal;
     max-width: calc(@vw300 + @vw40);
+
+    &-text {
+        flex: 1;
+        min-width: 0;
+        line-height: 1.45;
+    }
+
+    // A tinted left edge rather than a tinted panel: the toast sits over the
+    // page, and a filled one at this size reads as an error dialog whatever it
+    // actually says.
+    &--success { border-left: max(3px, @vw3) solid var(--success); }
+    &--error { border-left: max(3px, @vw3) solid var(--error); }
+    &--warning { border-left: max(3px, @vw3) solid var(--warning); }
+    &--info { border-left: max(3px, @vw3) solid var(--accent); }
+
+    &-close {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw20;
+        height: @vw20;
+        margin-top: @vw1;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: @dashRadiusInner;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw1;
+        }
+    }
+
+    &-glyph { width: @vw12; height: @vw12; }
 }
 
 // ── Funnel + table ───────────────────────────────────────────────────────────

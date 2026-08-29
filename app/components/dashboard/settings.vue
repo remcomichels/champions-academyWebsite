@@ -9,9 +9,14 @@
 			<p class="settingsHead-text">{{ page.text }}</p>
 		</header>
 
-		<NuxtAlertBanner v-if="banner" :variant="banner.variant">
-			{{ banner.text }}
-		</NuxtAlertBanner>
+		<!-- Bottom right rather than above the cards. As a banner it pushed the
+		     whole tab down the moment it appeared, and on a long page it
+		     reported the result of a save that had scrolled out of view. The
+		     two banners that remain are different things: they describe a
+		     standing condition of the card they sit in, not an event. -->
+		<NuxtDashboardToast :message="banner?.text ?? ''" :variant="banner?.variant ?? 'info'">
+			{{ banner?.text }}
+		</NuxtDashboardToast>
 
 		<!-- Preferences ─────────────────────────────────────────────────── -->
 		<section v-if="isPreferences" class="settingsBlock">

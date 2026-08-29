@@ -94,11 +94,13 @@ const close = () => { open.value = false; };
 function toggle() {
 	if (props.disabled) return;
 	open.value = !open.value;
-	// Opening lands on what is already chosen, so the first arrow press moves
-	// from there rather than from the top of a list you did not choose from.
-	if (open.value) {
-		activeIndex.value = Math.max(0, props.options.findIndex(o => o.value === props.modelValue));
-	}
+	// Nothing is highlighted on open. Landing the highlight on the chosen option
+	// meant the row was filled the moment the list appeared, so with a single
+	// option every option was tinted and the list read as a differently
+	// coloured box rather than as a menu. The tick already says which one is
+	// chosen; the fill is for saying which one you are *about* to choose, and
+	// until you move there is no such thing.
+	if (open.value) activeIndex.value = -1;
 }
 
 function choose(value: string) {
@@ -129,13 +131,17 @@ function onTriggerKey(event: KeyboardEvent) {
 		return;
 	}
 
+	// From -1, down lands on the first option and up on the last, which is what
+	// "nothing is highlighted yet" should do in either direction.
 	if (event.key === "ArrowDown") {
 		event.preventDefault();
 		activeIndex.value = (activeIndex.value + 1) % props.options.length;
 	}
 	else if (event.key === "ArrowUp") {
 		event.preventDefault();
-		activeIndex.value = (activeIndex.value - 1 + props.options.length) % props.options.length;
+		activeIndex.value = activeIndex.value <= 0
+			? props.options.length - 1
+			: activeIndex.value - 1;
 	}
 	else if (event.key === "Enter" || event.key === " ") {
 		event.preventDefault();

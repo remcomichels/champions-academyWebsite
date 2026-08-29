@@ -108,6 +108,23 @@ export const optional = <T>(check: Check<T>): Check<T | null> => (value, field) 
 	return check(value, field);
 };
 
+/**
+ * Like `optional`, except an empty string is a value rather than an absence.
+ *
+ * `optional` folds "the client did not send this" and "the client sent it
+ * empty" into the same `null`, which is right for most fields — a blank box is
+ * a field you did not fill in. It is wrong for anything clearable. A route that
+ * cannot tell the two apart has to fall back to the stored value, and then
+ * emptying the box saves nothing and the old value comes back on the next load.
+ *
+ * Returns `undefined` only for a key that was genuinely absent, so
+ * `!== undefined` means "the client had something to say about this field".
+ */
+export const whenPresent = <T>(check: Check<T>): Check<T | undefined> => (value, field) => {
+	if (value === undefined || value === null) return undefined;
+	return check(value, field);
+};
+
 type Shape = Record<string, Check<unknown>>;
 type Infer<S extends Shape> = { [K in keyof S]: S[K] extends Check<infer T> ? T : never };
 
