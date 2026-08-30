@@ -2752,27 +2752,30 @@
     align-items: center;
     gap: @vw14;
 
-    // A tile, not a bare glyph. At the size this icon has to be to sit beside
-    // two lines of text it looked like a stray mark next to them; the tile
-    // gives it the same weight as the row it labels.
+    // A bare glyph, and big enough to carry the row on its own. It was a
+    // bordered tile — the tile was there to give an @vw18 icon enough presence
+    // to sit beside two lines of text, which is a lot of chrome to solve a
+    // sizing problem. Dropping it and growing the glyph gets the same weight
+    // with nothing drawn around it, and keeps the panel as flat as every other
+    // surface here.
     &-icon {
         flex: none;
         display: grid;
         place-items: center;
-        width: @vw36;
-        height: @vw36;
-        border-radius: @dashRadius;
-        background-color: var(--surface-raised);
-        border: max(1px, @vw1) solid var(--border);
+        width: @vw26;
+        height: @vw26;
         color: var(--text-secondary);
 
-        .icon { width: @vw18; height: @vw18; }
+        .icon { width: @vw24; height: @vw24; }
     }
 
+    // The label and the address are one thing read together, so they are set
+    // tight: no gap, and a line-height pulled well in from the body default,
+    // which is sized for paragraphs rather than for a two-line pair.
     &-body {
         display: flex;
         flex-direction: column;
-        gap: @vw2;
+        gap: 0;
         min-width: 0;
     }
 
@@ -2782,11 +2785,13 @@
     &-label {
         font-size: @settingsLabel;
         font-weight: @medium;
+        line-height: 1.35;
         color: var(--text);
     }
 
     &-value {
         font-size: @settingsBody;
+        line-height: 1.35;
         color: var(--text-tertiary);
         overflow-wrap: anywhere;
     }
@@ -2811,39 +2816,51 @@
     }
 }
 
-// A square control whose whole label is its glyph — sized and coloured like
-// `.btn--subtle`, because it sits next to one and the pair has to read as two
-// controls of the same rank rather than a button with an afterthought beside
-// it. Its accessible name comes from `aria-label`; `.tip` draws the visible
-// one on hover and on focus.
+// A control whose whole label is its glyph. Its accessible name comes from
+// `aria-label`; `.tip` draws the visible one on hover and on focus.
+//
+// Nothing drawn around it. It used to be boxed like `.btn--subtle` so it would
+// read as the equal of the button beside it, but two filled boxes in a row is
+// two things asking to be pressed, and only one of them is the row's actual
+// action. Bare, the glyph reads as the secondary control it is.
+//
+// The glyph is sized as a length rather than off the type scale, and the size
+// was settled by looking at it. Matched to the adjacent button's text it was
+// unreadable — a 1.5-weight outline needs more room than a letterform before it
+// is identifiable at all — and taken up to the mail glyph's own size it stopped
+// reading as the secondary control and started competing with the button. @vw16
+// is the middle: legible on its own, still clearly the quieter of the two.
+//
+// vw, like every other length here and unlike the type around it. A reading size
+// is fixed because reading distance is; a glyph is a proportion of the row.
 .iconButton {
     flex: none;
     display: grid;
     place-items: center;
-    width: @vw34;
-    height: @vw34;
-    padding: 0;
-    background-color: var(--surface-raised);
-    border: max(1px, @vw1) solid var(--border);
-    border-radius: @dashRadius;
+    // Padding, not a width and height: it keeps a pointer target around a bare
+    // glyph without drawing a box the size of the target.
+    padding: @vw6;
+    background: none;
+    border: none;
+    line-height: 1;
+    // Secondary, not tertiary. Inside the old bordered tile the box carried the
+    // glyph and a quieter tint was fine; bare, the stroke is the only thing on
+    // screen, and at tertiary it dropped out of the row on the dark theme.
     color: var(--text-secondary);
     cursor: pointer;
     .transition();
-    transition-property: color, border-color, background-color;
+    transition-property: color;
 
-    .icon { width: @vw17; height: @vw17; }
+    .icon { width: @vw16; height: @vw16; }
 
     @media (hover: hover) {
-        &:hover:not(:disabled) {
-            color: var(--text);
-            border-color: var(--border-strong);
-            background-color: var(--surface-hover);
-        }
+        &:hover:not(:disabled) { color: var(--text); }
     }
 
     &:focus-visible {
         outline: max(2px, @vw2) solid var(--accent);
         outline-offset: @vw2;
+        border-radius: @dashRadiusInner;
     }
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }

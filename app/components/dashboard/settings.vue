@@ -98,7 +98,7 @@
 		<section v-if="isPreferences" class="settingsBlock">
 			<header class="settingsBlock-head">
 				<h2 class="settingsBlock-title">Sign-in methods</h2>
-				<p class="settingsBlock-text">How you get into this account. Both of these are what someone would need to take it.</p>
+				<p class="settingsBlock-text">Manage the methods linked to your Champions Academy account and update their details.</p>
 			</header>
 
 			<div class="dashPanel">
@@ -121,12 +121,14 @@
 						</NuxtLink>
 
 						<!-- `.tip` is decoration over the top of the aria-label,
-						     never the only place the name exists. `--end` because
-						     this control sits at the right edge of the panel,
-						     where a centred balloon would hang off it. -->
+						     never the only place the name exists. Centred rather
+						     than `--end`: the balloon overhangs the panel edge a
+						     little, which is what a tooltip does, and pinning it
+						     right made it look like it belonged to the card
+						     rather than to the control under it. -->
 						<button
 							type="button"
-							class="iconButton tip tip--end"
+							class="iconButton tip"
 							data-tip="Update email address"
 							aria-label="Update email address"
 							@click="openEmailDialog"
@@ -362,7 +364,7 @@ const isLogs = computed(() => props.section === "logs");
 const HEADINGS = {
 	preferences: {
 		title: "Preferences",
-		text: "Your name, the link people arrive on, and what happens to the data we hold about you.",
+		text: "Your name, how you sign in, the link people arrive on, and what happens to the data we hold about you.",
 	},
 	security: {
 		title: "Security",
