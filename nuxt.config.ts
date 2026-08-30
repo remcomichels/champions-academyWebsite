@@ -173,6 +173,10 @@ export default defineNuxtConfig({
 		// Secret key (sb_secret_…): bypasses RLS. Never leaves the server.
 		supabaseSecretKey: process.env.SUPABASE_SECRET_KEY || "",
 
+		// Sent by Vercel Cron as `Authorization: Bearer <this>` on the daily
+		// purge run. Server-side only, and the only caller is the scheduler.
+		cronSecret: process.env.CRON_SECRET || "",
+
 		// Peppers for one-way hashes. Kept in env, not the DB, so a database
 		// leak on its own doesn't make the hashes reversible.
 		otpPepper: process.env.OTP_PEPPER || "",

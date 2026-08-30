@@ -301,37 +301,66 @@
 			</div>
 		</section>
 
-		<!-- Your data sits with Preferences rather than Security. Exporting or
-		     deleting your own account is not a defence against anybody — it is
-		     the last thing you are free to decide about it, which is what the
-		     rest of this tab is. -->
+		<!-- Danger zone ────────────────────────────────────────────────── -->
+		<!-- Here rather than under Security, which is about keeping other people
+		     out of the account. Closing it is not a defence against anybody — it
+		     is the last thing that is yours to decide about it, which is what
+		     the rest of this tab is.
+
+		     It offered a data export beside this until nobody used it: not one
+		     request in the lifetime of the feature, so it came out along with
+		     the route that built it.
+
+		     "Request", not "Delete", because that is honestly what happens. The
+		     route queues the ask and a person acts on it — deleting an affiliate
+		     cascades into their conversions, which is the record of sales the
+		     commission was already paid on, so it is a decision with an
+		     accounting consequence rather than a button press. A control saying
+		     "Delete my account" would name something this deliberately does not
+		     do. -->
 		<section v-if="isPreferences" class="settingsBlock">
 			<header class="settingsBlock-head">
-				<h2 class="settingsBlock-title">Your data</h2>
-				<p class="settingsBlock-text">Take a copy of everything we hold, or ask us to remove it.</p>
+				<h2 class="settingsBlock-title">Danger zone</h2>
+				<p class="settingsBlock-text">The one thing on this page that does not come back.</p>
 			</header>
 
-			<div class="dashPanel">
-				<p class="dashPanel-note">
-					Deletion waits 14 days before anything is removed, so it can be undone.
-				</p>
+			<div class="dangerZone">
+				<span class="dangerZone-icon" aria-hidden="true">
+					<NuxtDashboardIcon name="warning" />
+				</span>
 
-				<NuxtAlertBanner v-if="pendingDelete" variant="warning">
-					Deletion requested — scheduled for {{ formatDate(pendingDelete.executeAfter) }}.
-					<button type="button" class="linkButton" @click="gdpr('cancel')">Cancel it</button>
-				</NuxtAlertBanner>
+				<div class="dangerZone-body">
+					<h3 class="dangerZone-title">Request account deletion</h3>
 
-				<div class="dangerRow">
-					<button type="button" class="linkButton" :disabled="busy === 'gdpr'" @click="exportData">
-						Download my data
-					</button>
+					<p v-if="pendingDelete" class="dangerZone-text">
+						Asked for. Nothing is touched until
+						<strong>{{ formatDate(pendingDelete.executeAfter) }}</strong>, so there is still
+						time to change your mind — after that the account and its sales history go.
+					</p>
+
+					<p v-else class="dangerZone-text">
+						There is no undoing this once it goes through. You have 14 days to call it
+						off; after that the account, your link and every sale recorded against it
+						are removed.
+					</p>
+				</div>
+
+				<div class="dangerZone-actions">
 					<button
-						v-if="!pendingDelete"
+						v-if="pendingDelete"
 						type="button"
-						class="linkButton is-danger"
+						class="btn btn--danger"
 						:disabled="busy === 'gdpr'"
-						@click="confirmDelete"
-					>Delete my account</button>
+						@click="gdpr('cancel')"
+					>Keep my account</button>
+
+					<button
+						v-else
+						type="button"
+						class="btn btn--danger"
+						:disabled="busy === 'gdpr'"
+						@click="openDeleteDialog"
+					>Request account deletion</button>
 				</div>
 			</div>
 		</section>
@@ -386,6 +415,58 @@
 				<p v-else class="dashPanel-empty">Nothing recorded yet.</p>
 			</div>
 		</section>
+
+		<!-- Asking why, on the way out. Same dialog as Update email address —
+		     `showModal()` for the focus trap, Escape and top-layer stacking — and
+		     it replaces a `window.confirm`, which could not carry a question and
+		     looked like the browser asking rather than us. -->
+		<dialog
+			v-if="isPreferences"
+			ref="deleteDialog"
+			class="modal modal--compact"
+			@close="onDeleteDialogClose"
+			@click="onDeleteDialogClick"
+		>
+			<form class="modal-panel" novalidate @submit.prevent="requestDelete">
+				<header class="modal-head">
+					<h2 class="modal-title">Request account deletion</h2>
+					<button type="button" class="modal-close" aria-label="Close" @click="closeDeleteDialog">
+						<NuxtDashboardIcon name="close" />
+					</button>
+				</header>
+
+				<div class="modal-body">
+					<NuxtDashboardSelectField
+						v-model="deleteReason"
+						:options="DELETE_REASONS"
+						label="Why are you leaving?"
+						:disabled="busy === 'gdpr'"
+					/>
+
+					<NuxtAuthField
+						v-model="deleteNote"
+						label="Anything you'd add?"
+						placeholder="Optional"
+						:disabled="busy === 'gdpr'"
+						hint="Nothing here changes the outcome — it only tells us what to fix."
+					/>
+
+					<p class="modal-warning">
+						Your account is removed in 14 days. You can call it off from this page any
+						time before then; after that it cannot be undone.
+					</p>
+				</div>
+
+				<footer class="modal-foot">
+					<button type="button" class="btn btn--ghost" :disabled="busy === 'gdpr'" @click="closeDeleteDialog">
+						Cancel
+					</button>
+					<button type="submit" class="btn btn--danger" :disabled="busy === 'gdpr'">
+						{{ busy === "gdpr" ? "Sending…" : "Request deletion" }}
+					</button>
+				</footer>
+			</form>
+		</dialog>
 
 		<!-- Native <dialog>, not a div with a high z-index: showModal() gives
 		     focus trapping, Escape, an inert background and top-layer stacking
@@ -525,6 +606,7 @@ const emailOptions = computed(() => {
 });
 
 const emailDialog = useTemplateRef<HTMLDialogElement>("emailDialog");
+const deleteDialog = useTemplateRef<HTMLDialogElement>("deleteDialog");
 
 /**
  * Theme and rail behaviour both come straight from their composables, with no
@@ -547,7 +629,9 @@ const {
 	profile, slug, pendingDelete,
 	profileDirty, slugDirty, resetProfile,
 	saveProfile, saveSlug,
-	signOutOthers, gdpr, confirmDelete, exportData,
+	signOutOthers, gdpr, requestDelete,
+	DELETE_REASONS, deleteDialogOpen, deleteReason, deleteNote,
+	openDeleteDialog, closeDeleteDialog,
 	emailDialogOpen, newEmail, emailError, newEmailValid,
 	openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 	formatDate, formatWhen, formatUntil, describeAction,
@@ -602,5 +686,26 @@ function onEmailDialogClose() {
 // on the content hits .modal-panel and stops there.
 function onEmailDialogClick(event: MouseEvent) {
 	if (event.target === emailDialog.value) closeEmailDialog();
+}
+
+// The deletion dialog, wired the same way. Its opening focus is deliberately
+// left where showModal puts it — on the close button — rather than moved to the
+// reason picker: the first control in a dialog that deletes an account should
+// be the way out of it.
+watch(deleteDialogOpen, async (open) => {
+	await nextTick();
+	const dialog = deleteDialog.value;
+	if (!dialog) return;
+
+	if (open && !dialog.open) dialog.showModal();
+	else if (!open && dialog.open) dialog.close();
+});
+
+function onDeleteDialogClose() {
+	if (deleteDialogOpen.value) closeDeleteDialog();
+}
+
+function onDeleteDialogClick(event: MouseEvent) {
+	if (event.target === deleteDialog.value) closeDeleteDialog();
 }
 </script>

@@ -1554,17 +1554,157 @@
         }
     }
 
+    // Outlined at rest, not bare. It had a transparent border and only grew one
+    // on hover, which is fine for a control among other controls — but this one
+    // now sits alone on a tinted panel where a borderless red word does not read
+    // as something you press. Nothing else used it, so the whole variant moves
+    // rather than gaining a modifier.
     &--danger {
         background: none;
-        border-color: transparent;
+        border-color: var(--error);
         color: var(--error);
 
         @media (hover: hover) {
-            &:hover:not(:disabled) { border-color: var(--error); }
+            &:hover:not(:disabled) { background-color: var(--error-subtle); }
         }
     }
 
     &--block { width: 100%; }
+}
+
+// ── Select trigger ───────────────────────────────────────────────────────────
+// What `NuxtDashboardSelectField` draws instead of a `<select>`, lifted out of
+// `.dashForm--split` where it was first written.
+//
+// It was nested there because that was the only place a select existed, and the
+// nesting turned out to be load bearing in the wrong direction: dropped into a
+// dialog, the trigger lost `display: flex` and `text-align: left`, so the value
+// centred itself the way a button's label does and the caret — absolutely
+// positioned and still working — sat over the left of it. The control looked
+// broken in the one place it had not been tried.
+//
+// None of these rules describe the settings column. They describe a select, so
+// they belong to the select.
+
+// The trigger. A button rather than a `<select>` — the native popup is
+// drawn by the operating system, which will not put it under the field, let
+// it run wider than the field, or make it look like the rest of this form.
+.field-input--select {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    padding-right: @vw32;
+    text-align: left;
+    font-family: @body;
+    cursor: pointer;
+
+    &.is-open { border-color: var(--accent); }
+}
+
+// The value inside it. Its own element so a long address is clipped by the
+// control rather than pushing the caret out of the box.
+.field-input-value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-caret {
+    position: absolute;
+    top: 50%;
+    right: @vw10;
+    width: @vw14;
+    height: @vw14;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    // The caret is decoration over a control that is itself clickable —
+    // without this, clicking the arrow does nothing.
+    pointer-events: none;
+}
+
+// The popup.
+//
+// Under the trigger and pinned to its left edge, free to run wider than it
+// to the right. That asymmetry is the point: the control lives in the 40%
+// column and an email address is longer than that, so a menu held to the
+// trigger's width would truncate every option and leave a picker you cannot
+// pick from. Left edge fixed so the list opens where the eye already is.
+//
+// `max-content` with a floor of the trigger's own width: never narrower
+// than what it hangs from, never wider than it needs, and capped so a long
+// address cannot run it off the side of the page.
+
+// The menu the trigger opens, moved out of `.dashForm--split` alongside it.
+//
+// Leaving it behind made the select worse rather than better: outside the
+// settings column the button looked right and then dropped an unstyled list of
+// bullet points over the page. It hangs off `.field-control`, which form.less
+// makes `position: relative` for every field everywhere, so it needed nothing
+// from that layout to begin with.
+
+.selectMenu {
+    position: absolute;
+    top: calc(100% + @vw6);
+    left: 0;
+    z-index: 20;
+    min-width: 100%;
+    width: max-content;
+    max-width: @vw300 + @vw60;
+    max-height: @vw240;
+    overflow-y: auto;
+    padding: @vw4;
+    list-style: none;
+    // Popover tokens, not surface ones. This floats over the page, and
+    // `--border` is an rgba — fine on a panel sitting on a known
+    // background, wrong on a box with content sliding under it, where a
+    // part-transparent edge reads as a translucent menu.
+    background-color: var(--popover);
+    border: max(1px, @vw1) solid var(--popover-border);
+    border-radius: @dashRadius;
+    box-shadow: var(--shadow-pop);
+
+    &-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw10;
+        padding: @vw7 @vw10;
+        border-radius: @dashRadiusInner;
+        font-size: @settingsBody;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        cursor: pointer;
+
+        // Driven by `activeIndex` rather than `:hover`, so the keyboard and
+        // the pointer light the same row and only ever one of them.
+        //
+        // `--popover-border`, which is the one opaque colour in the set that
+        // is a real step away from `--popover` in all three themes.
+        // `--surface-hover` was the obvious choice and the wrong one: at
+        // #27272E against a #2A2A31 menu it is *darker* by three points and
+        // reads as nothing at all.
+        &.is-active {
+            background-color: var(--popover-border);
+            color: var(--text);
+        }
+
+        &.is-chosen { color: var(--text); }
+    }
+
+    &-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &-tick {
+        flex: none;
+        width: @vw14;
+        height: @vw14;
+        color: var(--accent);
+    }
 }
 
 // ── Copy field ───────────────────────────────────────────────────────────────
@@ -2709,117 +2849,6 @@
     .field-input:focus-visible,
     .readonlyField-value:focus-visible { box-shadow: none; }
 
-    // The trigger. A button rather than a `<select>` — the native popup is
-    // drawn by the operating system, which will not put it under the field, let
-    // it run wider than the field, or make it look like the rest of this form.
-    .field-input--select {
-        appearance: none;
-        display: flex;
-        align-items: center;
-        padding-right: @vw32;
-        text-align: left;
-        font-family: @body;
-        cursor: pointer;
-
-        &.is-open { border-color: var(--accent); }
-    }
-
-    // The value inside it. Its own element so a long address is clipped by the
-    // control rather than pushing the caret out of the box.
-    .field-input-value {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .field-caret {
-        position: absolute;
-        top: 50%;
-        right: @vw10;
-        width: @vw14;
-        height: @vw14;
-        transform: translateY(-50%);
-        color: var(--text-tertiary);
-        // The caret is decoration over a control that is itself clickable —
-        // without this, clicking the arrow does nothing.
-        pointer-events: none;
-    }
-
-    // The popup.
-    //
-    // Under the trigger and pinned to its left edge, free to run wider than it
-    // to the right. That asymmetry is the point: the control lives in the 40%
-    // column and an email address is longer than that, so a menu held to the
-    // trigger's width would truncate every option and leave a picker you cannot
-    // pick from. Left edge fixed so the list opens where the eye already is.
-    //
-    // `max-content` with a floor of the trigger's own width: never narrower
-    // than what it hangs from, never wider than it needs, and capped so a long
-    // address cannot run it off the side of the page.
-    .selectMenu {
-        position: absolute;
-        top: calc(100% + @vw6);
-        left: 0;
-        z-index: 20;
-        min-width: 100%;
-        width: max-content;
-        max-width: @vw300 + @vw60;
-        max-height: @vw240;
-        overflow-y: auto;
-        padding: @vw4;
-        list-style: none;
-        // Popover tokens, not surface ones. This floats over the page, and
-        // `--border` is an rgba — fine on a panel sitting on a known
-        // background, wrong on a box with content sliding under it, where a
-        // part-transparent edge reads as a translucent menu.
-        background-color: var(--popover);
-        border: max(1px, @vw1) solid var(--popover-border);
-        border-radius: @dashRadius;
-        box-shadow: var(--shadow-pop);
-
-        &-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: @vw10;
-            padding: @vw7 @vw10;
-            border-radius: @dashRadiusInner;
-            font-size: @settingsBody;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            cursor: pointer;
-
-            // Driven by `activeIndex` rather than `:hover`, so the keyboard and
-            // the pointer light the same row and only ever one of them.
-            //
-            // `--popover-border`, which is the one opaque colour in the set that
-            // is a real step away from `--popover` in all three themes.
-            // `--surface-hover` was the obvious choice and the wrong one: at
-            // #27272E against a #2A2A31 menu it is *darker* by three points and
-            // reads as nothing at all.
-            &.is-active {
-                background-color: var(--popover-border);
-                color: var(--text);
-            }
-
-            &.is-chosen { color: var(--text); }
-        }
-
-        &-label {
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        &-tick {
-            flex: none;
-            width: @vw14;
-            height: @vw14;
-            color: var(--accent);
-        }
-    }
 }
 
 .readonlyField {
@@ -3888,11 +3917,82 @@
     &.is-danger { color: var(--error); }
 }
 
-.dangerRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: @vw24;
+// ── Danger zone ──────────────────────────────────────────────────────────────
+// The one panel on the page that is allowed to look different from the others.
+//
+// The ground is the signal: the error tint and edge instead of the shared
+// surface. A tint rather than a solid fill, for the reason `--error-subtle`
+// exists at 12% — the text sitting on it has to stay the most legible thing in
+// the box.
+//
+// The button sits under the text rather than out to the right, which is where
+// the rows elsewhere on this page put theirs. Those rows offer a control beside
+// the thing it changes and you can take them in at a glance. This one is a
+// paragraph you are meant to finish before you decide, and a button parked
+// alongside it is reachable before the sentence explaining it has been read.
+// Underneath, it comes after.
+.dangerZone {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    // Top, not centre: the glyph belongs beside the title, and centring it
+    // against a block that is now two rows tall floats it down by the height of
+    // the button.
+    align-items: start;
+    gap: @vw14;
+    padding: @vw16;
+    border-radius: @dashRadius;
+    background-color: var(--error-subtle);
+    border: max(1px, @vw1) solid var(--error);
+
+    &-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw24;
+        height: @vw24;
+        color: var(--error);
+
+        .icon { width: @vw22; height: @vw22; }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        min-width: 0;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: @settingsLabel;
+        font-weight: @semiBold;
+        line-height: 1.35;
+        color: var(--text);
+    }
+
+    // Body colour, not the error red. The panel is already red; a paragraph in
+    // it as well leaves nothing for the red to mean, and this is the part that
+    // has to be read carefully rather than noticed.
+    &-text {
+        font-size: @settingsBody;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-secondary);
+
+        strong { color: var(--text); font-weight: @semiBold; }
+    }
+
+    &-icon { grid-column: 1; grid-row: 1; }
+    &-body { grid-column: 2; grid-row: 1; }
+
+    // Column two, so it lines up with the text it belongs to rather than with
+    // the glyph. `start` keeps it the width of its own label — a danger button
+    // stretched across the panel is a bigger target than this one wants to be.
+    &-actions {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: start;
+    }
 }
 
 // ── Support ──────────────────────────────────────────────────────────────────
@@ -4492,10 +4592,12 @@
         gap: 0;
         padding: 0;
         height: auto;
-        // The bands sit flush against the panel's edges, so the rounding has to
-        // come off them rather than off the panel — otherwise a square corner
-        // pokes out through the curve.
-        overflow: hidden;
+        // No `overflow: hidden`. It was here to stop the actions band's square
+        // corners poking through the panel's curve, and that band lost its own
+        // background a while ago — it is a rule and nothing else now, so there
+        // are no corners to clip and the hidden was only ever going to clip
+        // something that mattered instead.
+        overflow: visible;
     }
 
     .modal-head {
@@ -4506,6 +4608,11 @@
 
     // A column, because it holds two things when the request is refused: the
     // failure, then the field it was about.
+    //
+    // It scrolls as a last resort, on a viewport too short for the dialog. That
+    // makes it a scroll container, and a scroll container clips both axes — so
+    // a select opened inside one drops its menu behind the dialog's own edge.
+    // The trigger looked right and the list was simply not there.
     .modal-body {
         display: flex;
         flex-direction: column;
@@ -4513,6 +4620,14 @@
         padding: @vw18;
         overflow-y: auto;
         overscroll-behavior: contain;
+    }
+
+    // So the clipping is lifted for exactly as long as a menu is open, and put
+    // back the moment it closes. `:has()` rather than a class toggled in script,
+    // because the state is already in the DOM — the trigger carries `.is-open`
+    // — and a second copy of it in a parent is a second thing to keep in step.
+    &:has(.field-input--select.is-open) .modal-body {
+        overflow: visible;
     }
 
     // The rule is the band. It had a raised ground as well, which made the
@@ -4552,6 +4667,18 @@
     }
 
     .field-message { line-height: 1.25; }
+
+    // What the dialog is about to do, under the questions it asks. Tinted like
+    // the danger panel it was opened from, so the two read as one action.
+    .modal-warning {
+        padding: @vw10 @vw12;
+        border-radius: @dashRadiusInner;
+        background-color: var(--error-subtle);
+        font-size: @settingsBody;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-secondary);
+    }
 
     // The line under the field is the dialog's explanation of itself, not an
     // aside about the input — so it takes the body colour rather than the
@@ -4761,6 +4888,29 @@
 
         &.is-active  { color: var(--success); background-color: var(--surface-raised); }
         &.is-revoked { color: var(--error); background-color: var(--surface-raised); }
+
+        // Tinted rather than sat on the raised surface like the other two. This
+        // one is not a state the account is resting in — it is a clock running,
+        // and it should be the thing the eye finds when scanning the column.
+        // Not capitalised either: it carries a date rather than a bare word.
+        &.is-deleting {
+            color: var(--error);
+            background-color: var(--error-subtle);
+            text-transform: none;
+        }
+    }
+
+    // Why they are going, under the chip that says they are. Quiet on purpose:
+    // the chip is what has to be found while scanning, and this is what gets
+    // read once it has been.
+    &-reason {
+        display: block;
+        margin-top: @vw4;
+        max-width: @vw300;
+        font-size: max(0.62em, @vw11);
+        line-height: 1.4;
+        white-space: normal;
+        color: var(--text-tertiary);
     }
 
     &-invite {

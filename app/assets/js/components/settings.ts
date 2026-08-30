@@ -64,7 +64,6 @@ const ACTION_LABELS: Record<string, string> = {
 	"links.updated": "Links updated",
 	"sessions.revoked_others": "Signed out other devices",
 	"invite.redeemed": "Account created",
-	"gdpr.exported": "Data exported",
 	"gdpr.delete_requested": "Deletion requested",
 	"gdpr.cancelled": "Deletion cancelled",
 };
@@ -311,9 +310,45 @@ export async function useSettings() {
 		catch (error) { handle(error, "Could not sign out the other devices."); }
 	});
 
+	/**
+	 * The reasons offered when somebody asks to go.
+	 *
+	 * Kept short and mundane on purpose — the point is to be quick to answer on
+	 * the way out, not to run a survey. `other` is last and is the one that
+	 * turns the note field into the thing worth reading.
+	 */
+	const DELETE_REASONS = [
+		{ value: "not_using", label: "I'm not using it any more" },
+		{ value: "not_earning", label: "I'm not earning enough from it" },
+		{ value: "too_complicated", label: "It's harder to use than I expected" },
+		{ value: "switching", label: "I'm moving to something else" },
+		{ value: "privacy", label: "I don't want my data held" },
+		{ value: "temporary", label: "I'll be back — just not right now" },
+		{ value: "other", label: "Something else" },
+	];
+
+	const deleteDialogOpen = ref(false);
+	const deleteReason = ref("not_using");
+	const deleteNote = ref("");
+
+	function openDeleteDialog() {
+		deleteReason.value = "not_using";
+		deleteNote.value = "";
+		errors.value = {};
+		deleteDialogOpen.value = true;
+	}
+
+	const closeDeleteDialog = () => { deleteDialogOpen.value = false; };
+
 	const gdpr = (action: "delete" | "cancel") => run("gdpr", async () => {
 		try {
-			await $fetch("/api/affiliate/gdpr", { method: "POST", body: { action } });
+			await $fetch("/api/affiliate/gdpr", {
+				method: "POST",
+				body: action === "delete"
+					? { action, reason: deleteReason.value, reasonNote: deleteNote.value }
+					: { action },
+			});
+			deleteDialogOpen.value = false;
 			banner.value = {
 				variant: action === "delete" ? "warning" : "success",
 				text: action === "delete"
@@ -325,27 +360,12 @@ export async function useSettings() {
 		catch (error) { handle(error, "Could not record that request."); }
 	});
 
-	function confirmDelete() {
-		const message = "Request deletion of your affiliate account? Nothing is removed for 14 days and you can cancel at any point. Your sales history is part of what gets deleted.";
-		if (window.confirm(message)) gdpr("delete");
-	}
-
-	/** Exported as a download rather than rendered — it can be a large file. */
-	async function exportData() {
-		await run("gdpr", async () => {
-			try {
-				const payload = await $fetch("/api/affiliate/gdpr", { method: "POST", body: { action: "export" } });
-				const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-				const url = URL.createObjectURL(blob);
-				const link = document.createElement("a");
-				link.href = url;
-				link.download = `${data.value?.profile.slug ?? "affiliate"}-data-export.json`;
-				link.click();
-				URL.revokeObjectURL(url);
-			}
-			catch (error) { handle(error, "Could not build your export."); }
-		});
-	}
+	/**
+	 * Submitting the dialog. The confirming is the dialog itself now — it was a
+	 * `window.confirm`, which is the wrong control for a decision with a reason
+	 * attached to it, and the wrong one for a decision this size either way.
+	 */
+	const requestDelete = () => gdpr("delete");
 
 	const formatDate = (iso: string | null) =>
 		iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
@@ -387,7 +407,9 @@ export async function useSettings() {
 		emailDialogOpen, newEmail, emailError, newEmailValid,
 		openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 		saveProfile, saveSlug,
-		signOutOthers, gdpr, confirmDelete, exportData,
+		signOutOthers, gdpr, requestDelete,
+		DELETE_REASONS, deleteDialogOpen, deleteReason, deleteNote,
+		openDeleteDialog, closeDeleteDialog,
 		formatDate, formatWhen, formatUntil, describeAction,
 	};
 }
