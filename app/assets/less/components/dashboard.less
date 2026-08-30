@@ -2809,6 +2809,15 @@
         gap: @vw8;
     }
 
+    // A rule between rows, not around them. Only ever applies where there is
+    // more than one — the sign-in panel has a single row and never sees it —
+    // and the padding is matched to the panel's own gap, so the space above the
+    // line and below it come out equal.
+    & + & {
+        padding-top: @vw16;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
     // The row wraps before the address does. Below this the three columns have
     // nowhere left to go, and squeezing them is what pushes an email onto four
     // lines beside a button it no longer fits next to.
@@ -2870,6 +2879,72 @@
     }
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Teaser ───────────────────────────────────────────────────────────────────
+// A panel whose contents are real but not ready.
+//
+// The alternative was an empty section saying a feature is coming, and this is
+// better for one reason: the shape underneath is the actual markup, so it says
+// what the thing will be rather than that a thing will exist — and when the
+// feature lands, the wrapper comes off and there is nothing to build.
+//
+// What it is not is a way to ship dead controls. Everything inside is inert by
+// construction rather than by CSS: the buttons are rendered as `span`s and the
+// whole veil is `aria-hidden`, so there is nothing focusable, nothing to press
+// and nothing announced. `pointer-events: none` below is the third layer, not
+// the only one — CSS that is the sole thing standing between a user and a
+// broken action is CSS that will eventually be overridden by accident.
+.teaser {
+    position: relative;
+    // Contains the badge, which is centred against the panel rather than the
+    // row it happens to land on.
+    isolation: isolate;
+
+    &-veiled {
+        display: flex;
+        flex-direction: column;
+        gap: @vw16;
+        // Tuned by looking at it. At @vw4 the platform names were gone entirely,
+        // which hides the most useful thing a teaser has to say — *which*
+        // platforms are coming. At @vw3 the names are almost legible and the
+        // glyphs are recognisable, while the copy underneath is not. Less than
+        // this stops reading as deliberate and starts looking like a rendering
+        // fault.
+        filter: blur(@vw3);
+        // Pulled back so the badge over it has something to sit against without
+        // needing a scrim of its own.
+        opacity: 0.55;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    &-badge {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        padding: @vw8 @vw16;
+        border-radius: @dashRadiusPill;
+        // Popover tokens, because that is exactly what this is: something
+        // floating over content rather than sitting in the page. They are the
+        // opaque pair, so the blur behind never shows through the badge and
+        // makes the one legible thing on the panel look out of focus too.
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
+        box-shadow: var(--shadow-pop);
+        font-size: @settingsBody;
+        font-weight: @semiBold;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        color: var(--text);
+    }
+
+    // The accent stays off this. A badge is not something you can press, and
+    // the note in dashboardTokens.less is explicit that the accent means
+    // interactive — spending it on a label saying "not yet" is the fastest way
+    // to make it stop meaning anything.
 }
 
 // ── Activity inbox + toasts ──────────────────────────────────────────────────

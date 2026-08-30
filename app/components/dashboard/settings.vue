@@ -156,6 +156,46 @@
 			</div>
 		</section>
 
+		<!-- Connections ─────────────────────────────────────────────────── -->
+		<!-- Built and then deliberately obscured. The panel underneath is the
+		     real thing rather than a mock — when the OAuth lands in V3 the
+		     `teaser` wrapper comes off and the rows are already here — but until
+		     then the buttons are `span`s, not `button`s, so there is nothing to
+		     press, nothing in the tab order, and no disabled control to explain.
+		     Showing a blurred shape of what is coming beats an empty section,
+		     and beats three live buttons that do nothing. -->
+		<section v-if="isPreferences" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Connections</h2>
+				<p class="settingsBlock-text">Link the platforms you post on, so your reach and what performs best sit beside your sales.</p>
+			</header>
+
+			<div class="dashPanel teaser">
+				<!-- Hidden from assistive tech rather than merely blurred. The
+				     heading and the badge above and over it already say
+				     everything this list would, and reading out three rows of
+				     unavailable actions is worse than not reading them. -->
+				<div class="teaser-veiled" aria-hidden="true">
+					<div v-for="platform in CONNECTIONS" :key="platform.name" class="signinRow">
+						<span class="signinRow-icon">
+							<NuxtDashboardIcon :name="platform.icon" />
+						</span>
+
+						<div class="signinRow-body">
+							<span class="signinRow-label">{{ platform.name }}</span>
+							<span class="signinRow-value">{{ platform.blurb }}</span>
+						</div>
+
+						<div class="signinRow-actions">
+							<span class="btn btn--subtle">Connect</span>
+						</div>
+					</div>
+				</div>
+
+				<p class="teaser-badge">Coming in V3</p>
+			</div>
+		</section>
+
 		<section v-if="isPreferences" class="settingsBlock">
 			<header class="settingsBlock-head">
 				<h2 class="settingsBlock-title">Your link</h2>
@@ -382,6 +422,21 @@ const HEADINGS = {
 } as const;
 
 const page = computed(() => HEADINGS[props.section]);
+
+/**
+ * The platforms the Connections block will link to, in the order they are
+ * drawn.
+ *
+ * A list rather than three copies of the same markup because the rows differ
+ * only by their three strings, and because what comes next is this array
+ * gaining a `connected` flag and an href per platform rather than the template
+ * gaining branches.
+ */
+const CONNECTIONS = [
+	{ name: "TikTok", icon: "tiktok", blurb: "Views, follows and what each post sent your way." },
+	{ name: "Instagram", icon: "instagram", blurb: "Reach and profile taps from posts, reels and stories." },
+	{ name: "YouTube", icon: "youtube", blurb: "Watch time and subscribers earned from your videos." },
+] as const;
 
 /**
  * One entry, and it is the account's own address. A list rather than a bare
