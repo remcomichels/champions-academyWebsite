@@ -1,5 +1,12 @@
 import { ref, reactive, computed } from "vue";
 import { useAsyncData, useRequestHeaders } from "#imports";
+// Explicit, like the two lines above it. Nuxt's auto-import transform does not
+// run on `app/assets/js/**` — only on the scanned directories, which is why
+// nothing in this file has ever relied on it — and the generated types are
+// global regardless, so `vue-tsc` and the production build both pass on an
+// identifier that is undefined at runtime. There is no error until the handler
+// actually fires.
+import { isValidEmail } from "#shared/utils/email";
 
 /**
  * Settings tab state.
