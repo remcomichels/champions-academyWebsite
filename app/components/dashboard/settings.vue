@@ -230,6 +230,77 @@
 			</div>
 		</section>
 
+		<!-- Appearance ──────────────────────────────────────────────────── -->
+		<section v-if="isPreferences" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Appearance</h2>
+				<p class="settingsBlock-text">Choose how the dashboard looks and behaves.</p>
+			</header>
+
+			<div class="dashPanel">
+				<!-- A div, not a form. `.dashForm--split` is a layout — label and
+				     hint in one column, the control in the other, ruled edge to
+				     edge — and nothing in here submits. -->
+				<div class="dashForm dashForm--split dashForm--noActions">
+					<div class="field appearanceTheme">
+						<span id="themeModeLabel" class="field-label">Theme mode</span>
+						<p class="field-message">Choose how the dashboard looks to you. Pick one, or follow your system.</p>
+
+						<div class="field-control themeGrid" role="radiogroup" aria-labelledby="themeModeLabel">
+							<label
+								v-for="option in themeOptions"
+								:key="option.value"
+								class="themeCard"
+								:class="{ 'is-chosen': themeChoice === option.value }"
+							>
+								<!-- System draws both palettes rather than picking
+								     one: the whole point of the option is that it
+								     is whichever the machine is asking for. -->
+								<span
+									v-if="option.value === 'system'"
+									class="themeCard-frame themeCard-frame--split"
+									aria-hidden="true"
+								>
+									<span class="themeCard-face" data-theme="dark">
+										<NuxtDashboardThemePreview />
+									</span>
+									<span class="themeCard-face themeCard-face--second" data-theme="light">
+										<NuxtDashboardThemePreview />
+									</span>
+								</span>
+
+								<span v-else class="themeCard-frame" aria-hidden="true">
+									<span class="themeCard-face" :data-theme="option.value">
+										<NuxtDashboardThemePreview />
+									</span>
+								</span>
+
+								<span class="themeCard-foot">
+									<input
+										class="themeCard-radio"
+										type="radio"
+										name="theme-mode"
+										:value="option.value"
+										:checked="themeChoice === option.value"
+										@change="setTheme(option.value)"
+									>
+									<span class="themeCard-name">{{ option.label }}</span>
+								</span>
+							</label>
+						</div>
+					</div>
+
+					<NuxtDashboardSelectField
+						:model-value="sidebarMode"
+						:options="sidebarOptions"
+						label="Sidebar behaviour"
+						hint="Applies to the main rail. Collapsed keeps it to icons, named on hover."
+						@update:model-value="setSidebarMode($event as SidebarMode)"
+					/>
+				</div>
+			</div>
+		</section>
+
 		<!-- Your data sits with Preferences rather than Security. Exporting or
 		     deleting your own account is not a defence against anybody — it is
 		     the last thing you are free to decide about it, which is what the
@@ -372,6 +443,7 @@
 
 <script setup lang="ts">
 import { useSettings } from "~/assets/js/components/settings";
+import type { SidebarMode } from "~/composables/useSidebarMode";
 
 /**
  * One component, three pages.
@@ -453,6 +525,22 @@ const emailOptions = computed(() => {
 });
 
 const emailDialog = useTemplateRef<HTMLDialogElement>("emailDialog");
+
+/**
+ * Theme and rail behaviour both come straight from their composables, with no
+ * copy held here and no Save to press.
+ *
+ * Every other control on this page edits a draft and posts it. These two are
+ * different in kind: the thing they change is the page you are looking at, so
+ * the preview *is* the confirmation — staging them behind a Save would mean
+ * choosing a theme, seeing nothing happen, and pressing a button to find out.
+ * Both write a cookie of their own, so there is nothing to persist here either.
+ *
+ * `useState` inside both composables is what keeps this in step with the
+ * switcher in the account menu: they are two views of one ref, not two copies.
+ */
+const { choice: themeChoice, setTheme, options: themeOptions } = useTheme();
+const { mode: sidebarMode, setSidebarMode, options: sidebarOptions } = useSidebarMode();
 
 const {
 	data, banner, busy, errors,

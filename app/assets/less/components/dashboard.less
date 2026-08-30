@@ -187,6 +187,18 @@
     // nothing left to do, since the width they animate to is already in place.
     &.is-accountNav { --rail-shut: var(--rail-open); }
 
+    // ── Chosen rail behaviour ────────────────────────────────────────────
+    // Both of these move one variable and nothing else. `--rail-shut` is the
+    // rail's own width *and* the column's left offset, so the two cannot end up
+    // disagreeing about how much room the rail is taking — which is the whole
+    // reason the account rail has always been able to stay open in one line.
+    //
+    // Never both. The layout withholds these two while the account rail is up,
+    // so there is no order to get right here — the account rail stays open at
+    // full width and this setting is about the other one.
+    &.is-navExpanded { --rail-shut: var(--rail-open); }
+    &.is-navCollapsed { --rail-shut: var(--top-bar); }
+
     &-body {
         position: relative;
         flex: 1;
@@ -367,6 +379,41 @@
 
     &:focus-visible::after,
     &:focus-visible::before { visibility: visible; }
+
+    // ── The collapsed rail's balloon ─────────────────────────────────────
+    // Beside the row rather than under it, because "under" is the next nav row.
+    // Nothing else changes: same box, same size, same tail, same colours — the
+    // balloon moves to the right of the host and the tail turns to point back
+    // at it.
+    //
+    // `top: 50%` with `translateY(-50%)` on both, so each centres on the host
+    // and therefore on the other.
+    //
+    // The two offsets are the downward tooltip's, turned on their side: @vw2 for
+    // the tail and @vw6 for the balloon. The 4px between them is half the
+    // square, and that is the whole trick — the balloon covers half the tail, so
+    // what shows is a chevron rather than a diamond. Sitting them flush instead,
+    // which is what "closer" first meant, leaves the entire square visible and
+    // it stops looking like the tooltips everywhere else.
+    //
+    // Left and bottom borders where the downward tail uses left and top:
+    // rotating 45deg puts the bottom-left corner at nine o'clock, and those are
+    // the two edges that meet there.
+    &--rail {
+        &::after {
+            top: 50%;
+            left: calc(100% + @vw6);
+            transform: translateY(-50%);
+        }
+
+        &::before {
+            top: 50%;
+            left: calc(100% + @vw2);
+            transform: translateY(-50%) rotate(45deg);
+            border-top: none;
+            border-bottom: max(1px, @vw1) solid var(--popover-border);
+        }
+    }
 
     // The last control sits against the right edge of the viewport, where a
     // centred balloon would hang off it. This one grows leftward instead; the
@@ -705,6 +752,46 @@
 
             .dashNav-label { transition-delay: 0.04s; }
         }
+    }
+
+    // Collapsed by choice, so pointing at it does nothing.
+    //
+    // Ahead of `.is-static` below and after the two peek rules above, which is
+    // the only order that works: it has to beat the peek, and lose to the
+    // static rail so the account tabs stay readable.
+    //
+    // The `:focus-within` peek goes with it, which costs keyboard users the
+    // labels — the reason that rule was not gated on pointer type in the first
+    // place. The tooltips are the replacement, and they are on `:focus-visible`
+    // as well as `:hover` precisely so tabbing through a collapsed rail still
+    // names every row.
+    .dashLayout.is-navCollapsed .dashNav:not(.is-static) {
+        &:hover,
+        &:focus-within {
+            width: var(--rail-shut);
+            box-shadow: none;
+
+            .dashNav-label { opacity: 0; }
+        }
+
+        // Nothing clips while collapsed, which is what lets the tooltips above
+        // be ordinary tooltips rather than something exotic. Two boxes were
+        // cutting them off and both had to go:
+        //
+        // The row hides its own overflow so a label cannot spill out of a
+        // narrow rail. At rest that label is already `opacity: 0`, so there is
+        // nothing to see whether it spills or not, and the clip only costs the
+        // balloon beside it.
+        //
+        // The list is a scroll container — `overflow-y: auto` for a nav longer
+        // than the viewport — and a scroll container clips *both* axes whatever
+        // you ask of it: `overflow-x: visible` computes to `auto` beside it and
+        // `overflow-x: clip` computes to `hidden`. The scroll is a safety valve,
+        // and the note on `-list` puts it at "past roughly a dozen" entries;
+        // collapsed, this rail is five rows at icon height with nothing to
+        // scroll, and it is given up only in the mode where that holds.
+        .dashNav-list,
+        .dashNav-item { overflow: visible; }
     }
 
     // Static — the account rail, open at full width and staying there.
@@ -2496,6 +2583,15 @@
     // which would otherwise stack on the card's own.
     > *:first-child { padding-top: 0; }
 
+    // Unless there are no buttons. That trailing rule exists to divide the
+    // fields from the actions under them, so on a panel that has none it is a
+    // line with nothing on the other side of it, closing off the card's own
+    // bottom padding into a strip of empty space.
+    &.dashForm--noActions > *:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
     // Sentence case, not the uppercase the shared field uses. Uppercase reads
     // as a category heading, which is right for a label sitting above its
     // control and wrong for one sitting beside it in a row of them.
@@ -2896,6 +2992,222 @@
     }
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Appearance ───────────────────────────────────────────────────────────────
+// The theme row inside a `.dashForm--split` panel, widened.
+//
+// Everything else in that container is a label and one control, which the 3/2
+// split is drawn for. This row's control is four preview cards in a 2x2, and at
+// 2fr of a 768 column they came out about 130px each — too small to read as a
+// picture of a dashboard, which is the only job they have. The rest of the row
+// — the rule, the padding, the label and hint in column one — is inherited
+// unchanged, so it still lines up with the select underneath it.
+.dashForm--split .appearanceTheme {
+    // 30/70, against the 60/40 the other rows use. Those pair a label with a
+    // single control and the label is the wider half because it is the part you
+    // read down the form looking for. Here the control is four pictures and they
+    // are the point of the row, so the weighting inverts. The number was walked
+    // in: 20/80 squeezed the heading and its line into a column narrow enough
+    // that the text became the awkward thing on the row, and 40/60 left the
+    // previews smaller than they need to be to read as pictures of a dashboard.
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+
+    // Two rows, and the second one takes the slack.
+    //
+    // Every other row in this container pairs a short label with a short
+    // control and centres them against each other. This control is four preview
+    // cards tall, so left to `auto` rows the spanning card grid hands its extra
+    // height to *both* tracks and the hint drifts away from the label it
+    // belongs to. Pinning row one to the label and giving row two `1fr` puts
+    // all the slack under the pair, so the two stay together at the top where a
+    // heading and its explanation belong.
+    grid-template-rows: auto 1fr;
+    align-items: start;
+
+    .field-label,
+    .field-message,
+    .field-control { align-self: start; }
+}
+
+.themeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: @vw12;
+    width: 100%;
+}
+
+// One option: a picture of the theme, then a radio naming it.
+.themeCard {
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+    padding: @vw8;
+    border-radius: @dashRadius;
+    border: max(1px, @vw1) solid var(--border);
+    background-color: var(--surface);
+    cursor: pointer;
+    .transition();
+    transition-property: border-color, background-color;
+
+    @media (hover: hover) {
+        &:hover { border-color: var(--border-strong); }
+    }
+
+    // The chosen one is outlined rather than filled. A fill would put a tinted
+    // ground behind a preview whose whole purpose is to show a ground.
+    &.is-chosen {
+        border-color: var(--accent);
+    }
+
+    // Focus lands on the radio inside, which is the thing that actually moves,
+    // so the ring is drawn on the card around it.
+    &:focus-within {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    // ── The preview ──────────────────────────────────────────────────────
+    // A miniature of the chrome, not a screenshot: a rail, a top bar and two
+    // cards. `data-theme` on this element is what makes it worth having —
+    // the tokens in dashboardTokens.less are declared on a bare `[data-theme]`
+    // attribute selector rather than on `html`, so every custom property
+    // re-resolves inside this box. A dark preview renders dark on a light page
+    // with no second palette to maintain, and any change to the real tokens
+    // shows up here without anyone remembering to update it.
+    &-frame {
+        position: relative;
+        display: flex;
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: @dashRadiusInner;
+        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--background);
+    }
+
+    // System: both themes at once, split on the diagonal. Two complete frames
+    // stacked, the upper one clipped to a triangle — rather than one frame with
+    // half its parts recoloured, so neither half can drift from the theme it is
+    // claiming to show.
+    &-frame--split {
+        .themeCard-face {
+            position: absolute;
+            inset: 0;
+        }
+
+        .themeCard-face--second {
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        }
+    }
+
+    &-face {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background-color: var(--background);
+    }
+
+    &-rail {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6%;
+        width: 11%;
+        padding: 6% 0 0 3.5%;
+        background-color: var(--surface);
+        border-right: max(1px, @vw1) solid var(--border);
+
+        i {
+            width: 40%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background-color: var(--text-tertiary);
+        }
+    }
+
+    &-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5%;
+        padding: 5%;
+    }
+
+    &-bar {
+        display: flex;
+        gap: 4%;
+        height: 8%;
+
+        i {
+            flex: 1;
+            border-radius: @dashRadiusPill;
+            background-color: var(--chart-bar);
+
+            // One accented pill, the way one thing on a real screen is the
+            // accent. Flexed wider so it reads as the active tab.
+            &:first-child {
+                flex: 1.4;
+                background-color: var(--accent);
+            }
+        }
+    }
+
+    &-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12%;
+        padding: 0 8%;
+        border-radius: @dashRadiusInner;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+
+        i {
+            height: 8%;
+            min-height: 1px;
+            border-radius: @dashRadiusPill;
+            background-color: var(--chart-bar);
+
+            &:last-child { width: 45%; background-color: var(--accent); }
+        }
+    }
+
+    // ── The label ────────────────────────────────────────────────────────
+    &-foot {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        padding: 0 @vw2 @vw2;
+    }
+
+    &-radio {
+        flex: none;
+        width: @vw14;
+        height: @vw14;
+        margin: 0;
+        // Put back deliberately. `_reset.less` strips `appearance` from every
+        // input, which is right for the text fields it was written for and
+        // fatal here: a radio with no appearance is not an unstyled radio, it
+        // is an empty box — the control rendered as nothing at all.
+        //
+        // Kept native rather than redrawn because `accent-color` themes it in
+        // one line, and a hand-built radio has to reimplement checked, focus
+        // and disabled to arrive back where this starts. It is a circle; there
+        // is no cross-platform popup to disagree about, which is what made the
+        // native <select> worth replacing and does not apply to this.
+        -webkit-appearance: radio;
+        appearance: auto;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    &-name {
+        font-size: @settingsBody;
+        font-weight: @medium;
+        color: var(--text);
+    }
 }
 
 // ── Teaser ───────────────────────────────────────────────────────────────────

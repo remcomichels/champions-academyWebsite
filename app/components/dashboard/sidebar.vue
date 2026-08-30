@@ -1,7 +1,7 @@
 <template>
 	<aside
 		class="dashNav"
-		:class="{ 'is-open': drawerOpen, 'is-static': accountMode }"
+		:class="{ 'is-open': drawerOpen, 'is-static': accountMode || sidebarMode === 'expanded' }"
 		:aria-label="accountMode ? 'Account settings sections' : 'Dashboard sections'"
 	>
 		<!-- Mobile only, and hidden on desktop by `display: none`.
@@ -39,10 +39,19 @@
 				     saying what the entries under it have in common. -->
 				<p v-if="item.heading" class="dashNav-heading">{{ item.heading }}</p>
 
+				<!-- `.tip` only while the rail is collapsed. In the other two
+				     modes the label is either already visible or one hover away,
+				     and a balloon repeating a word you can read is noise.
+
+				     It carries the label rather than replacing it: `.dashNav-label`
+				     stays in the DOM at `opacity: 0`, so the accessible name is
+				     the link text as it always was and `data-tip` is decoration
+				     over the top — the same division `.tip` uses everywhere. -->
 				<NuxtLink
 					:to="item.to"
 					class="dashNav-item"
-					:class="{ 'is-active': isActive(item.to) }"
+					:class="{ 'is-active': isActive(item.to), 'tip tip--rail': tips }"
+					:data-tip="tips ? item.label : undefined"
 					:aria-current="isActive(item.to) ? 'page' : undefined"
 				>
 					<NuxtDashboardIcon v-if="item.icon" :name="item.icon" class="dashNav-glyph" />
@@ -75,8 +84,24 @@ import { matchNavItem } from "~/composables/useDashboardNav";
  * there the rail is open at its full width and stays that way. Peeking is a
  * trade — a narrow rail in exchange for having to point at it — and it is the
  * wrong one for a set of tabs, which have to be readable to be chosen between.
+ *
+ * Peeking is now the *default* rather than the only option — Appearance lets an
+ * affiliate pin the rail open or hold it shut instead. `is-static` covers the
+ * pinned case for free, since "open and staying that way" is exactly what the
+ * account rail already does.
  */
 const { items, drawerOpen, accountMode } = useDashboardNav();
+
+const { mode: sidebarMode } = useSidebarMode();
+
+/**
+ * Whether a hovered or focused row should name itself.
+ *
+ * Only while the rail is collapsed, and never on the account rail — that one is
+ * open at full width whatever this says, so a balloon there would sit beside a
+ * label that is already legible.
+ */
+const tips = computed(() => sidebarMode.value === "collapsed" && !accountMode.value);
 
 const route = useRoute();
 
