@@ -160,6 +160,23 @@ const icons: Record<string, string[]> = {
 	external: ["M14 4h6v6", "M20 4l-8.5 8.5", "M18 14.5V19a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h4.5"],
 	logout: ["M9.5 20.5H5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1h4.5", "M16 16.5l4.5-4.5L16 7.5", "M20.5 12h-11"],
 	check: ["M4.5 12.5l5 5 10-11"],
+	// An envelope, for the email row under Sign-in methods. The flap is drawn
+	// as two straight strokes meeting at the fold rather than a single V across
+	// the whole width, so it keeps a visible gap from the body's top corners
+	// instead of turning into a filled triangle at 16px.
+	mail: [
+		"M3.5 6.5a1 1 0 0 1 1-1h15a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-15a1 1 0 0 1-1-1v-11Z",
+		"M4 7l8 6 8-6",
+	],
+	// A pencil over a sheet — "change this one thing", as distinct from `cog`,
+	// which is a whole area of settings. Two paths: the sheet with its top-right
+	// corner left open for the pencil to cross, then the pencil itself as a
+	// closed nib-to-shoulder outline so it reads as a tool and not a stray
+	// diagonal.
+	edit: [
+		"M11 5.5H5.5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V13",
+		"M16.4 4.1a1.9 1.9 0 0 1 2.7 2.7l-7.6 7.6-3.4.7.7-3.4 7.6-7.6Z",
+	],
 	trendUp: ["M4 16.5 9.5 11l4 4 6.5-6.5", "M15 8.5h5v5"],
 	trendDown: ["M4 8.5 9.5 14l4-4 6.5 6.5", "M15 15.5h5v-5"],
 	trendFlat: ["M4.5 12h15"],

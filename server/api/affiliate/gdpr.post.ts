@@ -1,10 +1,33 @@
-import { object, oneOf } from "../../utils/validate";
+import { object, oneOf, str, whenPresent } from "../../utils/validate";
+
+/**
+ * Why somebody is leaving.
+ *
+ * Stored as a key rather than the sentence shown on screen, so the wording can
+ * be reworded without making a year of past answers unreadable. `other` is the
+ * one that carries its own explanation in `reason_note`.
+ */
+const DELETE_REASONS = [
+	"not_using",
+	"not_earning",
+	"too_complicated",
+	"privacy",
+	"switching",
+	"temporary",
+	"other",
+] as const;
 
 /** Deletion sits in a grace period before anything is destroyed. */
 const DELETE_GRACE_DAYS = 14;
 
 /**
- * Data export and account deletion requests.
+ * Account deletion requests.
+ *
+ * It answered `export` too — a download of everything held about an affiliate,
+ * built on the spot. It came out because nobody ever asked for one: not a
+ * single request was made in the lifetime of the feature, and an export route
+ * that is never called is a second query over conversions, visits and the audit
+ * log kept working for nothing.
  *
  * Deletion is queued rather than immediate, for two reasons: an account
  * deleted in a bad five minutes should be recoverable, and a request made
@@ -23,7 +46,11 @@ export default defineEventHandler(async (event) => {
 	const session = await requireUser(event);
 
 	const body = await readValidatedBody(event, object({
-		action: oneOf("export", "delete", "cancel"),
+		action: oneOf("delete", "cancel"),
+		// Only meaningful on a delete, and optional even there — a reason is
+		// worth asking for and not worth blocking somebody's exit over.
+		reason: whenPresent(oneOf(...DELETE_REASONS)),
+		reasonNote: whenPresent(str({ max: 500 })),
 	}));
 
 	if (body.action === "cancel") {
@@ -45,58 +72,6 @@ export default defineEventHandler(async (event) => {
 		return { cancelled: data?.length ?? 0 };
 	}
 
-	// An export is answered immediately — it is the affiliate's own data and
-	// there is nothing to weigh up.
-	if (body.action === "export") {
-		const [conversions, visits, activity] = await Promise.all([
-			db().from("conversions")
-				.select("whop_payment_id, buyer_username, status, occurred_at")
-				.eq("affiliate_id", affiliate.id),
-			db().from("referral_visits")
-				.select("day, path, referrer_host, country, occurred_at")
-				.eq("affiliate_id", affiliate.id),
-			db().from("audit_log")
-				.select("at, action, ip")
-				.eq("subject_affiliate_id", affiliate.id),
-		]);
-
-		await audit(event, {
-			actorKind: "affiliate",
-			action: "gdpr.exported",
-			actorUserId: session.userId,
-			subjectAffiliateId: affiliate.id,
-		});
-
-		setResponseHeader(event, "content-type", "application/json; charset=utf-8");
-		setResponseHeader(event, "cache-control", "private, no-store");
-		setResponseHeader(
-			event,
-			"content-disposition",
-			`attachment; filename="${affiliate.slug}-data-export.json"`,
-		);
-
-		return {
-			exportedAt: new Date().toISOString(),
-			profile: {
-				slug: affiliate.slug,
-				displayName: affiliate.display_name,
-				timezone: affiliate.timezone,
-				locale: affiliate.locale,
-				memberSince: affiliate.created_at,
-				links: {
-					vip: affiliate.vip_checkout_url,
-					telegram: affiliate.lite_telegram_url,
-					calendly: affiliate.calendly_url,
-				},
-			},
-			sales: conversions.data ?? [],
-			// Visitor rows carry a daily-rotating hash and never an IP or user
-			// agent, so there is nothing here that identifies a visitor.
-			linkVisits: visits.data ?? [],
-			accountActivity: activity.data ?? [],
-		};
-	}
-
 	const executeAfter = new Date(Date.now() + DELETE_GRACE_DAYS * 24 * 60 * 60 * 1000);
 
 	const { error } = await db().from("gdpr_requests").insert({
@@ -104,6 +79,10 @@ export default defineEventHandler(async (event) => {
 		kind: "delete",
 		status: "pending",
 		execute_after: executeAfter.toISOString(),
+		reason: body.reason ?? null,
+		// Blank counts as absent. Somebody who opened the note field and typed
+		// nothing has not given a note.
+		reason_note: body.reasonNote?.trim() || null,
 	});
 
 	if (error) throw createError({ statusCode: 500, statusMessage: "Could not record the request" });
@@ -113,7 +92,10 @@ export default defineEventHandler(async (event) => {
 		action: "gdpr.delete_requested",
 		actorUserId: session.userId,
 		subjectAffiliateId: affiliate.id,
-		meta: { executeAfter: executeAfter.toISOString() },
+		// The key, never the note. `meta` is append-only and the note is free
+		// text somebody typed about why they are leaving — it lives on the
+		// request row, which the purge removes with everything else.
+		meta: { executeAfter: executeAfter.toISOString(), reason: body.reason ?? "unstated" },
 	});
 
 	return {

@@ -36,8 +36,8 @@ export default defineEventHandler(async (event) => {
 
 	const ids = (data ?? []).map(row => row.id as string);
 
-	// Counts and live-invite prefixes in two queries rather than N+1.
-	const [conversions, visits, invites] = await Promise.all([
+	// Counts, live-invite prefixes and pending deletions, batched rather than N+1.
+	const [conversions, visits, invites, deletions] = await Promise.all([
 		ids.length ? db().from("conversions").select("affiliate_id").in("affiliate_id", ids) : { data: [] },
 		ids.length ? db().from("referral_visits").select("affiliate_id").in("affiliate_id", ids) : { data: [] },
 		ids.length
@@ -55,6 +55,23 @@ export default defineEventHandler(async (event) => {
 				// included, so the one-live-invite index is never at risk.
 				.gt("expires_at", new Date().toISOString())
 			: { data: [] },
+
+		// Affiliates who have asked to be deleted.
+		//
+		// Surfaced here because nothing else surfaces it. The request writes a
+		// row and stops — the queue is deliberately not drained automatically,
+		// since deleting an affiliate cascades into the conversions that record
+		// commission already paid — so without this the only trace of somebody
+		// asking is a line in their own audit log that no admin screen reads.
+		// The settings page tells them 14 days; this is what makes that a
+		// deadline somebody can actually meet.
+		ids.length
+			? db().from("gdpr_requests")
+				.select("affiliate_id, execute_after, reason, reason_note")
+				.in("affiliate_id", ids)
+				.eq("kind", "delete")
+				.in("status", ["pending", "ready"])
+			: { data: [] },
 	]);
 
 	const tally = (rows: { affiliate_id: unknown }[] | null) => {
@@ -68,6 +85,15 @@ export default defineEventHandler(async (event) => {
 
 	const sales = tally(conversions.data as { affiliate_id: unknown }[]);
 	const visitCounts = tally(visits.data as { affiliate_id: unknown }[]);
+
+	const pendingDeletion = new Map<string, { on: string; reason: string | null; note: string | null }>();
+	for (const row of (deletions.data ?? []) as Record<string, unknown>[]) {
+		pendingDeletion.set(row.affiliate_id as string, {
+			on: row.execute_after as string,
+			reason: (row.reason as string | null) ?? null,
+			note: (row.reason_note as string | null) ?? null,
+		});
+	}
 
 	const liveInvites = new Map<string, { prefix: string; expiresAt: string }>();
 	for (const row of (invites.data ?? []) as Record<string, unknown>[]) {
@@ -97,6 +123,11 @@ export default defineEventHandler(async (event) => {
 				hasTelegram: Boolean(row.lite_telegram_url),
 				hasCalendly: Boolean(row.calendly_url),
 				hasLogin: Boolean(row.user_id),
+				// Null unless they have asked to be deleted. The date is when the
+				// grace period they were promised runs out, and the reason is
+				// what they picked on the way out — the only place anyone gets
+				// to read it, since the request row goes with the purge.
+				pendingDeletion: pendingDeletion.get(id) ?? null,
 				createdAt: row.created_at as string,
 				sales: sales.get(id) ?? 0,
 				visits: visitCounts.get(id) ?? 0,

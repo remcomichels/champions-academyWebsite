@@ -187,6 +187,18 @@
     // nothing left to do, since the width they animate to is already in place.
     &.is-accountNav { --rail-shut: var(--rail-open); }
 
+    // ── Chosen rail behaviour ────────────────────────────────────────────
+    // Both of these move one variable and nothing else. `--rail-shut` is the
+    // rail's own width *and* the column's left offset, so the two cannot end up
+    // disagreeing about how much room the rail is taking — which is the whole
+    // reason the account rail has always been able to stay open in one line.
+    //
+    // Never both. The layout withholds these two while the account rail is up,
+    // so there is no order to get right here — the account rail stays open at
+    // full width and this setting is about the other one.
+    &.is-navExpanded { --rail-shut: var(--rail-open); }
+    &.is-navCollapsed { --rail-shut: var(--top-bar); }
+
     &-body {
         position: relative;
         flex: 1;
@@ -367,6 +379,41 @@
 
     &:focus-visible::after,
     &:focus-visible::before { visibility: visible; }
+
+    // ── The collapsed rail's balloon ─────────────────────────────────────
+    // Beside the row rather than under it, because "under" is the next nav row.
+    // Nothing else changes: same box, same size, same tail, same colours — the
+    // balloon moves to the right of the host and the tail turns to point back
+    // at it.
+    //
+    // `top: 50%` with `translateY(-50%)` on both, so each centres on the host
+    // and therefore on the other.
+    //
+    // The two offsets are the downward tooltip's, turned on their side: @vw2 for
+    // the tail and @vw6 for the balloon. The 4px between them is half the
+    // square, and that is the whole trick — the balloon covers half the tail, so
+    // what shows is a chevron rather than a diamond. Sitting them flush instead,
+    // which is what "closer" first meant, leaves the entire square visible and
+    // it stops looking like the tooltips everywhere else.
+    //
+    // Left and bottom borders where the downward tail uses left and top:
+    // rotating 45deg puts the bottom-left corner at nine o'clock, and those are
+    // the two edges that meet there.
+    &--rail {
+        &::after {
+            top: 50%;
+            left: calc(100% + @vw6);
+            transform: translateY(-50%);
+        }
+
+        &::before {
+            top: 50%;
+            left: calc(100% + @vw2);
+            transform: translateY(-50%) rotate(45deg);
+            border-top: none;
+            border-bottom: max(1px, @vw1) solid var(--popover-border);
+        }
+    }
 
     // The last control sits against the right edge of the viewport, where a
     // centred balloon would hang off it. This one grows leftward instead; the
@@ -705,6 +752,46 @@
 
             .dashNav-label { transition-delay: 0.04s; }
         }
+    }
+
+    // Collapsed by choice, so pointing at it does nothing.
+    //
+    // Ahead of `.is-static` below and after the two peek rules above, which is
+    // the only order that works: it has to beat the peek, and lose to the
+    // static rail so the account tabs stay readable.
+    //
+    // The `:focus-within` peek goes with it, which costs keyboard users the
+    // labels — the reason that rule was not gated on pointer type in the first
+    // place. The tooltips are the replacement, and they are on `:focus-visible`
+    // as well as `:hover` precisely so tabbing through a collapsed rail still
+    // names every row.
+    .dashLayout.is-navCollapsed .dashNav:not(.is-static) {
+        &:hover,
+        &:focus-within {
+            width: var(--rail-shut);
+            box-shadow: none;
+
+            .dashNav-label { opacity: 0; }
+        }
+
+        // Nothing clips while collapsed, which is what lets the tooltips above
+        // be ordinary tooltips rather than something exotic. Two boxes were
+        // cutting them off and both had to go:
+        //
+        // The row hides its own overflow so a label cannot spill out of a
+        // narrow rail. At rest that label is already `opacity: 0`, so there is
+        // nothing to see whether it spills or not, and the clip only costs the
+        // balloon beside it.
+        //
+        // The list is a scroll container — `overflow-y: auto` for a nav longer
+        // than the viewport — and a scroll container clips *both* axes whatever
+        // you ask of it: `overflow-x: visible` computes to `auto` beside it and
+        // `overflow-x: clip` computes to `hidden`. The scroll is a safety valve,
+        // and the note on `-list` puts it at "past roughly a dozen" entries;
+        // collapsed, this rail is five rows at icon height with nothing to
+        // scroll, and it is given up only in the mode where that holds.
+        .dashNav-list,
+        .dashNav-item { overflow: visible; }
     }
 
     // Static — the account rail, open at full width and staying there.
@@ -1467,17 +1554,157 @@
         }
     }
 
+    // Outlined at rest, not bare. It had a transparent border and only grew one
+    // on hover, which is fine for a control among other controls — but this one
+    // now sits alone on a tinted panel where a borderless red word does not read
+    // as something you press. Nothing else used it, so the whole variant moves
+    // rather than gaining a modifier.
     &--danger {
         background: none;
-        border-color: transparent;
+        border-color: var(--error);
         color: var(--error);
 
         @media (hover: hover) {
-            &:hover:not(:disabled) { border-color: var(--error); }
+            &:hover:not(:disabled) { background-color: var(--error-subtle); }
         }
     }
 
     &--block { width: 100%; }
+}
+
+// ── Select trigger ───────────────────────────────────────────────────────────
+// What `NuxtDashboardSelectField` draws instead of a `<select>`, lifted out of
+// `.dashForm--split` where it was first written.
+//
+// It was nested there because that was the only place a select existed, and the
+// nesting turned out to be load bearing in the wrong direction: dropped into a
+// dialog, the trigger lost `display: flex` and `text-align: left`, so the value
+// centred itself the way a button's label does and the caret — absolutely
+// positioned and still working — sat over the left of it. The control looked
+// broken in the one place it had not been tried.
+//
+// None of these rules describe the settings column. They describe a select, so
+// they belong to the select.
+
+// The trigger. A button rather than a `<select>` — the native popup is
+// drawn by the operating system, which will not put it under the field, let
+// it run wider than the field, or make it look like the rest of this form.
+.field-input--select {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    padding-right: @vw32;
+    text-align: left;
+    font-family: @body;
+    cursor: pointer;
+
+    &.is-open { border-color: var(--accent); }
+}
+
+// The value inside it. Its own element so a long address is clipped by the
+// control rather than pushing the caret out of the box.
+.field-input-value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-caret {
+    position: absolute;
+    top: 50%;
+    right: @vw10;
+    width: @vw14;
+    height: @vw14;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    // The caret is decoration over a control that is itself clickable —
+    // without this, clicking the arrow does nothing.
+    pointer-events: none;
+}
+
+// The popup.
+//
+// Under the trigger and pinned to its left edge, free to run wider than it
+// to the right. That asymmetry is the point: the control lives in the 40%
+// column and an email address is longer than that, so a menu held to the
+// trigger's width would truncate every option and leave a picker you cannot
+// pick from. Left edge fixed so the list opens where the eye already is.
+//
+// `max-content` with a floor of the trigger's own width: never narrower
+// than what it hangs from, never wider than it needs, and capped so a long
+// address cannot run it off the side of the page.
+
+// The menu the trigger opens, moved out of `.dashForm--split` alongside it.
+//
+// Leaving it behind made the select worse rather than better: outside the
+// settings column the button looked right and then dropped an unstyled list of
+// bullet points over the page. It hangs off `.field-control`, which form.less
+// makes `position: relative` for every field everywhere, so it needed nothing
+// from that layout to begin with.
+
+.selectMenu {
+    position: absolute;
+    top: calc(100% + @vw6);
+    left: 0;
+    z-index: 20;
+    min-width: 100%;
+    width: max-content;
+    max-width: @vw300 + @vw60;
+    max-height: @vw240;
+    overflow-y: auto;
+    padding: @vw4;
+    list-style: none;
+    // Popover tokens, not surface ones. This floats over the page, and
+    // `--border` is an rgba — fine on a panel sitting on a known
+    // background, wrong on a box with content sliding under it, where a
+    // part-transparent edge reads as a translucent menu.
+    background-color: var(--popover);
+    border: max(1px, @vw1) solid var(--popover-border);
+    border-radius: @dashRadius;
+    box-shadow: var(--shadow-pop);
+
+    &-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw10;
+        padding: @vw7 @vw10;
+        border-radius: @dashRadiusInner;
+        font-size: @settingsBody;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        cursor: pointer;
+
+        // Driven by `activeIndex` rather than `:hover`, so the keyboard and
+        // the pointer light the same row and only ever one of them.
+        //
+        // `--popover-border`, which is the one opaque colour in the set that
+        // is a real step away from `--popover` in all three themes.
+        // `--surface-hover` was the obvious choice and the wrong one: at
+        // #27272E against a #2A2A31 menu it is *darker* by three points and
+        // reads as nothing at all.
+        &.is-active {
+            background-color: var(--popover-border);
+            color: var(--text);
+        }
+
+        &.is-chosen { color: var(--text); }
+    }
+
+    &-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &-tick {
+        flex: none;
+        width: @vw14;
+        height: @vw14;
+        color: var(--accent);
+    }
 }
 
 // ── Copy field ───────────────────────────────────────────────────────────────
@@ -2496,6 +2723,15 @@
     // which would otherwise stack on the card's own.
     > *:first-child { padding-top: 0; }
 
+    // Unless there are no buttons. That trailing rule exists to divide the
+    // fields from the actions under them, so on a panel that has none it is a
+    // line with nothing on the other side of it, closing off the card's own
+    // bottom padding into a strip of empty space.
+    &.dashForm--noActions > *:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
     // Sentence case, not the uppercase the shared field uses. Uppercase reads
     // as a category heading, which is right for a label sitting above its
     // control and wrong for one sitting beside it in a row of them.
@@ -2527,9 +2763,11 @@
     // On the row, not on `&` — `&` here is the form, and scoped to that this
     // read "if any row anywhere has a hint, shift every label in the form",
     // which is emphatically not the question being asked.
+    // `:has()` is a descendant test, so it still matches with the note wrapped.
     .field:has(.field-message),
     .readonlyField:has(.field-message) {
         .field-label { align-self: end; }
+        .field-notes,
         .field-message { align-self: start; }
     }
 
@@ -2542,6 +2780,10 @@
     // under the label it has 60% to run in and reads as part of the label,
     // which is what it is.
     .field-label { grid-column: 1; grid-row: 1; }
+    // `.field-notes` is what `NuxtAuthField` renders; the bare `.field-message`
+    // is for `.readonlyField`, whose note is written by hand in the template and
+    // is a direct grid item. Both name the same cell.
+    .field-notes,
     .field-message { grid-column: 1; grid-row: 2; }
 
     // Both tracks, which is what makes the control the thing that sets the row
@@ -2607,117 +2849,6 @@
     .field-input:focus-visible,
     .readonlyField-value:focus-visible { box-shadow: none; }
 
-    // The trigger. A button rather than a `<select>` — the native popup is
-    // drawn by the operating system, which will not put it under the field, let
-    // it run wider than the field, or make it look like the rest of this form.
-    .field-input--select {
-        appearance: none;
-        display: flex;
-        align-items: center;
-        padding-right: @vw32;
-        text-align: left;
-        font-family: @body;
-        cursor: pointer;
-
-        &.is-open { border-color: var(--accent); }
-    }
-
-    // The value inside it. Its own element so a long address is clipped by the
-    // control rather than pushing the caret out of the box.
-    .field-input-value {
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .field-caret {
-        position: absolute;
-        top: 50%;
-        right: @vw10;
-        width: @vw14;
-        height: @vw14;
-        transform: translateY(-50%);
-        color: var(--text-tertiary);
-        // The caret is decoration over a control that is itself clickable —
-        // without this, clicking the arrow does nothing.
-        pointer-events: none;
-    }
-
-    // The popup.
-    //
-    // Under the trigger and pinned to its left edge, free to run wider than it
-    // to the right. That asymmetry is the point: the control lives in the 40%
-    // column and an email address is longer than that, so a menu held to the
-    // trigger's width would truncate every option and leave a picker you cannot
-    // pick from. Left edge fixed so the list opens where the eye already is.
-    //
-    // `max-content` with a floor of the trigger's own width: never narrower
-    // than what it hangs from, never wider than it needs, and capped so a long
-    // address cannot run it off the side of the page.
-    .selectMenu {
-        position: absolute;
-        top: calc(100% + @vw6);
-        left: 0;
-        z-index: 20;
-        min-width: 100%;
-        width: max-content;
-        max-width: @vw300 + @vw60;
-        max-height: @vw240;
-        overflow-y: auto;
-        padding: @vw4;
-        list-style: none;
-        // Popover tokens, not surface ones. This floats over the page, and
-        // `--border` is an rgba — fine on a panel sitting on a known
-        // background, wrong on a box with content sliding under it, where a
-        // part-transparent edge reads as a translucent menu.
-        background-color: var(--popover);
-        border: max(1px, @vw1) solid var(--popover-border);
-        border-radius: @dashRadius;
-        box-shadow: var(--shadow-pop);
-
-        &-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: @vw10;
-            padding: @vw7 @vw10;
-            border-radius: @dashRadiusInner;
-            font-size: @settingsBody;
-            color: var(--text-secondary);
-            white-space: nowrap;
-            cursor: pointer;
-
-            // Driven by `activeIndex` rather than `:hover`, so the keyboard and
-            // the pointer light the same row and only ever one of them.
-            //
-            // `--popover-border`, which is the one opaque colour in the set that
-            // is a real step away from `--popover` in all three themes.
-            // `--surface-hover` was the obvious choice and the wrong one: at
-            // #27272E against a #2A2A31 menu it is *darker* by three points and
-            // reads as nothing at all.
-            &.is-active {
-                background-color: var(--popover-border);
-                color: var(--text);
-            }
-
-            &.is-chosen { color: var(--text); }
-        }
-
-        &-label {
-            min-width: 0;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        &-tick {
-            flex: none;
-            width: @vw14;
-            height: @vw14;
-            color: var(--accent);
-        }
-    }
 }
 
 .readonlyField {
@@ -2739,6 +2870,444 @@
             color: var(--text-tertiary);
         }
     }
+}
+
+// ── Sign-in methods ──────────────────────────────────────────────────────────
+// One method per row: a glyph, what it is and what it currently says, then the
+// controls that change it. Three columns rather than a flex row with a spacer,
+// so a second row — a passkey, a linked account — lines its icon and its label
+// up with this one instead of each row finding its own edges.
+.signinRow {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: @vw14;
+
+    // A bare glyph, and big enough to carry the row on its own. It was a
+    // bordered tile — the tile was there to give an @vw18 icon enough presence
+    // to sit beside two lines of text, which is a lot of chrome to solve a
+    // sizing problem. Dropping it and growing the glyph gets the same weight
+    // with nothing drawn around it, and keeps the panel as flat as every other
+    // surface here.
+    &-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw26;
+        height: @vw26;
+        color: var(--text-secondary);
+
+        .icon { width: @vw24; height: @vw24; }
+    }
+
+    // The platform marks are supplied artwork rather than glyphs from the icon
+    // set, so they bring their own colour and their own proportions — YouTube
+    // is a wide rectangle where the other two are squares. `contain` fits each
+    // inside the same box so the three line up on their centres, and the box
+    // keeps its width either way so the labels beside them share one left edge.
+    &-icon--logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    // The label and the address are one thing read together, so they are set
+    // tight: no gap, and a line-height pulled well in from the body default,
+    // which is sized for paragraphs rather than for a two-line pair.
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        min-width: 0;
+    }
+
+    // Sentence case, matching the labels in `.dashForm--split` rather than the
+    // uppercase a standalone field label uses — this is the name of a row, not
+    // a heading over a group of them.
+    &-label {
+        font-size: @settingsLabel;
+        font-weight: @medium;
+        line-height: 1.35;
+        color: var(--text);
+    }
+
+    &-value {
+        font-size: @settingsBody;
+        line-height: 1.35;
+        color: var(--text-tertiary);
+        overflow-wrap: anywhere;
+    }
+
+    &-actions {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+    }
+
+    // A rule between rows, not around them. Only ever applies where there is
+    // more than one — the sign-in panel has a single row and never sees it.
+    //
+    // Ruled edge to edge, the same trick `.dashForm--split` uses: the negative
+    // margin takes the row out past `.dashPanel`'s @vw16 padding and the
+    // matching inline padding puts the content back where it was, so the line
+    // spans the card while the glyphs and labels stay on the left edge they
+    // share with everything above. The top padding matches the panel's gap, so
+    // the space above the line and below it come out equal.
+    & + & {
+        margin-inline: -@vw16;
+        padding: @vw16 @vw16 0;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    // The row wraps before the address does. Below this the three columns have
+    // nowhere left to go, and squeezing them is what pushes an email onto four
+    // lines beside a button it no longer fits next to.
+    @media (max-width: 600px) {
+        grid-template-columns: auto minmax(0, 1fr);
+
+        &-actions {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+        }
+    }
+}
+
+// A control whose whole label is its glyph. Its accessible name comes from
+// `aria-label`; `.tip` draws the visible one on hover and on focus.
+//
+// Nothing drawn around it. It used to be boxed like `.btn--subtle` so it would
+// read as the equal of the button beside it, but two filled boxes in a row is
+// two things asking to be pressed, and only one of them is the row's actual
+// action. Bare, the glyph reads as the secondary control it is.
+//
+// The glyph is sized as a length rather than off the type scale, and the size
+// was settled by looking at it. Matched to the adjacent button's text it was
+// unreadable — a 1.5-weight outline needs more room than a letterform before it
+// is identifiable at all — and taken up to the mail glyph's own size it stopped
+// reading as the secondary control and started competing with the button. @vw16
+// is the middle: legible on its own, still clearly the quieter of the two.
+//
+// vw, like every other length here and unlike the type around it. A reading size
+// is fixed because reading distance is; a glyph is a proportion of the row.
+.iconButton {
+    flex: none;
+    display: grid;
+    place-items: center;
+    // Padding, not a width and height: it keeps a pointer target around a bare
+    // glyph without drawing a box the size of the target.
+    padding: @vw6;
+    background: none;
+    border: none;
+    line-height: 1;
+    // Secondary, not tertiary. Inside the old bordered tile the box carried the
+    // glyph and a quieter tint was fine; bare, the stroke is the only thing on
+    // screen, and at tertiary it dropped out of the row on the dark theme.
+    color: var(--text-secondary);
+    cursor: pointer;
+    .transition();
+    transition-property: color;
+
+    .icon { width: @vw16; height: @vw16; }
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) { color: var(--text); }
+    }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+        border-radius: @dashRadiusInner;
+    }
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+// ── Appearance ───────────────────────────────────────────────────────────────
+// The theme row inside a `.dashForm--split` panel, widened.
+//
+// Everything else in that container is a label and one control, which the 3/2
+// split is drawn for. This row's control is four preview cards in a 2x2, and at
+// 2fr of a 768 column they came out about 130px each — too small to read as a
+// picture of a dashboard, which is the only job they have. The rest of the row
+// — the rule, the padding, the label and hint in column one — is inherited
+// unchanged, so it still lines up with the select underneath it.
+.dashForm--split .appearanceTheme {
+    // 30/70, against the 60/40 the other rows use. Those pair a label with a
+    // single control and the label is the wider half because it is the part you
+    // read down the form looking for. Here the control is four pictures and they
+    // are the point of the row, so the weighting inverts. The number was walked
+    // in: 20/80 squeezed the heading and its line into a column narrow enough
+    // that the text became the awkward thing on the row, and 40/60 left the
+    // previews smaller than they need to be to read as pictures of a dashboard.
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+
+    // Two rows, and the second one takes the slack.
+    //
+    // Every other row in this container pairs a short label with a short
+    // control and centres them against each other. This control is four preview
+    // cards tall, so left to `auto` rows the spanning card grid hands its extra
+    // height to *both* tracks and the hint drifts away from the label it
+    // belongs to. Pinning row one to the label and giving row two `1fr` puts
+    // all the slack under the pair, so the two stay together at the top where a
+    // heading and its explanation belong.
+    grid-template-rows: auto 1fr;
+    align-items: start;
+
+    .field-label,
+    .field-message,
+    .field-control { align-self: start; }
+}
+
+.themeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: @vw12;
+    width: 100%;
+}
+
+// One option: a picture of the theme, then a radio naming it.
+.themeCard {
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+    padding: @vw8;
+    border-radius: @dashRadius;
+    border: max(1px, @vw1) solid var(--border);
+    background-color: var(--surface);
+    cursor: pointer;
+    .transition();
+    transition-property: border-color, background-color;
+
+    @media (hover: hover) {
+        &:hover { border-color: var(--border-strong); }
+    }
+
+    // The chosen one is outlined rather than filled. A fill would put a tinted
+    // ground behind a preview whose whole purpose is to show a ground.
+    &.is-chosen {
+        border-color: var(--accent);
+    }
+
+    // Focus lands on the radio inside, which is the thing that actually moves,
+    // so the ring is drawn on the card around it.
+    &:focus-within {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    // ── The preview ──────────────────────────────────────────────────────
+    // A miniature of the chrome, not a screenshot: a rail, a top bar and two
+    // cards. `data-theme` on this element is what makes it worth having —
+    // the tokens in dashboardTokens.less are declared on a bare `[data-theme]`
+    // attribute selector rather than on `html`, so every custom property
+    // re-resolves inside this box. A dark preview renders dark on a light page
+    // with no second palette to maintain, and any change to the real tokens
+    // shows up here without anyone remembering to update it.
+    &-frame {
+        position: relative;
+        display: flex;
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: @dashRadiusInner;
+        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--background);
+    }
+
+    // System: both themes at once, split on the diagonal. Two complete frames
+    // stacked, the upper one clipped to a triangle — rather than one frame with
+    // half its parts recoloured, so neither half can drift from the theme it is
+    // claiming to show.
+    &-frame--split {
+        .themeCard-face {
+            position: absolute;
+            inset: 0;
+        }
+
+        .themeCard-face--second {
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        }
+    }
+
+    &-face {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background-color: var(--background);
+    }
+
+    &-rail {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6%;
+        width: 11%;
+        padding: 6% 0 0 3.5%;
+        background-color: var(--surface);
+        border-right: max(1px, @vw1) solid var(--border);
+
+        i {
+            width: 40%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background-color: var(--text-tertiary);
+        }
+    }
+
+    &-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5%;
+        padding: 5%;
+    }
+
+    &-bar {
+        display: flex;
+        gap: 4%;
+        height: 8%;
+
+        i {
+            flex: 1;
+            border-radius: @dashRadiusPill;
+            background-color: var(--chart-bar);
+
+            // One accented pill, the way one thing on a real screen is the
+            // accent. Flexed wider so it reads as the active tab.
+            &:first-child {
+                flex: 1.4;
+                background-color: var(--accent);
+            }
+        }
+    }
+
+    &-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12%;
+        padding: 0 8%;
+        border-radius: @dashRadiusInner;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+
+        i {
+            height: 8%;
+            min-height: 1px;
+            border-radius: @dashRadiusPill;
+            background-color: var(--chart-bar);
+
+            &:last-child { width: 45%; background-color: var(--accent); }
+        }
+    }
+
+    // ── The label ────────────────────────────────────────────────────────
+    &-foot {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        padding: 0 @vw2 @vw2;
+    }
+
+    &-radio {
+        flex: none;
+        width: @vw14;
+        height: @vw14;
+        margin: 0;
+        // Put back deliberately. `_reset.less` strips `appearance` from every
+        // input, which is right for the text fields it was written for and
+        // fatal here: a radio with no appearance is not an unstyled radio, it
+        // is an empty box — the control rendered as nothing at all.
+        //
+        // Kept native rather than redrawn because `accent-color` themes it in
+        // one line, and a hand-built radio has to reimplement checked, focus
+        // and disabled to arrive back where this starts. It is a circle; there
+        // is no cross-platform popup to disagree about, which is what made the
+        // native <select> worth replacing and does not apply to this.
+        -webkit-appearance: radio;
+        appearance: auto;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    &-name {
+        font-size: @settingsBody;
+        font-weight: @medium;
+        color: var(--text);
+    }
+}
+
+// ── Teaser ───────────────────────────────────────────────────────────────────
+// A panel whose contents are real but not ready.
+//
+// The alternative was an empty section saying a feature is coming, and this is
+// better for one reason: the shape underneath is the actual markup, so it says
+// what the thing will be rather than that a thing will exist — and when the
+// feature lands, the wrapper comes off and there is nothing to build.
+//
+// What it is not is a way to ship dead controls. Everything inside is inert by
+// construction rather than by CSS: the buttons are rendered as `span`s and the
+// whole veil is `aria-hidden`, so there is nothing focusable, nothing to press
+// and nothing announced. `pointer-events: none` below is the third layer, not
+// the only one — CSS that is the sole thing standing between a user and a
+// broken action is CSS that will eventually be overridden by accident.
+.teaser {
+    position: relative;
+    // Contains the badge, which is centred against the panel rather than the
+    // row it happens to land on.
+    isolation: isolate;
+
+    &-veiled {
+        display: flex;
+        flex-direction: column;
+        gap: @vw16;
+        // Tuned by looking at it. At @vw4 the platform names were gone entirely,
+        // which hides the most useful thing a teaser has to say — *which*
+        // platforms are coming. At @vw3 the names are almost legible and the
+        // glyphs are recognisable, while the copy underneath is not. Less than
+        // this stops reading as deliberate and starts looking like a rendering
+        // fault.
+        // Tuned by looking at it. At @vw4 the platform names were gone entirely,
+        // which hides the most useful thing a teaser has to say — *which*
+        // platforms are coming. At @vw3 the names are almost legible and the
+        // marks are recognisable, while the copy underneath is not. Less than
+        // this stops reading as deliberate and starts looking like a rendering
+        // fault.
+        filter: blur(@vw3);
+        // Pulled back so the label over it reads without needing a plate of its
+        // own — see the note on the badge below.
+        opacity: 0.55;
+        pointer-events: none;
+        user-select: none;
+    }
+
+    // Bare text, and nothing behind it.
+    //
+    // It was a pill on the popover tokens with a shadow, which is the treatment
+    // for something floating over the page — a tooltip, a menu. This is not
+    // floating over anything: it is the label *for* the panel it sits in, and
+    // giving it an object's chrome made the panel look like it had a dialog
+    // open on top of it. The veil's own opacity is what keeps this readable,
+    // which is the job that plate was doing.
+    &-badge {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1;
+        font-size: @settingsBody;
+        font-weight: @semiBold;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+        color: var(--text);
+    }
+
+    // The accent stays off this. A label is not something you can press, and
+    // the note in dashboardTokens.less is explicit that the accent means
+    // interactive — spending it on a label saying "not yet" is the fastest way
+    // to make it stop meaning anything.
 }
 
 // ── Activity inbox + toasts ──────────────────────────────────────────────────
@@ -3348,11 +3917,82 @@
     &.is-danger { color: var(--error); }
 }
 
-.dangerRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: @vw24;
+// ── Danger zone ──────────────────────────────────────────────────────────────
+// The one panel on the page that is allowed to look different from the others.
+//
+// The ground is the signal: the error tint and edge instead of the shared
+// surface. A tint rather than a solid fill, for the reason `--error-subtle`
+// exists at 12% — the text sitting on it has to stay the most legible thing in
+// the box.
+//
+// The button sits under the text rather than out to the right, which is where
+// the rows elsewhere on this page put theirs. Those rows offer a control beside
+// the thing it changes and you can take them in at a glance. This one is a
+// paragraph you are meant to finish before you decide, and a button parked
+// alongside it is reachable before the sentence explaining it has been read.
+// Underneath, it comes after.
+.dangerZone {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    // Top, not centre: the glyph belongs beside the title, and centring it
+    // against a block that is now two rows tall floats it down by the height of
+    // the button.
+    align-items: start;
+    gap: @vw14;
+    padding: @vw16;
+    border-radius: @dashRadius;
+    background-color: var(--error-subtle);
+    border: max(1px, @vw1) solid var(--error);
+
+    &-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw24;
+        height: @vw24;
+        color: var(--error);
+
+        .icon { width: @vw22; height: @vw22; }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        min-width: 0;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: @settingsLabel;
+        font-weight: @semiBold;
+        line-height: 1.35;
+        color: var(--text);
+    }
+
+    // Body colour, not the error red. The panel is already red; a paragraph in
+    // it as well leaves nothing for the red to mean, and this is the part that
+    // has to be read carefully rather than noticed.
+    &-text {
+        font-size: @settingsBody;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-secondary);
+
+        strong { color: var(--text); font-weight: @semiBold; }
+    }
+
+    &-icon { grid-column: 1; grid-row: 1; }
+    &-body { grid-column: 2; grid-row: 1; }
+
+    // Column two, so it lines up with the text it belongs to rather than with
+    // the glyph. `start` keeps it the width of its own label — a danger button
+    // stretched across the panel is a bigger target than this one wants to be.
+    &-actions {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: start;
+    }
 }
 
 // ── Support ──────────────────────────────────────────────────────────────────
@@ -3796,6 +4436,29 @@
 // ── Modal ────────────────────────────────────────────────────────────────────
 // Styling for a native <dialog>. The browser owns the open/closed display, the
 // centring and the top layer; everything here is the look.
+// The page behind a modal does not move.
+//
+// `showModal()` makes the rest of the document inert — it cannot be clicked,
+// tabbed into or read by a screen reader — but inert is not still. Measured on
+// the real dialog: with it open, the wheel moved the page 473px and PageDown
+// moved it 573px, so the thing you opened stayed put while everything around it
+// slid away behind it.
+//
+// `:has()` rather than a class toggled when each dialog opens. The state is
+// already in the DOM — `<dialog>` carries `open` — and every modal in this
+// project uses `.modal`, so one rule covers the three of them and any fourth
+// without that dialog having to remember to announce itself. Scoped to `.modal`
+// rather than to `dialog[open]` so a non-modal dialog, which is allowed to sit
+// over a page that still works, does not freeze it.
+//
+// Both elements, matching the treatment in auth.less: `body` carries
+// `min-height: 100vh` from the reset, and locking only `html` leaves it as the
+// scrolling box on some engines.
+html:has(.modal[open]),
+html:has(.modal[open]) body {
+    overflow: hidden;
+}
+
 .modal {
     // The element itself is only a positioning box — the visible card is
     // -panel. That separation is what makes the backdrop click work: a click
@@ -3871,6 +4534,19 @@
         color: var(--text);
     }
 
+    // The middle and the bottom of a framed dialog. Only `--compact` uses them
+    // today — the affiliate editor is one long scrolling form with no bands —
+    // but they belong to `.modal` rather than to the modifier, because what
+    // they name is "the content" and "the actions", not "the narrow version".
+    &-body { min-width: 0; }
+
+    &-foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: @vw10;
+    }
+
     &-close {
         flex: none;
         display: grid;
@@ -3898,6 +4574,143 @@
             outline-offset: @vw2;
         }
     }
+}
+
+// ── Compact dialog ───────────────────────────────────────────────────────────
+// A dialog sized to one question.
+//
+// `.modal` is a flat 80vw x 80dvh and says why: the affiliate editor is a form
+// of several fields plus notes, and a dialog whose dimensions move with its
+// contents is a dialog that jumps. That reasoning does not reach this one. A
+// label, an input and two buttons at 80% of a desktop viewport is a small
+// paragraph adrift in a very large box, and there is nothing here that can grow
+// — so it is sized to the content and capped against the viewport instead.
+//
+// The bands are the other half of the difference. A dialog this short has no
+// scroll to tell you where the content ends, so the rules under the title and
+// over the buttons are what give it a top and a bottom.
+.modal--compact {
+    width: min(@vw300 + @vw180, calc(100vw - @vw32));
+
+    // `fit-content`, and `auto` is wrong — this is the whole reason the dialog
+    // rendered against the top of the screen instead of the middle of it.
+    //
+    // The UA gives a modal <dialog> `position: fixed; inset: 0` and `.modal`
+    // adds `margin: auto`, which is what centres it. With `height: auto` that
+    // is over-constrained: top and bottom are both 0, so the box stretches to
+    // fill the gap — 836px on a 900px viewport — the auto margins resolve to
+    // nothing, and the short card inside sits at the top of a full-height
+    // element. `fit-content` makes the height definite, and the leftover space
+    // goes back to the margins, which is where the centring comes from.
+    //
+    // `.modal` never hit this because its panel is `height: 100%` of a box that
+    // was always meant to be 80% of the viewport.
+    height: fit-content;
+    // Only ever reached by a field error wrapping onto a third line on a very
+    // short window; the panel scrolls inside the frame rather than the dialog
+    // growing past the screen.
+    max-height: calc(100dvh - @vw64);
+
+    .modal-panel {
+        gap: 0;
+        padding: 0;
+        height: auto;
+        // No `overflow: hidden`. It was here to stop the actions band's square
+        // corners poking through the panel's curve, and that band lost its own
+        // background a while ago — it is a rule and nothing else now, so there
+        // are no corners to clip and the hidden was only ever going to clip
+        // something that mattered instead.
+        overflow: visible;
+    }
+
+    .modal-head {
+        align-items: center;
+        padding: @vw14 @vw18;
+        border-bottom: max(1px, @vw1) solid var(--border);
+    }
+
+    // A column, because it holds two things when the request is refused: the
+    // failure, then the field it was about.
+    //
+    // It scrolls as a last resort, on a viewport too short for the dialog. That
+    // makes it a scroll container, and a scroll container clips both axes — so
+    // a select opened inside one drops its menu behind the dialog's own edge.
+    // The trigger looked right and the list was simply not there.
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw14;
+        padding: @vw18;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    // So the clipping is lifted for exactly as long as a menu is open, and put
+    // back the moment it closes. `:has()` rather than a class toggled in script,
+    // because the state is already in the DOM — the trigger carries `.is-open`
+    // — and a second copy of it in a parent is a second thing to keep in step.
+    &:has(.field-input--select.is-open) .modal-body {
+        overflow: visible;
+    }
+
+    // The rule is the band. It had a raised ground as well, which made the
+    // actions read as a separate panel bolted to the bottom of the dialog
+    // rather than as the end of it — one separator is enough to say where the
+    // content stops.
+    .modal-foot {
+        padding: @vw12 @vw18;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    // Sentence case, and at the label size the settings column uses.
+    //
+    // The shared `.field-label` is uppercase with letter-spacing, which reads
+    // as a category heading over a group of fields — right on a form of six,
+    // wrong on a dialog whose label is a full sentence asking one question.
+    .field-label {
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: @settingsLabel;
+        font-weight: @medium;
+        line-height: 1.25;
+        color: var(--text);
+    }
+
+    // The same control the rows on Preferences use, for the same reason given
+    // there: the shared field's `max(1em, @vw16)` resolves to about 21px on a
+    // 1920 monitor, which is display type inside a form control. A control's
+    // size is ergonomic rather than proportional — what is comfortable to read
+    // and to hit does not change because the monitor got wider — and a dialog
+    // opened from that column should not be visibly bigger than the column it
+    // opened over.
+    .field-input {
+        padding: @vw7 @vw10;
+        font-size: @settingsBody;
+        border-radius: @vw6;
+    }
+
+    .field-message { line-height: 1.25; }
+
+    // What the dialog is about to do, under the questions it asks. Tinted like
+    // the danger panel it was opened from, so the two read as one action.
+    .modal-warning {
+        padding: @vw10 @vw12;
+        border-radius: @dashRadiusInner;
+        background-color: var(--error-subtle);
+        font-size: @settingsBody;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+
+    // The line under the field is the dialog's explanation of itself, not an
+    // aside about the input — so it takes the body colour rather than the
+    // quieter tint a hint normally gets.
+    //
+    // `:not()` and not a bare `.field-message`: the error variant is a single
+    // class in form.less, so a two-class selector here would outrank it and
+    // quietly repaint every validation message grey.
+    .field-message:not(.field-message--error) { color: var(--text-secondary); }
 }
 
 // ── Activity log ─────────────────────────────────────────────────────────────
@@ -4098,6 +4911,29 @@
 
         &.is-active  { color: var(--success); background-color: var(--surface-raised); }
         &.is-revoked { color: var(--error); background-color: var(--surface-raised); }
+
+        // Tinted rather than sat on the raised surface like the other two. This
+        // one is not a state the account is resting in — it is a clock running,
+        // and it should be the thing the eye finds when scanning the column.
+        // Not capitalised either: it carries a date rather than a bare word.
+        &.is-deleting {
+            color: var(--error);
+            background-color: var(--error-subtle);
+            text-transform: none;
+        }
+    }
+
+    // Why they are going, under the chip that says they are. Quiet on purpose:
+    // the chip is what has to be found while scanning, and this is what gets
+    // read once it has been.
+    &-reason {
+        display: block;
+        margin-top: @vw4;
+        max-width: @vw300;
+        font-size: max(0.62em, @vw11);
+        line-height: 1.4;
+        white-space: normal;
+        color: var(--text-tertiary);
     }
 
     &-invite {

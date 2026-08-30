@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 	const current = await requireUser(event);
 
-	const [sessions, audit, gdpr, user] = await Promise.all([
+	const [sessions, audit, gdpr, user, pendingEmail] = await Promise.all([
 		db().from("sessions")
 			.select("id, issued_at, last_seen_at, user_agent, ip")
 			.eq("user_id", current.userId)
@@ -43,6 +43,8 @@ export default defineEventHandler(async (event) => {
 			.order("created_at", { ascending: false }),
 
 		db().auth.admin.getUserById(current.userId),
+
+		pendingEmailChange(current.userId),
 	]);
 
 	const changedAt = affiliate.slug_changed_at ? new Date(affiliate.slug_changed_at) : null;
@@ -58,11 +60,23 @@ export default defineEventHandler(async (event) => {
 			slug: affiliate.slug,
 			timezone: affiliate.timezone,
 			locale: affiliate.locale,
-			// Read from auth rather than stored twice; changing it is not
-			// supported yet, so it is shown for reference only.
+			// Read from auth rather than stored twice. auth.users is the only
+			// place an address lives — a copy on the affiliate row would be a
+			// second thing to keep in step with the one that decides who can
+			// sign in.
 			email: user.data.user?.email ?? null,
 			memberSince: affiliate.created_at,
 		},
+
+		/**
+		 * The address waiting on a confirmation link, if there is one.
+		 *
+		 * Sent so the sign-in row can say a change is in flight. Without it the
+		 * page looks exactly as it did before the request — which reads as
+		 * "nothing happened" to somebody whose mail is slow, and invites them to
+		 * ask again until the throttle stops them.
+		 */
+		pendingEmailChange: pendingEmail,
 
 		slugChange: {
 			// Null means never changed, so a change is allowed right now.

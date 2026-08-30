@@ -88,6 +88,28 @@
 								<span class="adminTable-name">{{ affiliate.displayName }}</span>
 								<span class="adminTable-slug">?r={{ affiliate.slug }}</span>
 								<span class="adminTable-status" :class="`is-${affiliate.status}`">{{ affiliate.status }}</span>
+								<!-- Only ever drawn for somebody who has asked to be
+								     deleted, which is the point: nothing else on any
+								     admin screen says that they have. The date is the
+								     deadline they were shown on their own settings
+								     page, so this is the same promise seen from the
+								     side that has to keep it. -->
+								<span
+									v-if="affiliate.pendingDeletion"
+									class="adminTable-status is-deleting"
+								>Deleting {{ formatDate(affiliate.pendingDeletion.on) }}</span>
+
+								<!-- Under the chip rather than inside it. The chip is
+								     the alarm and has to stay scannable down a column;
+								     the reason is the thing you read once the alarm has
+								     caught you, and it is the only place anybody sees it
+								     — the request row goes with the purge. -->
+								<span v-if="affiliate.pendingDeletion" class="adminTable-reason">
+									{{ DELETION_REASON_LABELS[affiliate.pendingDeletion.reason ?? ""] ?? "No reason given" }}
+									<template v-if="affiliate.pendingDeletion.note">
+										— “{{ affiliate.pendingDeletion.note }}”
+									</template>
+								</span>
 							</td>
 							<td>
 								<ul class="adminChecks">
@@ -268,7 +290,7 @@
 
 <script setup lang="ts">
 import { useTemplateRef, watch } from "vue";
-import { useAdmin, type AdminAffiliate, type AdminUser } from "~/assets/js/components/admin";
+import { useAdmin, type AdminAffiliate, type AdminUser, DELETION_REASON_LABELS } from "~/assets/js/components/admin";
 
 definePageMeta({
 	layout: "dashboard",
@@ -326,6 +348,10 @@ function onDialogClose() {
 function onDialogClick(event: MouseEvent) {
 	if (event.target === editDialog.value) cancelEdit();
 }
+
+// The same hold on the page as the account dialogs, for the same reason: Lenis
+// scrolls programmatically and does not care what `overflow` says.
+useScrollLock(computed(() => editing.value !== null));
 
 /** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {

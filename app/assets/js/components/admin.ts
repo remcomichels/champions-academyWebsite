@@ -26,7 +26,27 @@ export interface AdminAffiliate {
 	sales: number;
 	visits: number;
 	liveInvite: { prefix: string; expiresAt: string } | null;
+	/** Set only while they have asked to go and the grace period is running. */
+	pendingDeletion: { on: string; reason: string | null; note: string | null } | null;
 }
+
+/**
+ * The reasons an affiliate can pick, keyed the way the API stores them.
+ *
+ * A second copy of the list in settings.ts, and deliberately so: that one is
+ * the question, phrased to be answered by the person leaving, and this is the
+ * answer, phrased to be read afterwards by somebody scanning a table. Sharing
+ * one list would force one wording to do both jobs.
+ */
+export const DELETION_REASON_LABELS: Record<string, string> = {
+	not_using: "Not using it",
+	not_earning: "Not earning enough",
+	too_complicated: "Too complicated",
+	switching: "Switching away",
+	privacy: "Privacy",
+	temporary: "Taking a break",
+	other: "Other",
+};
 
 export interface AdminUser {
 	userId: string;

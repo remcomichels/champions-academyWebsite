@@ -1,5 +1,18 @@
 <template>
-	<div class="dashLayout" :class="{ 'has-alertBar': vipLinkPending, 'is-accountNav': accountMode }">
+	<div
+		class="dashLayout"
+		:class="{
+			'has-alertBar': vipLinkPending,
+			'is-accountNav': accountMode,
+			// Gated on the main rail rather than fought over in CSS. The account
+			// rail is a set of tabs that have to be readable to be chosen
+			// between — it is open at full width whatever this says — so the
+			// class simply is not there rather than being applied and then
+			// overridden by a rule somebody has to keep in the right order.
+			'is-navExpanded': !accountMode && sidebarMode === 'expanded',
+			'is-navCollapsed': !accountMode && sidebarMode === 'collapsed',
+		}"
+	>
 		<!-- Across the very top of the viewport, over the rail rather than
 		     beside it. This is an account-level warning, not an Overview one —
 		     sales are going uncredited on every page, so it follows the
@@ -158,6 +171,10 @@ import { ADMIN_HOME, AFFILIATE_HOME, isAdminRoute, matchNavItem } from "~/compos
 const { isAdmin, affiliate, viewingAs, stopViewingAs, fetchMe } = useAuth();
 const { drawerOpen, accountMode } = useDashboardNav();
 const { resolved: theme } = useTheme();
+// Read here rather than in the rail, because the class it drives lives on
+// `.dashLayout`: the rail's width and the column's offset both come off one
+// custom property declared there, which is what keeps them from disagreeing.
+const { mode: sidebarMode } = useSidebarMode();
 
 // The auth middleware has already populated this, but a direct load of a
 // nested route should not depend on that ordering.

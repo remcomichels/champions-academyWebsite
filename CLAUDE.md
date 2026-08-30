@@ -86,6 +86,7 @@ Set in `.env` (never commit). All are consumed via `nuxt.config.ts` runtime conf
 | `SUPABASE_URL` | Supabase project URL (server-side only) |
 | `SUPABASE_PUBLISHABLE_KEY` | Supabase publishable key (`sb_publishable_…`, replaces anon; RLS applies). Server-side only here — nothing in the browser talks to Supabase |
 | `SUPABASE_SECRET_KEY` | Supabase secret key (`sb_secret_…`, replaces service_role; **bypasses RLS**). Never expose |
+| `CRON_SECRET` | Bearer token Vercel Cron sends to `/api/internal/purge-deletions`. Set it in the Vercel project; the daily deletion purge answers 503 without it |
 | `OTP_PEPPER` | HMAC pepper for invite-code hashes — `openssl rand -base64 48` |
 | `VISIT_PEPPER` | Hash pepper for pseudonymous visitor fingerprints — `openssl rand -base64 48` |
 | `BUNNY_STREAM_API_KEY` | Bunny Stream API key |

@@ -285,3 +285,95 @@ export async function sendWelcomeEmail(
 		].join("\n"),
 	});
 }
+
+/**
+ * "Confirm your new email address."
+ *
+ * Sent to the address somebody has just asked to move to, and it is the whole
+ * proof: the account does not change until this link is clicked, so what the
+ * link demonstrates is that the person asking can read the mailbox they are
+ * asking for.
+ *
+ * Like the reset *request* mail and unlike the notice below, it does not ask an
+ * unintended recipient to contact anyone — nothing has happened yet, and a
+ * message that goes nowhere is safe to ignore.
+ */
+export async function sendEmailChangeConfirmationEmail(
+	event: H3Event,
+	to: string,
+	link: string,
+): Promise<void> {
+	const origin = siteOrigin(event);
+
+	await send({
+		to,
+		subject: "Confirm your new Champions Academy email address",
+		html: layout(origin, "Confirm your new address", `
+      <p style="margin:0;">Someone asked to use this address to sign in to a Champions Academy account. Confirm it here:</p>
+      ${button(link, "Confirm this address")}
+      <p style="margin:0;">This link works once and expires in <strong style="color:${INK};">24 hours</strong>. Nothing changes until you use it.</p>
+      <p style="margin:16px 0 0 0;"><strong style="color:${INK};">Didn't ask for this?</strong> You can safely ignore this email — the account carries on using the address it already has, and nobody gains access to this inbox by sending mail to it.</p>
+      <p style="margin:24px 0 0 0;font-size:13px;color:${INK_SOFT};">If the button doesn't work, paste this into your browser:<br><span style="word-break:break-all;">${link}</span></p>
+    `),
+		text: [
+			"Confirm your new address",
+			"",
+			"Someone asked to use this address to sign in to a Champions Academy",
+			"account. Confirm it here:",
+			link,
+			"",
+			"This link works once and expires in 24 hours. Nothing changes until you",
+			"use it.",
+			"",
+			"Didn't ask for this? You can safely ignore this email — the account",
+			"carries on using the address it already has.",
+			"",
+			"— Champions Academy",
+		].join("\n"),
+	});
+}
+
+/**
+ * "Your email address was changed."
+ *
+ * Goes to the address being left behind, once the change has actually gone
+ * through. Same division as the password pair above: the request mail asks
+ * nothing of anyone, and this one — sent only after something real has happened
+ * — is the one that gives the reader somewhere to go, because if it was not
+ * them, the account has just moved to a mailbox they do not control.
+ *
+ * The new address is interpolated, so it goes through `escape()`. It reached us
+ * from a form.
+ */
+export async function sendEmailChangedEmail(
+	event: H3Event,
+	to: string,
+	newEmail: string,
+): Promise<void> {
+	const origin = siteOrigin(event);
+	const when = new Date().toUTCString();
+	const address = escape(newEmail);
+
+	await send({
+		to,
+		subject: "Your Champions Academy email address was changed",
+		html: layout(origin, "Your email address was changed", `
+      <p style="margin:0;">The address on this account was changed to <strong style="color:${INK};">${address}</strong> on <strong style="color:${INK};">${when}</strong>. Sign in with the new address from now on.</p>
+      <p style="margin:16px 0 0 0;"><strong style="color:${INK};">Wasn't you?</strong> Get in touch straight away — whoever did this can now reset the password to an inbox you don't control.</p>
+      ${button(SUPPORT_URL, "Message us on Telegram")}
+      <p style="margin:0;font-size:13px;">${SUPPORT_URL}</p>
+    `),
+		text: [
+			"Your email address was changed",
+			"",
+			`The address on this account was changed to ${newEmail} on ${when}.`,
+			"Sign in with the new address from now on.",
+			"",
+			"Wasn't you? Get in touch straight away — whoever did this can now reset",
+			"the password to an inbox you don't control.",
+			SUPPORT_URL,
+			"",
+			"— Champions Academy",
+		].join("\n"),
+	});
+}
