@@ -89,6 +89,71 @@
 			</div>
 		</section>
 
+		<!-- Sign-in methods ─────────────────────────────────────────────── -->
+		<!-- One row today, because one way in is all this account has. It is
+		     built as a list rather than as a pair of fields for the same reason
+		     the primary-email picker above is a picker: the day a second method
+		     lands — a passkey, a Google sign-in — it is another row here and
+		     nothing else on this page changes. -->
+		<section v-if="isPreferences" class="settingsBlock">
+			<header class="settingsBlock-head">
+				<h2 class="settingsBlock-title">Sign-in methods</h2>
+				<p class="settingsBlock-text">How you get into this account. Both of these are what someone would need to take it.</p>
+			</header>
+
+			<div class="dashPanel">
+				<div class="signinRow">
+					<span class="signinRow-icon" aria-hidden="true">
+						<NuxtDashboardIcon name="mail" />
+					</span>
+
+					<div class="signinRow-body">
+						<span class="signinRow-label">Email</span>
+						<span class="signinRow-value">{{ data.profile.email ?? "—" }}</span>
+					</div>
+
+					<div class="signinRow-actions">
+						<!-- A link, not a button that navigates. It goes to a real
+						     page, so it has to be middle-clickable and it has to
+						     show its destination in the status bar. -->
+						<NuxtLink to="/dashboard/account/password" class="btn btn--subtle">
+							Change password
+						</NuxtLink>
+
+						<!-- `.tip` is decoration over the top of the aria-label,
+						     never the only place the name exists. `--end` because
+						     this control sits at the right edge of the panel,
+						     where a centred balloon would hang off it. -->
+						<button
+							type="button"
+							class="iconButton tip tip--end"
+							data-tip="Update email address"
+							aria-label="Update email address"
+							@click="openEmailDialog"
+						>
+							<NuxtDashboardIcon name="edit" />
+						</button>
+					</div>
+				</div>
+
+				<!-- Standing condition of this card, not an event — which is why
+				     it is a banner in here rather than the toast the saves use.
+				     Without it the page looks exactly as it did before the
+				     request, which reads as "nothing happened" to somebody whose
+				     mail is slow. -->
+				<NuxtAlertBanner v-if="data.pendingEmailChange" variant="info">
+					Waiting on <strong>{{ data.pendingEmailChange.email }}</strong> — open the link we sent
+					there to finish the change. It expires {{ formatUntil(data.pendingEmailChange.expiresAt) }}.
+					<button
+						type="button"
+						class="linkButton"
+						:disabled="busy === 'email'"
+						@click="cancelEmailChange"
+					>Cancel it</button>
+				</NuxtAlertBanner>
+			</div>
+		</section>
+
 		<section v-if="isPreferences" class="settingsBlock">
 			<header class="settingsBlock-head">
 				<h2 class="settingsBlock-title">Your link</h2>
@@ -232,6 +297,55 @@
 				<p v-else class="dashPanel-empty">Nothing recorded yet.</p>
 			</div>
 		</section>
+
+		<!-- Native <dialog>, not a div with a high z-index: showModal() gives
+		     focus trapping, Escape, an inert background and top-layer stacking
+		     that no sidebar or sticky bar can paint over. It stays mounted while
+		     closed — there has to be an element to call showModal on. -->
+		<dialog
+			v-if="isPreferences"
+			ref="emailDialog"
+			class="modal modal--compact"
+			@close="onEmailDialogClose"
+			@click="onEmailDialogClick"
+		>
+			<form class="modal-panel" novalidate @submit.prevent="requestEmailChange">
+				<header class="modal-head">
+					<h2 class="modal-title">Update email address</h2>
+					<button type="button" class="modal-close" aria-label="Close" @click="closeEmailDialog">
+						<NuxtDashboardIcon name="close" />
+					</button>
+				</header>
+
+				<div class="modal-body">
+					<NuxtAlertBanner v-if="emailError" variant="error">
+						{{ emailError }}
+					</NuxtAlertBanner>
+
+					<NuxtAuthField
+						v-model="newEmail"
+						label="Provide a new email address"
+						type="email"
+						inputmode="email"
+						autocomplete="email"
+						placeholder="example@email.com"
+						:error="errors.email"
+						:disabled="busy === 'email'"
+						hint="A confirmation email will be sent to the provided email address"
+						required
+					/>
+				</div>
+
+				<footer class="modal-foot">
+					<button type="button" class="btn btn--ghost" :disabled="busy === 'email'" @click="closeEmailDialog">
+						Cancel
+					</button>
+					<button type="submit" class="btn btn--primary" :disabled="busy === 'email'">
+						{{ busy === "email" ? "Sending…" : "Confirm" }}
+					</button>
+				</footer>
+			</form>
+		</dialog>
 	</div>
 
 	<p v-else class="dash-loading">Loading…</p>
@@ -299,12 +413,54 @@ const emailOptions = computed(() => {
 	return address ? [{ value: address, label: address }] : [];
 });
 
+const emailDialog = useTemplateRef<HTMLDialogElement>("emailDialog");
+
 const {
 	data, banner, busy, errors,
 	profile, slug, passwords, pendingDelete,
 	profileDirty, resetProfile,
 	saveProfile, saveSlug, savePassword,
 	signOutOthers, gdpr, confirmDelete, exportData,
-	formatDate, formatWhen, describeAction,
+	emailDialogOpen, newEmail, emailError,
+	openEmailDialog, closeEmailDialog, requestEmailChange, cancelEmailChange,
+	formatDate, formatWhen, formatUntil, describeAction,
 } = await useSettings();
+
+/**
+ * The open flag lives in `useSettings`; the element lives here. This is the one
+ * line between them.
+ *
+ * `showModal()` cannot be called during the same tick the element is created,
+ * and the dialog is behind `v-if="isPreferences"` — so the watch waits a tick
+ * before reaching for it rather than assuming it is already in the DOM.
+ */
+watch(emailDialogOpen, async (open) => {
+	await nextTick();
+	const dialog = emailDialog.value;
+	if (!dialog) return;
+
+	if (open && !dialog.open) {
+		dialog.showModal();
+		// showModal focuses the first tabbable thing, which is the close button
+		// — so the dialog would open with the dismiss control highlighted rather
+		// than the field you came here to fill in.
+		dialog.querySelector<HTMLInputElement>(".field-input")?.focus();
+	}
+	else if (!open && dialog.open) {
+		dialog.close();
+	}
+});
+
+// Escape closes the dialog without going through closeEmailDialog, so the flag
+// has to be caught up here. Guarded, or closing via Cancel would recurse: that
+// path clears the flag, which closes the dialog, which fires this again.
+function onEmailDialogClose() {
+	if (emailDialogOpen.value) closeEmailDialog();
+}
+
+// A click landing on the <dialog> itself is a click on the backdrop — anything
+// on the content hits .modal-panel and stops there.
+function onEmailDialogClick(event: MouseEvent) {
+	if (event.target === emailDialog.value) closeEmailDialog();
+}
 </script>

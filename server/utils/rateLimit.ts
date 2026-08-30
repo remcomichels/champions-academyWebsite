@@ -79,6 +79,26 @@ export const RATE_LIMITS = {
 	 * caps how much mail one address can be sent.
 	 */
 	resetUser: { limit: 5, windowSeconds: 3600, lockSeconds: 3600 },
+	/**
+	 * Confirmation-link attempts from one IP, on the email-change route.
+	 *
+	 * Its own budget rather than a share of `resetIp`, even though both are
+	 * "somebody is guessing at tokens". Spending one allowance across the two
+	 * would mean a burst against the email confirmer locking a real affiliate
+	 * out of a password reset — and being unable to recover an account is a
+	 * worse failure than being unable to change an address.
+	 */
+	emailChangeIp: { limit: 10, windowSeconds: 900, lockSeconds: 1800 },
+	/**
+	 * Email-change requests from one account.
+	 *
+	 * Keyed on the user rather than the address, because this route requires a
+	 * session — so the identity is known, and an address bucket would be keyed
+	 * on a value the caller chooses. Five an hour covers a typo, a correction
+	 * and a re-send, and caps how much mail one signed-in account can aim at
+	 * inboxes that are not theirs.
+	 */
+	emailChangeUser: { limit: 5, windowSeconds: 3600, lockSeconds: 3600 },
 } as const satisfies Record<string, RateLimitRule>;
 
 /** Hashes identifying values into bucket keys so the table holds no PII. */
@@ -99,6 +119,10 @@ export const feedbackBucket = (affiliateId: string) => bucketKey("feedback:aff",
 export const webhookIpBucket = (ip: string) => bucketKey("whop:ip", ip);
 export const resetIpBucket = (ip: string) => bucketKey("reset:ip", ip);
 export const resetUserBucket = (email: string) => bucketKey("reset:user", email);
+export const emailChangeIpBucket = (ip: string) => bucketKey("emailchange:ip", ip);
+// The user id, not the address they typed: the route is authenticated, so this
+// is throttling a known account rather than a value from the request body.
+export const emailChangeUserBucket = (userId: string) => bucketKey("emailchange:user", userId);
 export const OTP_GLOBAL_BUCKET = "otp:global";
 
 /**

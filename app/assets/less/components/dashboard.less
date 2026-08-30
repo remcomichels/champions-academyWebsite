@@ -2741,6 +2741,114 @@
     }
 }
 
+// ── Sign-in methods ──────────────────────────────────────────────────────────
+// One method per row: a glyph, what it is and what it currently says, then the
+// controls that change it. Three columns rather than a flex row with a spacer,
+// so a second row — a passkey, a linked account — lines its icon and its label
+// up with this one instead of each row finding its own edges.
+.signinRow {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: @vw14;
+
+    // A tile, not a bare glyph. At the size this icon has to be to sit beside
+    // two lines of text it looked like a stray mark next to them; the tile
+    // gives it the same weight as the row it labels.
+    &-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw36;
+        height: @vw36;
+        border-radius: @dashRadius;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        color: var(--text-secondary);
+
+        .icon { width: @vw18; height: @vw18; }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        min-width: 0;
+    }
+
+    // Sentence case, matching the labels in `.dashForm--split` rather than the
+    // uppercase a standalone field label uses — this is the name of a row, not
+    // a heading over a group of them.
+    &-label {
+        font-size: @settingsLabel;
+        font-weight: @medium;
+        color: var(--text);
+    }
+
+    &-value {
+        font-size: @settingsBody;
+        color: var(--text-tertiary);
+        overflow-wrap: anywhere;
+    }
+
+    &-actions {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+    }
+
+    // The row wraps before the address does. Below this the three columns have
+    // nowhere left to go, and squeezing them is what pushes an email onto four
+    // lines beside a button it no longer fits next to.
+    @media (max-width: 600px) {
+        grid-template-columns: auto minmax(0, 1fr);
+
+        &-actions {
+            grid-column: 1 / -1;
+            justify-content: flex-start;
+        }
+    }
+}
+
+// A square control whose whole label is its glyph — sized and coloured like
+// `.btn--subtle`, because it sits next to one and the pair has to read as two
+// controls of the same rank rather than a button with an afterthought beside
+// it. Its accessible name comes from `aria-label`; `.tip` draws the visible
+// one on hover and on focus.
+.iconButton {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: @vw34;
+    height: @vw34;
+    padding: 0;
+    background-color: var(--surface-raised);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @dashRadius;
+    color: var(--text-secondary);
+    cursor: pointer;
+    .transition();
+    transition-property: color, border-color, background-color;
+
+    .icon { width: @vw17; height: @vw17; }
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) {
+            color: var(--text);
+            border-color: var(--border-strong);
+            background-color: var(--surface-hover);
+        }
+    }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
 // ── Activity inbox + toasts ──────────────────────────────────────────────────
 .inbox {
     position: relative;
@@ -3871,6 +3979,19 @@
         color: var(--text);
     }
 
+    // The middle and the bottom of a framed dialog. Only `--compact` uses them
+    // today — the affiliate editor is one long scrolling form with no bands —
+    // but they belong to `.modal` rather than to the modifier, because what
+    // they name is "the content" and "the actions", not "the narrow version".
+    &-body { min-width: 0; }
+
+    &-foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: @vw10;
+    }
+
     &-close {
         flex: none;
         display: grid;
@@ -3898,6 +4019,97 @@
             outline-offset: @vw2;
         }
     }
+}
+
+// ── Compact dialog ───────────────────────────────────────────────────────────
+// A dialog sized to one question.
+//
+// `.modal` is a flat 80vw x 80dvh and says why: the affiliate editor is a form
+// of several fields plus notes, and a dialog whose dimensions move with its
+// contents is a dialog that jumps. That reasoning does not reach this one. A
+// label, an input and two buttons at 80% of a desktop viewport is a small
+// paragraph adrift in a very large box, and there is nothing here that can grow
+// — so it is sized to the content and capped against the viewport instead.
+//
+// The bands are the other half of the difference. A dialog this short has no
+// scroll to tell you where the content ends, so the rules under the title and
+// over the buttons are what give it a top and a bottom.
+.modal--compact {
+    width: min(@vw300 + @vw180, calc(100vw - @vw32));
+
+    // `fit-content`, and `auto` is wrong — this is the whole reason the dialog
+    // rendered against the top of the screen instead of the middle of it.
+    //
+    // The UA gives a modal <dialog> `position: fixed; inset: 0` and `.modal`
+    // adds `margin: auto`, which is what centres it. With `height: auto` that
+    // is over-constrained: top and bottom are both 0, so the box stretches to
+    // fill the gap — 836px on a 900px viewport — the auto margins resolve to
+    // nothing, and the short card inside sits at the top of a full-height
+    // element. `fit-content` makes the height definite, and the leftover space
+    // goes back to the margins, which is where the centring comes from.
+    //
+    // `.modal` never hit this because its panel is `height: 100%` of a box that
+    // was always meant to be 80% of the viewport.
+    height: fit-content;
+    // Only ever reached by a field error wrapping onto a third line on a very
+    // short window; the panel scrolls inside the frame rather than the dialog
+    // growing past the screen.
+    max-height: calc(100dvh - @vw64);
+
+    .modal-panel {
+        gap: 0;
+        padding: 0;
+        height: auto;
+        // The bands sit flush against the panel's edges, so the rounding has to
+        // come off them rather than off the panel — otherwise a square corner
+        // pokes out through the curve.
+        overflow: hidden;
+    }
+
+    .modal-head {
+        align-items: center;
+        padding: @vw14 @vw18;
+        border-bottom: max(1px, @vw1) solid var(--border);
+    }
+
+    // A column, because it holds two things when the request is refused: the
+    // failure, then the field it was about.
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw14;
+        padding: @vw18;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    .modal-foot {
+        padding: @vw12 @vw18;
+        border-top: max(1px, @vw1) solid var(--border);
+        background-color: var(--surface-raised);
+    }
+
+    // Sentence case, and at the label size the settings column uses.
+    //
+    // The shared `.field-label` is uppercase with letter-spacing, which reads
+    // as a category heading over a group of fields — right on a form of six,
+    // wrong on a dialog whose label is a full sentence asking one question.
+    .field-label {
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: @settingsLabel;
+        font-weight: @medium;
+        color: var(--text);
+    }
+
+    // The line under the field is the dialog's explanation of itself, not an
+    // aside about the input — so it takes the body colour rather than the
+    // quieter tint a hint normally gets.
+    //
+    // `:not()` and not a bare `.field-message`: the error variant is a single
+    // class in form.less, so a two-class selector here would outrank it and
+    // quietly repaint every validation message grey.
+    .field-message:not(.field-message--error) { color: var(--text-secondary); }
 }
 
 // ── Activity log ─────────────────────────────────────────────────────────────

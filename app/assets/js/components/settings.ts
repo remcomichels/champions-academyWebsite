@@ -20,6 +20,8 @@ export interface SettingsData {
 		email: string | null;
 		memberSince: string;
 	};
+	/** The address waiting on a confirmation link, or null when none is. */
+	pendingEmailChange: { email: string; expiresAt: string } | null;
 	slugChange: { nextAllowedAt: string | null; cooldownDays: number };
 	sessions: {
 		id: string;
@@ -39,7 +41,7 @@ export interface SettingsData {
 	}[];
 }
 
-type Busy = "profile" | "slug" | "password" | "sessions" | "gdpr" | null;
+type Busy = "profile" | "slug" | "email" | "password" | "sessions" | "gdpr" | null;
 
 /** Turns an audit action into something an affiliate can read. */
 const ACTION_LABELS: Record<string, string> = {
@@ -49,6 +51,9 @@ const ACTION_LABELS: Record<string, string> = {
 	"password.change_failed": "Failed password change",
 	"profile.updated": "Profile updated",
 	"slug.changed": "Link changed",
+	"email.change_requested": "Email change requested",
+	"email.change_cancelled": "Email change cancelled",
+	"email.changed": "Email address changed",
 	"links.updated": "Links updated",
 	"sessions.revoked_others": "Signed out other devices",
 	"invite.redeemed": "Account created",
@@ -78,6 +83,29 @@ export async function useSettings() {
 	});
 
 	const slug = ref(data.value?.profile.slug ?? "");
+
+	/**
+	 * The Update-email dialog.
+	 *
+	 * Open state lives here rather than in the component because the request it
+	 * makes lives here: the dialog closes on a successful send and stays open on
+	 * a rejected address, and splitting "is it open" from "did it work" across
+	 * two files is how those two get out of step. The component keeps only the
+	 * <dialog> element itself, which is the part that has to be a DOM node.
+	 */
+	const emailDialogOpen = ref(false);
+	const newEmail = ref("");
+
+	/**
+	 * Form-level failures from the dialog, shown inside it.
+	 *
+	 * Not `banner`. A <dialog> opened with showModal() renders in the top layer,
+	 * over the toast that reports everything else on this page — so a throttled
+	 * or refused request would set a message the person who caused it is looking
+	 * straight past. Anything the server pins to a field still goes to `errors`
+	 * and appears under the input; this is for the rest.
+	 */
+	const emailError = ref<string | null>(null);
 
 	const passwords = reactive({
 		currentPassword: "",
@@ -156,6 +184,65 @@ export async function useSettings() {
 	});
 
 
+	/** Clears the dialog's field so it never reopens holding the last attempt. */
+	function openEmailDialog() {
+		newEmail.value = "";
+		errors.value = {};
+		emailError.value = null;
+		emailDialogOpen.value = true;
+	}
+
+	function closeEmailDialog() {
+		emailDialogOpen.value = false;
+	}
+
+	/**
+	 * Asks for a confirmation link to be sent to a new address.
+	 *
+	 * Changes nothing on its own — the account moves when the link in that mail
+	 * is clicked — so the banner says what was sent rather than what changed.
+	 * The dialog stays open when the address is refused, because a rejected
+	 * address is something to correct in the field it was typed in.
+	 */
+	const requestEmailChange = () => run("email", async () => {
+		emailError.value = null;
+
+		try {
+			const result = await $fetch<{ pending: string }>("/api/affiliate/email", {
+				method: "POST",
+				body: { email: newEmail.value },
+			});
+
+			emailDialogOpen.value = false;
+			newEmail.value = "";
+			banner.value = {
+				variant: "success",
+				text: `Confirmation email sent to ${result.pending}. Your address changes when you open the link in it.`,
+			};
+			await refresh();
+		}
+		catch (error) {
+			// Not `handle()`: its fallback is the page-level banner, which is
+			// under the dialog this was submitted from. Field errors take the
+			// same path as everywhere else; everything else stays in here.
+			const payload = (error as { data?: { data?: { field?: string; message?: string }; statusMessage?: string } })?.data;
+			const field = payload?.data?.field;
+			const message = payload?.data?.message ?? payload?.statusMessage ?? "Could not start that change.";
+
+			if (field) errors.value[field] = message;
+			else emailError.value = message;
+		}
+	});
+
+	const cancelEmailChange = () => run("email", async () => {
+		try {
+			await $fetch("/api/affiliate/email", { method: "DELETE" });
+			banner.value = { variant: "success", text: "Email change cancelled. That link no longer works." };
+			await refresh();
+		}
+		catch (error) { handle(error, "Could not cancel that change."); }
+	});
+
 	const savePassword = () => run("password", async () => {
 		if (passwords.newPassword !== passwords.newPasswordConfirm) {
 			errors.value.newPasswordConfirm = "Passwords do not match";
@@ -232,14 +319,35 @@ export async function useSettings() {
 		return formatDate(iso);
 	};
 
+	/**
+	 * How long is left on something that expires.
+	 *
+	 * The mirror of `formatWhen`, and it exists because that one cannot do this:
+	 * it subtracts from `Date.now()` and formats the result as "ago", so a
+	 * timestamp in the future comes out as a negative number of minutes ago. The
+	 * only thing here that looks forward is a confirmation link, which lives for
+	 * a day — so the units that matter are hours and minutes, and a date is the
+	 * fallback for a clock that has drifted rather than the normal case.
+	 */
+	const formatUntil = (iso: string) => {
+		const minutes = Math.round((new Date(iso).getTime() - Date.now()) / 60000);
+		if (minutes <= 0) return "shortly";
+		if (minutes < 60) return `in ${minutes}m`;
+		const hours = Math.round(minutes / 60);
+		if (hours < 48) return `in ${hours}h`;
+		return `on ${formatDate(iso)}`;
+	};
+
 	const describeAction = (action: string) => ACTION_LABELS[action] ?? action;
 
 	return {
 		data, banner, busy, errors,
 		profile, slug, passwords, pendingDelete,
 		profileDirty, resetProfile,
+		emailDialogOpen, newEmail, emailError,
+		openEmailDialog, closeEmailDialog, requestEmailChange, cancelEmailChange,
 		saveProfile, saveSlug, savePassword,
 		signOutOthers, gdpr, confirmDelete, exportData,
-		formatDate, formatWhen, describeAction,
+		formatDate, formatWhen, formatUntil, describeAction,
 	};
 }
