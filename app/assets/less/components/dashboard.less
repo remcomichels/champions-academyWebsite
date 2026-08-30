@@ -4100,10 +4100,13 @@
         overscroll-behavior: contain;
     }
 
+    // The rule is the band. It had a raised ground as well, which made the
+    // actions read as a separate panel bolted to the bottom of the dialog
+    // rather than as the end of it — one separator is enough to say where the
+    // content stops.
     .modal-foot {
         padding: @vw12 @vw18;
         border-top: max(1px, @vw1) solid var(--border);
-        background-color: var(--surface-raised);
     }
 
     // Sentence case, and at the label size the settings column uses.
@@ -4116,8 +4119,24 @@
         letter-spacing: 0;
         font-size: @settingsLabel;
         font-weight: @medium;
+        line-height: 1.25;
         color: var(--text);
     }
+
+    // The same control the rows on Preferences use, for the same reason given
+    // there: the shared field's `max(1em, @vw16)` resolves to about 21px on a
+    // 1920 monitor, which is display type inside a form control. A control's
+    // size is ergonomic rather than proportional — what is comfortable to read
+    // and to hit does not change because the monitor got wider — and a dialog
+    // opened from that column should not be visibly bigger than the column it
+    // opened over.
+    .field-input {
+        padding: @vw7 @vw10;
+        font-size: @settingsBody;
+        border-radius: @vw6;
+    }
+
+    .field-message { line-height: 1.25; }
 
     // The line under the field is the dialog's explanation of itself, not an
     // aside about the input — so it takes the body colour rather than the

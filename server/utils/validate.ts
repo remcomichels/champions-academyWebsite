@@ -38,10 +38,16 @@ export const str = (
  * Deliberately loose. Real validation of an address is delivery, not a regex —
  * this only rejects obvious nonsense and caps length (RFC 5321 limit) so the
  * value is safe to hash and store.
+ *
+ * The shape test lives in `shared/utils/email.ts` because the account settings
+ * dialog runs it too, to decide whether to show "Invalid email" before sending
+ * anything. This copy is still the one that decides — the browser's is a
+ * courtesy — but they have to agree, or a field passes locally and is refused
+ * here.
  */
 export const email = (): Check<string> => (value, field) => {
-	const s = str({ max: 254 })(value, field).toLowerCase();
-	if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(s)) throw bad(field, "must be a valid email address");
+	const s = str({ max: EMAIL_MAX_LENGTH })(value, field).toLowerCase();
+	if (!EMAIL_PATTERN.test(s)) throw bad(field, "must be a valid email address");
 	return s;
 };
 

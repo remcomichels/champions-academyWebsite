@@ -426,6 +426,19 @@ watch(emailDialogOpen, async (open) => {
 	}
 });
 
+/**
+ * Clears "Invalid email" as soon as the address is being corrected.
+ *
+ * Registered here rather than in `useSettings` because the composable awaits
+ * `useAsyncData` internally, and a watcher created after that await has no
+ * component instance to be bound to — it would outlive the page. The awaits in
+ * this file are compiled with `withAsyncContext`, so anything registered below
+ * them is scoped and stops on unmount.
+ */
+watch(newEmail, () => {
+	if (errors.value.email) errors.value.email = undefined;
+});
+
 // Escape closes the dialog without going through closeEmailDialog, so the flag
 // has to be caught up here. Guarded, or closing via Cancel would recurse: that
 // path clears the flag, which closes the dialog, which fires this again.

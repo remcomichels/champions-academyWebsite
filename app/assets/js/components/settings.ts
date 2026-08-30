@@ -201,6 +201,16 @@ export async function useSettings() {
 	const requestEmailChange = () => run("email", async () => {
 		emailError.value = null;
 
+		// Checked here as well as on the route, and `isValidEmail` is the same
+		// function both ends call — see shared/utils/email.ts. This is a
+		// courtesy rather than a control: it saves a round trip and, more
+		// usefully, an entry in a throttle that only allows five requests an
+		// hour, so a typo does not cost somebody a real attempt.
+		if (!isValidEmail(newEmail.value)) {
+			errors.value.email = "Invalid email";
+			return;
+		}
+
 		try {
 			const result = await $fetch<{ pending: string }>("/api/affiliate/email", {
 				method: "POST",

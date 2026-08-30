@@ -116,12 +116,38 @@
         color: var(--text-tertiary);
     }
 
+    // A failed field says so three ways: the label, the control and the line
+    // under it. One of them alone is not enough — a red border is the whole
+    // signal on most forms, and on a control that already has a border it is a
+    // colour change somebody scanning a column of fields will miss.
+    // `.field.field--error`, not `.field--error`, and the extra class is doing
+    // real work. `.dashForm--split` and `.modal--compact` both restyle
+    // `.field-label` at two classes and both set a resting colour, and
+    // dashboard.less is imported after this file — so at equal weight the
+    // context wins and the label never turns. Raising the failed state above
+    // any context that repaints a label is the right way round: a context
+    // should not have to remember to exclude an error it knows nothing about.
+    &.field--error &-label {
+        color: var(--error);
+    }
+
     &--error &-input {
         border-color: var(--error);
+        // A tint, not a fill. The value typed into the field has to stay the
+        // most legible thing in it.
+        background-color: var(--error-subtle);
 
         &:focus-visible {
             box-shadow: 0 0 0 max(2px, @vw2) var(--surface-raised);
             border-color: var(--error);
+        }
+
+        // Chrome paints its own background over an autofilled input, and the
+        // inset shadow in the base rule pins that to --surface-raised — which
+        // would quietly cancel the tint on exactly the fields most likely to be
+        // autofilled. Restated here so the error state survives it.
+        &:-webkit-autofill {
+            box-shadow: 0 0 0 100vw var(--error-subtle) inset;
         }
     }
 

@@ -214,6 +214,11 @@
     // Same 12% tint as --accent-subtle, so a warning panel sits at the same
     // weight as an accented one rather than shouting louder by accident.
     --warning-subtle: rgba(243, 156, 18, 0.12);
+    // And the same again for the one field in a form that has failed. 12% of
+    // @error over --surface-raised, which lands as a dark red on the dark
+    // themes and a pale one on light — a tint under the value, not a fill that
+    // competes with the text sitting on it.
+    --error-subtle: rgba(231, 76, 60, 0.12);
 }
 
 // `_general.less` pins `color-scheme: light !important` on both `:root` and
