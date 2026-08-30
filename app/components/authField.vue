@@ -19,6 +19,7 @@
 				:aria-describedby="describedBy"
 				:spellcheck="false"
 				@input="onInput"
+				@blur="emit('blur')"
 			>
 
 			<!-- type=button, or it submits the form it sits in. The label changes
@@ -82,7 +83,16 @@ const props = withDefaults(defineProps<{
 	disabled: false,
 });
 
-const emit = defineEmits<{ "update:modelValue": [value: string] }>();
+/**
+ * `blur` is here so a caller can check a value when somebody leaves the field
+ * rather than when they submit. Nothing in the component acts on it — a field
+ * does not know what makes its own value valid — and every existing call site
+ * simply ignores it.
+ */
+const emit = defineEmits<{
+	"update:modelValue": [value: string];
+	"blur": [];
+}>();
 
 const id = useId();
 const input = useTemplateRef<HTMLInputElement>("input");

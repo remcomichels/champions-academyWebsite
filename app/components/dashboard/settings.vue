@@ -303,6 +303,7 @@
 						:disabled="busy === 'email'"
 						hint="A confirmation email will be sent to the provided email address"
 						required
+						@blur="validateNewEmail"
 					/>
 				</div>
 
@@ -397,7 +398,7 @@ const {
 	saveProfile, saveSlug,
 	signOutOthers, gdpr, confirmDelete, exportData,
 	emailDialogOpen, newEmail, emailError,
-	openEmailDialog, closeEmailDialog, requestEmailChange, cancelEmailChange,
+	openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 	formatDate, formatWhen, formatUntil, describeAction,
 } = await useSettings();
 

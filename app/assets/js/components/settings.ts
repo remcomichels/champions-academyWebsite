@@ -191,6 +191,26 @@ export async function useSettings() {
 	}
 
 	/**
+	 * Checks the address when focus leaves the field.
+	 *
+	 * On blur rather than on Confirm, so the dialog has already told you the
+	 * address is wrong by the time you reach for the button — a form that waits
+	 * for a submit to say what it could have said a second earlier spends one of
+	 * your clicks telling you something it already knew.
+	 *
+	 * An empty field is not an error. Leaving a box you never filled in is how
+	 * somebody cancels; only the submit treats blank as a failure, and by then
+	 * it is a real one.
+	 */
+	function validateNewEmail() {
+		if (!newEmail.value.trim()) {
+			errors.value.email = undefined;
+			return;
+		}
+		errors.value.email = isValidEmail(newEmail.value) ? undefined : "Invalid email";
+	}
+
+	/**
 	 * Asks for a confirmation link to be sent to a new address.
 	 *
 	 * Changes nothing on its own — the account moves when the link in that mail
@@ -201,11 +221,15 @@ export async function useSettings() {
 	const requestEmailChange = () => run("email", async () => {
 		emailError.value = null;
 
-		// Checked here as well as on the route, and `isValidEmail` is the same
-		// function both ends call — see shared/utils/email.ts. This is a
-		// courtesy rather than a control: it saves a round trip and, more
-		// usefully, an entry in a throttle that only allows five requests an
-		// hour, so a typo does not cost somebody a real attempt.
+		// The backstop, not the main check — `validateNewEmail` has normally
+		// caught this on blur already. This still has to be here because Enter
+		// submits from inside the field without blurring it first, so the only
+		// path that reaches the route with a bad address never fired a blur.
+		//
+		// `isValidEmail` is the same function the route calls; see
+		// shared/utils/email.ts. It is a courtesy rather than a control: it
+		// saves a round trip and, more usefully, an entry in a throttle that
+		// allows five requests an hour, so a typo does not cost a real attempt.
 		if (!isValidEmail(newEmail.value)) {
 			errors.value.email = "Invalid email";
 			return;
@@ -333,7 +357,7 @@ export async function useSettings() {
 		profile, slug, pendingDelete,
 		profileDirty, resetProfile,
 		emailDialogOpen, newEmail, emailError,
-		openEmailDialog, closeEmailDialog, requestEmailChange, cancelEmailChange,
+		openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 		saveProfile, saveSlug,
 		signOutOthers, gdpr, confirmDelete, exportData,
 		formatDate, formatWhen, formatUntil, describeAction,
