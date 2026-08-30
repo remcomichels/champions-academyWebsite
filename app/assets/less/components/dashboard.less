@@ -4436,6 +4436,29 @@
 // ── Modal ────────────────────────────────────────────────────────────────────
 // Styling for a native <dialog>. The browser owns the open/closed display, the
 // centring and the top layer; everything here is the look.
+// The page behind a modal does not move.
+//
+// `showModal()` makes the rest of the document inert — it cannot be clicked,
+// tabbed into or read by a screen reader — but inert is not still. Measured on
+// the real dialog: with it open, the wheel moved the page 473px and PageDown
+// moved it 573px, so the thing you opened stayed put while everything around it
+// slid away behind it.
+//
+// `:has()` rather than a class toggled when each dialog opens. The state is
+// already in the DOM — `<dialog>` carries `open` — and every modal in this
+// project uses `.modal`, so one rule covers the three of them and any fourth
+// without that dialog having to remember to announce itself. Scoped to `.modal`
+// rather than to `dialog[open]` so a non-modal dialog, which is allowed to sit
+// over a page that still works, does not freeze it.
+//
+// Both elements, matching the treatment in auth.less: `body` carries
+// `min-height: 100vh` from the reset, and locking only `html` leaves it as the
+// scrolling box on some engines.
+html:has(.modal[open]),
+html:has(.modal[open]) body {
+    overflow: hidden;
+}
+
 .modal {
     // The element itself is only a positioning box — the visible card is
     // -panel. That separation is what makes the backdrop click work: a click

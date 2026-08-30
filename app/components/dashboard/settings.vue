@@ -708,4 +708,9 @@ function onDeleteDialogClose() {
 function onDeleteDialogClick(event: MouseEvent) {
 	if (event.target === deleteDialog.value) closeDeleteDialog();
 }
+
+// Holds the page still behind either dialog. See the composable for why the
+// `overflow: hidden` in dashboard.less does not cover it on its own.
+useScrollLock(emailDialogOpen);
+useScrollLock(deleteDialogOpen);
 </script>

@@ -349,6 +349,10 @@ function onDialogClick(event: MouseEvent) {
 	if (event.target === editDialog.value) cancelEdit();
 }
 
+// The same hold on the page as the account dialogs, for the same reason: Lenis
+// scrolls programmatically and does not care what `overflow` says.
+useScrollLock(computed(() => editing.value !== null));
+
 /** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {
 	const message = `Revoke ${affiliate.slug}? They'll be signed out immediately and their links stop swapping. Their sales history is kept.`;
