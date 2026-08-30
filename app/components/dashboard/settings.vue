@@ -216,43 +216,11 @@
 		</section>
 
 		<!-- Security ────────────────────────────────────────────────────── -->
-		<section v-if="isSecurity" class="settingsBlock">
-			<header class="settingsBlock-head">
-				<h2 class="settingsBlock-title">Password</h2>
-				<p class="settingsBlock-text">Used with your email to sign in. Changing it signs you out everywhere else.</p>
-			</header>
-
-			<div class="dashPanel">
-				<form class="dashForm dashForm--split" novalidate @submit.prevent="savePassword">
-					<NuxtAuthField
-						v-model="passwords.currentPassword"
-						label="Current password"
-						type="password"
-						autocomplete="current-password"
-						:error="errors.currentPassword"
-					/>
-					<NuxtAuthField
-						v-model="passwords.newPassword"
-						label="New password"
-						type="password"
-						autocomplete="new-password"
-						:error="errors.newPassword"
-						hint="At least 12 characters."
-					/>
-					<NuxtAuthField
-						v-model="passwords.newPasswordConfirm"
-						label="Confirm new password"
-						type="password"
-						autocomplete="new-password"
-						:error="errors.newPasswordConfirm"
-					/>
-					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'password'">
-						{{ busy === "password" ? "Changing…" : "Change password" }}
-					</button>
-				</form>
-			</div>
-		</section>
-
+		<!-- The password form used to be the first thing on this tab. It moved
+		     to /dashboard/account/password, reached from Sign-in methods under
+		     Preferences, and is not duplicated back here: two places to change
+		     one credential is two places to keep in step, and the one that
+		     survived is the one the affiliate is sent to. -->
 		<section v-if="isSecurity" class="settingsBlock">
 			<header class="settingsBlock-head">
 				<h2 class="settingsBlock-title">Where you're signed in</h2>
@@ -365,10 +333,15 @@ import { useSettings } from "~/assets/js/components/settings";
  * `useSettings()` would mean three requests and three independent notions of
  * what the account currently says.
  *
- * `preferences` is what you can freely change: your name, your link, and the
- * data requests that are yours to make. `security` is the pair of questions
- * asked when something looks wrong — your password, and who else is signed in.
- * `logs` is the record of what has already happened.
+ * `preferences` is what you can freely change: your name, your link, how you
+ * sign in, and the data requests that are yours to make. `security` is the
+ * question asked when something looks wrong — who else is signed in. `logs` is
+ * the record of what has already happened.
+ *
+ * Changing a password is deliberately not on `security`, even though that is
+ * where it reads as though it belongs. It is one of two ways into this account
+ * and the other is the email address, so the two are listed together under
+ * Sign-in methods and both lead somewhere else to be changed.
  */
 const props = withDefaults(defineProps<{
 	section?: "preferences" | "security" | "logs";
@@ -393,7 +366,7 @@ const HEADINGS = {
 	},
 	security: {
 		title: "Security",
-		text: "Your password, and every device currently signed in as you.",
+		text: "Every device currently signed in as you, and what to do when one of them isn't yours.",
 	},
 	logs: {
 		title: "Audit Logs",
@@ -417,9 +390,9 @@ const emailDialog = useTemplateRef<HTMLDialogElement>("emailDialog");
 
 const {
 	data, banner, busy, errors,
-	profile, slug, passwords, pendingDelete,
+	profile, slug, pendingDelete,
 	profileDirty, resetProfile,
-	saveProfile, saveSlug, savePassword,
+	saveProfile, saveSlug,
 	signOutOthers, gdpr, confirmDelete, exportData,
 	emailDialogOpen, newEmail, emailError,
 	openEmailDialog, closeEmailDialog, requestEmailChange, cancelEmailChange,

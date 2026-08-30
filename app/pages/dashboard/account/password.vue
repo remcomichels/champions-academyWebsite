@@ -75,11 +75,12 @@
  * nuxt.config.ts, and `auth` middleware bounces anyone signed out), so nothing
  * about being off the dashboard chrome puts it outside the dashboard's rules.
  *
- * Two fields, not three. The Security tab's version asks for a confirmation
- * because it sits in a page of unrelated forms where a mistyped password is
- * discovered a day later; arriving here from "Change password" you have done
- * one thing deliberately, and the current-password field above is already the
- * check that matters. See the note in password.post.ts.
+ * Two fields, not three. There was a third — "confirm new password" — on the
+ * Security tab's copy of this form, which this replaced rather than joined:
+ * one credential with two places to change it is two places to keep in step.
+ * Typing it twice guards against a typo, not against an attacker, and the
+ * current-password field above is already the check that matters. See the note
+ * in password.post.ts.
  */
 definePageMeta({
 	layout: "auth",

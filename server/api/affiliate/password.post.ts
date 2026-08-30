@@ -1,4 +1,4 @@
-import { assertMatches, object, password as passwordCheck, whenPresent } from "../../utils/validate";
+import { object, password as passwordCheck } from "../../utils/validate";
 
 /**
  * Changes the affiliate's password.
@@ -16,25 +16,17 @@ export default defineEventHandler(async (event) => {
 	const affiliate = await requireAffiliate(event);
 	const session = await requireUser(event);
 
+	// Two fields, and there was a third. `newPasswordConfirm` came out with the
+	// Security tab's copy of this form: the one caller left is
+	// /dashboard/account/password, which asks once, and a required field nobody
+	// sends is a 400 waiting for the next client. Typing a password twice
+	// guards against a typo rather than against an attacker, and the cost of
+	// the typo here is a password reset — the current-password field above is
+	// the check that actually matters.
 	const body = await readValidatedBody(event, object({
 		currentPassword: passwordCheck(),
 		newPassword: passwordCheck(),
-		// Optional, because the two forms that post here disagree about it. The
-		// Security tab asks for a confirmation; the standalone
-		// /dashboard/account/password page is two fields, matching what somebody
-		// arriving from "Change password" expects. A typed-twice check is a guard
-		// against a typo, not against an attacker, and the cost of getting it
-		// wrong there is a password reset rather than a lost account.
-		//
-		// `whenPresent` rather than a default, so "sent and blank" stays an
-		// error and only a genuinely absent key skips the comparison — a client
-		// that means to confirm cannot silently opt out by sending "".
-		newPasswordConfirm: whenPresent(passwordCheck()),
 	}));
-
-	if (body.newPasswordConfirm !== undefined) {
-		assertMatches(body.newPassword, body.newPasswordConfirm, "newPasswordConfirm");
-	}
 
 	if (body.newPassword === body.currentPassword) {
 		throw createError({

@@ -41,7 +41,7 @@ export interface SettingsData {
 	}[];
 }
 
-type Busy = "profile" | "slug" | "email" | "password" | "sessions" | "gdpr" | null;
+type Busy = "profile" | "slug" | "email" | "sessions" | "gdpr" | null;
 
 /** Turns an audit action into something an affiliate can read. */
 const ACTION_LABELS: Record<string, string> = {
@@ -106,12 +106,6 @@ export async function useSettings() {
 	 * and appears under the input; this is for the rest.
 	 */
 	const emailError = ref<string | null>(null);
-
-	const passwords = reactive({
-		currentPassword: "",
-		newPassword: "",
-		newPasswordConfirm: "",
-	});
 
 	const pendingDelete = computed(() =>
 		data.value?.gdprRequests.find(r => r.kind === "delete" && r.status === "pending") ?? null);
@@ -243,22 +237,6 @@ export async function useSettings() {
 		catch (error) { handle(error, "Could not cancel that change."); }
 	});
 
-	const savePassword = () => run("password", async () => {
-		if (passwords.newPassword !== passwords.newPasswordConfirm) {
-			errors.value.newPasswordConfirm = "Passwords do not match";
-			return;
-		}
-		try {
-			await $fetch("/api/affiliate/password", { method: "POST", body: { ...passwords } });
-			passwords.currentPassword = "";
-			passwords.newPassword = "";
-			passwords.newPasswordConfirm = "";
-			banner.value = { variant: "success", text: "Password changed. Other devices have been signed out." };
-			await refresh();
-		}
-		catch (error) { handle(error, "Could not change your password."); }
-	});
-
 	const signOutOthers = () => run("sessions", async () => {
 		try {
 			const result = await $fetch<{ signedOut: number }>("/api/affiliate/sessions", { method: "DELETE" });
@@ -342,11 +320,11 @@ export async function useSettings() {
 
 	return {
 		data, banner, busy, errors,
-		profile, slug, passwords, pendingDelete,
+		profile, slug, pendingDelete,
 		profileDirty, resetProfile,
 		emailDialogOpen, newEmail, emailError,
 		openEmailDialog, closeEmailDialog, requestEmailChange, cancelEmailChange,
-		saveProfile, saveSlug, savePassword,
+		saveProfile, saveSlug,
 		signOutOthers, gdpr, confirmDelete, exportData,
 		formatDate, formatWhen, formatUntil, describeAction,
 	};
