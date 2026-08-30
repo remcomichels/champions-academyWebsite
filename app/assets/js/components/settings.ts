@@ -139,6 +139,16 @@ export async function useSettings() {
 		profile.firstName !== (data.value?.profile.firstName ?? "")
 		|| profile.lastName !== (data.value?.profile.lastName ?? ""));
 
+	/**
+	 * The same question for the handle, and the same answer: is what is on
+	 * screen different from what the server has.
+	 *
+	 * Worth having here more than on the profile form. Changing a link is rate
+	 * limited to once a month, so a Change that fires on the value already
+	 * stored does not merely do nothing — it spends the cooldown on a no-op.
+	 */
+	const slugDirty = computed(() => slug.value !== (data.value?.profile.slug ?? ""));
+
 	/** Puts the form back to what is stored. The Cancel next to Save. */
 	function resetProfile() {
 		profile.firstName = data.value?.profile.firstName ?? "";
@@ -373,7 +383,7 @@ export async function useSettings() {
 	return {
 		data, banner, busy, errors,
 		profile, slug, pendingDelete,
-		profileDirty, resetProfile,
+		profileDirty, slugDirty, resetProfile,
 		emailDialogOpen, newEmail, emailError, newEmailValid,
 		openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 		saveProfile, saveSlug,

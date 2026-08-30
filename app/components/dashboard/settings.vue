@@ -175,7 +175,11 @@
 
 				<form v-else class="dashForm dashForm--split" novalidate @submit.prevent="saveSlug">
 					<NuxtAuthField v-model="slug" label="Link" :error="errors.slug" hint="Lowercase letters, numbers and dashes." />
-					<button type="submit" class="btn btn--primary dashForm-submit" :disabled="busy === 'slug'">
+					<button
+						type="submit"
+						class="btn btn--primary dashForm-submit"
+						:disabled="busy === 'slug' || !slugDirty"
+					>
 						{{ busy === "slug" ? "Changing…" : "Change link" }}
 					</button>
 				</form>
@@ -394,7 +398,7 @@ const emailDialog = useTemplateRef<HTMLDialogElement>("emailDialog");
 const {
 	data, banner, busy, errors,
 	profile, slug, pendingDelete,
-	profileDirty, resetProfile,
+	profileDirty, slugDirty, resetProfile,
 	saveProfile, saveSlug,
 	signOutOthers, gdpr, confirmDelete, exportData,
 	emailDialogOpen, newEmail, emailError, newEmailValid,
