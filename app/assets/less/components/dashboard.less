@@ -2527,9 +2527,11 @@
     // On the row, not on `&` — `&` here is the form, and scoped to that this
     // read "if any row anywhere has a hint, shift every label in the form",
     // which is emphatically not the question being asked.
+    // `:has()` is a descendant test, so it still matches with the note wrapped.
     .field:has(.field-message),
     .readonlyField:has(.field-message) {
         .field-label { align-self: end; }
+        .field-notes,
         .field-message { align-self: start; }
     }
 
@@ -2542,6 +2544,10 @@
     // under the label it has 60% to run in and reads as part of the label,
     // which is what it is.
     .field-label { grid-column: 1; grid-row: 1; }
+    // `.field-notes` is what `NuxtAuthField` renders; the bare `.field-message`
+    // is for `.readonlyField`, whose note is written by hand in the template and
+    // is a direct grid item. Both name the same cell.
+    .field-notes,
     .field-message { grid-column: 1; grid-row: 2; }
 
     // Both tracks, which is what makes the control the thing that sets the row

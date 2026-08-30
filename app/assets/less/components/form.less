@@ -122,6 +122,16 @@
         &:disabled { opacity: 0.5; cursor: not-allowed; }
     }
 
+    // The hint and the error, stacked. Tighter than the field's own gap: these
+    // two are one block of small print about the control above them, not two
+    // separate things sitting under it.
+    &-notes {
+        display: flex;
+        flex-direction: column;
+        gap: @vw4;
+        min-width: 0;
+    }
+
     &-message {
         font-size: max(0.7em, @vw12);
         line-height: 1.4;

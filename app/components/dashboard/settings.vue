@@ -311,7 +311,7 @@
 					<button type="button" class="btn btn--ghost" :disabled="busy === 'email'" @click="closeEmailDialog">
 						Cancel
 					</button>
-					<button type="submit" class="btn btn--primary" :disabled="busy === 'email'">
+					<button type="submit" class="btn btn--primary" :disabled="busy === 'email' || !newEmailValid">
 						{{ busy === "email" ? "Sending…" : "Confirm" }}
 					</button>
 				</footer>
@@ -397,7 +397,7 @@ const {
 	profileDirty, resetProfile,
 	saveProfile, saveSlug,
 	signOutOthers, gdpr, confirmDelete, exportData,
-	emailDialogOpen, newEmail, emailError,
+	emailDialogOpen, newEmail, emailError, newEmailValid,
 	openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 	formatDate, formatWhen, formatUntil, describeAction,
 } = await useSettings();

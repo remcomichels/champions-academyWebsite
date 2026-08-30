@@ -114,6 +114,15 @@ export async function useSettings() {
 	 */
 	const emailError = ref<string | null>(null);
 
+	/**
+	 * Whether Confirm is allowed to do anything.
+	 *
+	 * The same shape as `profileDirty` above and for the same reason: a button
+	 * that cannot succeed should look like it. Empty counts as not valid, so the
+	 * dialog opens with Confirm greyed rather than live over an empty field.
+	 */
+	const newEmailValid = computed(() => isValidEmail(newEmail.value));
+
 	const pendingDelete = computed(() =>
 		data.value?.gdprRequests.find(r => r.kind === "delete" && r.status === "pending") ?? null);
 
@@ -228,10 +237,12 @@ export async function useSettings() {
 	const requestEmailChange = () => run("email", async () => {
 		emailError.value = null;
 
-		// The backstop, not the main check — `validateNewEmail` has normally
-		// caught this on blur already. This still has to be here because Enter
-		// submits from inside the field without blurring it first, so the only
-		// path that reaches the route with a bad address never fired a blur.
+		// The backstop. The disabled Confirm is the real guard now — and it also
+		// closes the Enter-key path, since a browser will not implicitly submit
+		// a form whose submit button is disabled — so nothing in the UI should
+		// reach this. It stays because "no path reaches this" is a claim about
+		// today's markup, and the cost of being wrong is a request that spends
+		// one of five throttle entries an hour on a typo.
 		//
 		// `isValidEmail` is the same function the route calls; see
 		// shared/utils/email.ts. It is a courtesy rather than a control: it
@@ -363,7 +374,7 @@ export async function useSettings() {
 		data, banner, busy, errors,
 		profile, slug, pendingDelete,
 		profileDirty, resetProfile,
-		emailDialogOpen, newEmail, emailError,
+		emailDialogOpen, newEmail, emailError, newEmailValid,
 		openEmailDialog, closeEmailDialog, validateNewEmail, requestEmailChange, cancelEmailChange,
 		saveProfile, saveSlug,
 		signOutOthers, gdpr, confirmDelete, exportData,

@@ -38,12 +38,24 @@
 			</button>
 		</div>
 
-		<p v-if="error" :id="`${id}-error`" class="field-message field-message--error" role="alert">
-			{{ error }}
-		</p>
-		<p v-else-if="hint" :id="`${id}-hint`" class="field-message">
-			{{ hint }}
-		</p>
+		<!-- Both, when there are both. The error used to replace the hint, which
+		     meant failing a field also took away the sentence explaining what it
+		     wanted — exactly when that sentence is most worth reading.
+		     Hint first: it is the standing instruction and does not move, and
+		     the error arrives under it as an extra line.
+
+		     Wrapped rather than left as two siblings because `.dashForm--split`
+		     places the note in a named grid row; two grid items claiming the
+		     same row would sit on top of each other. One wrapper keeps that
+		     layout arithmetic true whatever is inside it. -->
+		<div v-if="hint || error" class="field-notes">
+			<p v-if="hint" :id="`${id}-hint`" class="field-message">
+				{{ hint }}
+			</p>
+			<p v-if="error" :id="`${id}-error`" class="field-message field-message--error" role="alert">
+				{{ error }}
+			</p>
+		</div>
 	</div>
 </template>
 
@@ -112,10 +124,16 @@ const isPassword = computed(() => props.type === "password");
 // Firefox does not implement and which leaves the value selectable as dots.
 const inputType = computed(() => (isPassword.value && revealed.value ? "text" : props.type));
 
+/**
+ * Both ids, in the order they are read on screen, since both are now rendered.
+ * A screen reader announces the description as one string, so dropping the hint
+ * here would tell a sighted user what the field wants and not tell anyone else.
+ */
 const describedBy = computed(() => {
-	if (props.error) return `${id}-error`;
-	if (props.hint) return `${id}-hint`;
-	return undefined;
+	const ids = [];
+	if (props.hint) ids.push(`${id}-hint`);
+	if (props.error) ids.push(`${id}-error`);
+	return ids.length ? ids.join(" ") : undefined;
 });
 
 const onInput = (event: Event) => {
