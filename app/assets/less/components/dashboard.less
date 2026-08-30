@@ -2775,6 +2775,17 @@
         .icon { width: @vw24; height: @vw24; }
     }
 
+    // The platform marks are supplied artwork rather than glyphs from the icon
+    // set, so they bring their own colour and their own proportions — YouTube
+    // is a wide rectangle where the other two are squares. `contain` fits each
+    // inside the same box so the three line up on their centres, and the box
+    // keeps its width either way so the labels beside them share one left edge.
+    &-icon--logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
     // The label and the address are one thing read together, so they are set
     // tight: no gap, and a line-height pulled well in from the body default,
     // which is sized for paragraphs rather than for a two-line pair.
@@ -2810,11 +2821,17 @@
     }
 
     // A rule between rows, not around them. Only ever applies where there is
-    // more than one — the sign-in panel has a single row and never sees it —
-    // and the padding is matched to the panel's own gap, so the space above the
-    // line and below it come out equal.
+    // more than one — the sign-in panel has a single row and never sees it.
+    //
+    // Ruled edge to edge, the same trick `.dashForm--split` uses: the negative
+    // margin takes the row out past `.dashPanel`'s @vw16 padding and the
+    // matching inline padding puts the content back where it was, so the line
+    // spans the card while the glyphs and labels stay on the left edge they
+    // share with everything above. The top padding matches the panel's gap, so
+    // the space above the line and below it come out equal.
     & + & {
-        padding-top: @vw16;
+        margin-inline: -@vw16;
+        padding: @vw16 @vw16 0;
         border-top: max(1px, @vw1) solid var(--border);
     }
 
@@ -2911,29 +2928,34 @@
         // glyphs are recognisable, while the copy underneath is not. Less than
         // this stops reading as deliberate and starts looking like a rendering
         // fault.
+        // Tuned by looking at it. At @vw4 the platform names were gone entirely,
+        // which hides the most useful thing a teaser has to say — *which*
+        // platforms are coming. At @vw3 the names are almost legible and the
+        // marks are recognisable, while the copy underneath is not. Less than
+        // this stops reading as deliberate and starts looking like a rendering
+        // fault.
         filter: blur(@vw3);
-        // Pulled back so the badge over it has something to sit against without
-        // needing a scrim of its own.
+        // Pulled back so the label over it reads without needing a plate of its
+        // own — see the note on the badge below.
         opacity: 0.55;
         pointer-events: none;
         user-select: none;
     }
 
+    // Bare text, and nothing behind it.
+    //
+    // It was a pill on the popover tokens with a shadow, which is the treatment
+    // for something floating over the page — a tooltip, a menu. This is not
+    // floating over anything: it is the label *for* the panel it sits in, and
+    // giving it an object's chrome made the panel look like it had a dialog
+    // open on top of it. The veil's own opacity is what keeps this readable,
+    // which is the job that plate was doing.
     &-badge {
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 1;
-        padding: @vw8 @vw16;
-        border-radius: @dashRadiusPill;
-        // Popover tokens, because that is exactly what this is: something
-        // floating over content rather than sitting in the page. They are the
-        // opaque pair, so the blur behind never shows through the badge and
-        // makes the one legible thing on the panel look out of focus too.
-        background-color: var(--popover);
-        border: max(1px, @vw1) solid var(--popover-border);
-        box-shadow: var(--shadow-pop);
         font-size: @settingsBody;
         font-weight: @semiBold;
         letter-spacing: 0.02em;
@@ -2941,7 +2963,7 @@
         color: var(--text);
     }
 
-    // The accent stays off this. A badge is not something you can press, and
+    // The accent stays off this. A label is not something you can press, and
     // the note in dashboardTokens.less is explicit that the accent means
     // interactive — spending it on a label saying "not yet" is the fastest way
     // to make it stop meaning anything.

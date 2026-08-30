@@ -177,37 +177,6 @@ const icons: Record<string, string[]> = {
 		"M11 5.5H5.5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V13",
 		"M16.4 4.1a1.9 1.9 0 0 1 2.7 2.7l-7.6 7.6-3.4.7.7-3.4 7.6-7.6Z",
 	],
-	// ── Platform marks ───────────────────────────────────────────────────────
-	// Drawn in this set's own 1.5-weight outline style rather than dropped in as
-	// brand assets. Three reasons: the official marks are filled, and two of
-	// them are full colour, so beside a row of monochrome strokes they read as
-	// pasted-in rather than as part of the page; a brand kit is a licence and an
-	// update to track; and the note at the top of nuxt.config.ts is explicit
-	// that a glyph here is an entry in this file, not a dependency. These are
-	// recognisable simplifications, which is what a row label needs to be.
-
-	// Rounded square, lens, and the flash as a dot in the top right.
-	instagram: [
-		"M7.8 3.5h8.4a4.3 4.3 0 0 1 4.3 4.3v8.4a4.3 4.3 0 0 1-4.3 4.3H7.8a4.3 4.3 0 0 1-4.3-4.3V7.8a4.3 4.3 0 0 1 4.3-4.3Z",
-		"M12 15.9a3.9 3.9 0 1 0 0-7.8 3.9 3.9 0 0 0 0 7.8Z",
-		"M16.9 7.1v.01",
-	],
-	// The rounded screen with a play head centred in it. The body is drawn with
-	// bowed top and bottom edges, which is what makes it read as YouTube's
-	// squashed rectangle rather than as a generic video tile.
-	youtube: [
-		"M21.2 8.3a2.7 2.7 0 0 0-1.9-1.9C17.6 5.9 12 5.9 12 5.9s-5.6 0-7.3.5A2.7 2.7 0 0 0 2.8 8.3 28 28 0 0 0 2.5 12a28 28 0 0 0 .3 3.7 2.7 2.7 0 0 0 1.9 1.9c1.7.5 7.3.5 7.3.5s5.6 0 7.3-.5a2.7 2.7 0 0 0 1.9-1.9 28 28 0 0 0 .3-3.7 28 28 0 0 0-.3-3.7Z",
-		"M10.3 14.8V9.2l4.8 2.8-4.8 2.8Z",
-	],
-	// The note: a stem, the round head hanging off its foot, and the flag
-	// reaching up and right from the top. Two paths meeting at the stem's top,
-	// so the flag and the stem read as one stroke turning rather than as a
-	// glyph with a line crossing it.
-	tiktok: [
-		"M14.4 3.5v11.6a4.1 4.1 0 1 1-4.1-4.1c.36 0 .7.05 1.04.14",
-		"M14.4 3.5a5.6 5.6 0 0 0 5.6 5.6",
-	],
-
 	trendUp: ["M4 16.5 9.5 11l4 4 6.5-6.5", "M15 8.5h5v5"],
 	trendDown: ["M4 8.5 9.5 14l4-4 6.5 6.5", "M15 15.5h5v-5"],
 	trendFlat: ["M4.5 12h15"],

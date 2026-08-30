@@ -177,8 +177,12 @@
 				     unavailable actions is worse than not reading them. -->
 				<div class="teaser-veiled" aria-hidden="true">
 					<div v-for="platform in CONNECTIONS" :key="platform.name" class="signinRow">
-						<span class="signinRow-icon">
-							<NuxtDashboardIcon :name="platform.icon" />
+						<!-- Empty alt on purpose. The platform's name is the very
+						     next element, so a description here would have a
+						     screen reader say it twice — and the whole veil is
+						     aria-hidden anyway. -->
+						<span class="signinRow-icon signinRow-icon--logo">
+							<NuxtAppImage :src="platform.logo" alt="" />
 						</span>
 
 						<div class="signinRow-body">
@@ -433,9 +437,9 @@ const page = computed(() => HEADINGS[props.section]);
  * gaining branches.
  */
 const CONNECTIONS = [
-	{ name: "TikTok", icon: "tiktok", blurb: "Views, follows and what each post sent your way." },
-	{ name: "Instagram", icon: "instagram", blurb: "Reach and profile taps from posts, reels and stories." },
-	{ name: "YouTube", icon: "youtube", blurb: "Watch time and subscribers earned from your videos." },
+	{ name: "TikTok", logo: "/images/tiktok-logo.webp", blurb: "Views, follows and what each post sent your way." },
+	{ name: "Instagram", logo: "/images/instagram-logo.webp", blurb: "Reach and profile taps from posts, reels and stories." },
+	{ name: "YouTube", logo: "/images/youtube-logo.webp", blurb: "Watch time and subscribers earned from your videos." },
 ] as const;
 
 /**
