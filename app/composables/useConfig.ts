@@ -15,7 +15,6 @@ export interface ConfigContent {
 	cta_menu?: MenuLinkItem[];
 	footer_menu?: FooterMenu[];
 	/** Default checkout / contact links, used when no affiliate is referring. */
-	default_vip?: StoryblokMultilink;
 	default_lite?: StoryblokMultilink;
 	default_calendly?: StoryblokMultilink;
 }

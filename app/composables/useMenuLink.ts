@@ -14,8 +14,8 @@ export function useMenuLink() {
 
 	const href = (item: MenuLinkItem): string | null =>
 		// Managed links are absolute external URLs, so they must not be run
-		// through localePath — that would turn https://whop.com/... into
-		// /en/https://whop.com/...
+		// through localePath — that would turn https://t.me/... into
+		// /en/https://t.me/...
 		roleHref(item.link_role, linkPath(item.link));
 
 	const attrs = (item: MenuLinkItem): { target?: string; rel?: string } =>

@@ -46,13 +46,6 @@
 						:error="createErrors.displayName"
 						required
 					/>
-					<NuxtAuthField
-						v-model="createForm.whopUsername"
-						label="Whop username"
-						placeholder="optional"
-						:error="createErrors.whopUsername"
-						hint="Reference only — nothing is sent to Whop."
-					/>
 				</div>
 				<div class="adminForm-actions">
 					<button type="submit" class="btn btn--primary adminForm-submit" :disabled="creating">
@@ -78,7 +71,6 @@
 							<th scope="col">Affiliate</th>
 							<th scope="col">Setup</th>
 							<th scope="col">Visits</th>
-							<th scope="col">Sales</th>
 							<th scope="col">Actions</th>
 						</tr>
 					</thead>
@@ -113,7 +105,6 @@
 							</td>
 							<td>
 								<ul class="adminChecks">
-									<li :class="{ 'is-done': affiliate.hasWhopConfig }">Whop</li>
 									<li :class="{ 'is-done': affiliate.hasLogin }">Login</li>
 									<li :class="{ 'is-done': affiliate.hasTelegram }">Telegram</li>
 									<li :class="{ 'is-done': affiliate.hasCalendly }">Calendly</li>
@@ -123,7 +114,6 @@
 								</span>
 							</td>
 							<td>{{ affiliate.visits }}</td>
-							<td>{{ affiliate.sales }}</td>
 							<td>
 								<div class="adminActions">
 									<button
@@ -137,13 +127,6 @@
 										:disabled="busyId === affiliate.id"
 										@click="viewAs(affiliate)"
 									>View as</button>
-
-									<button
-										v-if="!affiliate.hasWhopConfig"
-										type="button"
-										:disabled="busyId === affiliate.id"
-										@click="whopOnboard(affiliate)"
-									>Onboard Whop</button>
 
 									<button
 										v-if="!affiliate.hasLogin && !affiliate.liveInvite"
@@ -256,13 +239,6 @@
 							:error="editErrors.displayName"
 							required
 						/>
-						<NuxtAuthField
-							v-model="editForm.whopUsername"
-							label="Whop username"
-							placeholder="optional"
-							:error="editErrors.whopUsername"
-							hint="Reference only — nothing is sent to Whop."
-						/>
 						<div class="field adminForm-wide">
 							<label class="field-label" for="affiliateNotes">Notes</label>
 							<textarea
@@ -309,7 +285,7 @@ const {
 	admins, adminEmail, adminError, grantingAdmin, busyAdminId,
 	load, loadAdmins, grantAdmin, revokeAdmin,
 	create, startEdit, cancelEdit, saveEdit,
-	issueInvite, revokeInvite, setStatus, viewAs, whopOnboard,
+	issueInvite, revokeInvite, setStatus, viewAs,
 } = useAdmin();
 
 await Promise.all([load(), loadAdmins()]);
@@ -355,7 +331,7 @@ useScrollLock(computed(() => editing.value !== null));
 
 /** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {
-	const message = `Revoke ${affiliate.slug}? They'll be signed out immediately and their links stop swapping. Their sales history is kept.`;
+	const message = `Revoke ${affiliate.slug}? They'll be signed out immediately and their links stop swapping. Their traffic history is kept.`;
 	if (window.confirm(message)) setStatus(affiliate, status);
 }
 

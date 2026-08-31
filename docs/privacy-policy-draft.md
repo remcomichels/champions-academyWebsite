@@ -58,13 +58,12 @@ registered address, if one exists.]*
 - A log of security-relevant actions on your account, such as sign-ins,
   password changes and link changes.
 
-**If you buy from us**
+**If you join our community**
 
-- Purchases are processed by Whop. **We never see or store your payment card
-  details.**
-- When a purchase is made through an affiliate's link, we receive and store the
-  buyer's Whop **username**, the plan purchased and the date. **We do not
-  receive or store buyers' email addresses or real names.**
+- Access is arranged through Telegram. **We do not process payments on this
+  website and never see or store your payment card details.**
+- We do not receive or store any record of individual members from Telegram —
+  no usernames, email addresses or real names.
 
 **If you contact us**
 
@@ -91,9 +90,9 @@ and **consent** for analytics where consent is required.
 
 ## 4. Who can see what
 
-**Affiliates can see the Whop username, plan and date of people who bought
-through their own link.** They cannot see buyers' email addresses or real names,
-and cannot see anything about anyone who did not use their link.
+**Affiliates can see aggregate visit and click counts for their own link**, and
+nothing that identifies an individual visitor. They cannot see anything at all
+about anyone who did not use their link.
 
 Our administrators can see affiliate account details and aggregate figures. No
 one else has access to our systems.
@@ -127,23 +126,20 @@ We do **not** use advertising or retargeting pixels on this website.
 
 | Provider | What they handle | Where |
 |---|---|---|
-| **Supabase** | Affiliate accounts, passwords (hashed), sessions, referral and sales records | **United States** |
+| **Supabase** | Affiliate accounts, passwords (hashed), sessions, referral records | **United States** |
 | **PostHog** | Website analytics | **United States** |
-| **Whop** | Payments, memberships, commission and payouts | United States |
 | **Storyblok** | Website content | European Union |
 | **Bunny.net** | Video delivery | Global CDN |
 | **Vercel** | Website hosting | Global CDN |
 
-Each processes data only on our instructions, except Whop, which is an
-independent controller for the payment relationship and operates under its own
-privacy policy.
+Each processes data only on our instructions.
 
 ---
 
 ## 7. International transfers
 
 Some of our providers store data outside the European Economic Area, principally
-in the **United States** (Supabase, PostHog, Whop). Some of our administrators
+in the **United States** (Supabase, PostHog). Some of our administrators
 are located in **Canada**.
 
 Where personal data leaves the EEA we rely on:
@@ -168,8 +164,6 @@ is the section most likely to need adjusting.]*
 - **Referral visit records** — the daily hash is not reversible and is not
   linked to you. Aggregate counts are kept for as long as the affiliate account
   exists.
-- **Sales records** — retained while the affiliate account is open, as they are
-  the basis on which commission was paid.
 - **Analytics** — retained by PostHog for up to one year.
 - **Account activity logs** — retained for security and dispute resolution.
 
@@ -213,7 +207,7 @@ delete it promptly.
 
 ## 12. Links to other sites
 
-Our website links to third-party platforms including Whop, Telegram, Calendly,
+Our website links to third-party platforms including Telegram, Calendly,
 YouTube and Instagram. We are not responsible for their privacy practices and
 encourage you to read their policies.
 

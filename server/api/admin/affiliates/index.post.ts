@@ -15,9 +15,6 @@ export default defineEventHandler(async (event) => {
 	const body = await readValidatedBody(event, object({
 		slug: str({ min: 2, max: 32 }),
 		displayName: displayName({ min: 1, max: 80 }),
-		// Their Whop username, for commission attribution on Whop's side.
-		// Optional: an affiliate can be created before that is known.
-		whopUsername: optional(str({ max: 60 })),
 		notes: optional(str({ max: 1000 })),
 	}));
 
@@ -36,7 +33,6 @@ export default defineEventHandler(async (event) => {
 		.insert({
 			slug,
 			display_name: body.displayName,
-			whop_username: body.whopUsername,
 			notes: body.notes,
 			created_by: admin.userId,
 		})

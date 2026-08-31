@@ -26,18 +26,17 @@ const DELETE_GRACE_DAYS = 14;
  * It answered `export` too — a download of everything held about an affiliate,
  * built on the spot. It came out because nobody ever asked for one: not a
  * single request was made in the lifetime of the feature, and an export route
- * that is never called is a second query over conversions, visits and the audit
- * log kept working for nothing.
+ * that is never called is a second query over visits, clicks and the audit log
+ * kept working for nothing.
  *
  * Deletion is queued rather than immediate, for two reasons: an account
  * deleted in a bad five minutes should be recoverable, and a request made
  * under pressure by someone who has taken over the account should not be
  * instant either. `cancel` withdraws a pending request.
  *
- * The queue is deliberately not drained automatically — deleting an
- * affiliate cascades to their conversions, which is also the record of sales
- * Whop already paid commission on. That is a decision with an accounting
- * consequence, so it stays a human one.
+ * The queue is deliberately not drained automatically. Erasing somebody is
+ * irreversible and rewrites what the programme's own figures are counted over,
+ * so it stays a decision a human makes.
  */
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);

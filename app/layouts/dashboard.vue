@@ -2,7 +2,6 @@
 	<div
 		class="dashLayout"
 		:class="{
-			'has-alertBar': vipLinkPending,
 			'is-accountNav': accountMode,
 			// Gated on the main rail rather than fought over in CSS. The account
 			// rail is a set of tabs that have to be readable to be chosen
@@ -13,29 +12,14 @@
 			'is-navCollapsed': !accountMode && sidebarMode === 'collapsed',
 		}"
 	>
-		<!-- Across the very top of the viewport, over the rail rather than
-		     beside it. This is an account-level warning, not an Overview one —
-		     sales are going uncredited on every page, so it follows the
-		     affiliate around instead of living in one page's flow where it was
-		     being scrolled past. `status`, not `alert`: it is true for as long
-		     as the setup is pending, so interrupting a screen reader with it on
-		     every navigation would be noise. -->
-		<div v-if="vipLinkPending" class="alertBar" role="status">
-			<p class="alertBar-text">
-				<strong>Your VIP link is still being set up.</strong>
-				Until it's ready, VIP buttons on the site show the standard link and
-				those sales won't be credited to you.
-			</p>
-		</div>
-
 		<!-- A sibling of `main`, not a child of it.
-		
+
 		     The bar is fixed across the top of the viewport and has to paint above
 		     the rail. `.dashLayout-main` sets `z-index: 1`, which opens a stacking
 		     context — anything inside it is confined to that layer however high its
 		     own z-index goes, so from in there the bar could never clear a rail at
-		     50. Out here it can. It is also the more honest markup: a banner is not
-		     part of the main content it sits above. -->
+		     50. Out here it can. It is also the more honest markup: the top bar is
+		     not part of the main content it sits above. -->
 		<header class="dashBar">
 			<button
 				type="button"
@@ -234,22 +218,6 @@ const pageTitle = computed(() => matchNavItem(route.path)?.label ?? "Dashboard")
 // the whole admin section rather than on one route.
 const showNoAffiliate = computed(() =>
 	!affiliate.value && !isAdminRoute(route.path));
-
-/**
- * The VIP-link warning bar.
- *
- * Read here rather than on Overview because it is an account-level fact: while
- * it is true the affiliate's VIP buttons fall back to the site default on every
- * page, so the bar follows them instead of appearing on one.
- *
- * No extra request. `useAffiliateSummary` is a `useAsyncData` on a fixed key,
- * so this shares the one entry with whichever page also asks for it — and it is
- * gated on having an affiliate profile for the same reason `showNoAffiliate`
- * is, since an admin-only login can only ever get a 403 from that endpoint.
- */
-const { data: affiliateSummary } = await useAffiliateSummary({ immediate: !!affiliate.value });
-
-const vipLinkPending = computed(() => affiliateSummary.value?.vipLinkPending === true);
 
 /**
  * Lock the page behind the mobile drawer. `_general.less` already defines

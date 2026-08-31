@@ -64,7 +64,13 @@ export default defineEventHandler(async (event) => {
 			since = Number(row.id);
 			await stream.push({
 				id: String(row.id),
-				event: String(row.kind),
+				// A fixed event name, with the kind inside the payload. Naming
+				// the SSE event after the kind meant the client had to know every
+				// kind up front to register a listener for it, so a kind added
+				// on the server arrived at a browser that was not listening and
+				// vanished — silently, since an unhandled SSE event is not an
+				// error anywhere.
+				event: "notification",
 				data: JSON.stringify({
 					id: row.id,
 					kind: row.kind,

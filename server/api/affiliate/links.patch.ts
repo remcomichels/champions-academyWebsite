@@ -2,14 +2,11 @@ import { object, optional, str } from "../../utils/validate";
 import { allowedHostsFor } from "#shared/utils/isAllowedLink";
 
 /**
- * Saves the two links an affiliate supplies themselves.
+ * Saves the two links an affiliate supplies.
  *
  * These are the only affiliate-controlled values that end up as an `href` on
  * the public marketing site, so the host allow-list is enforced here as well
  * as in the database CHECK constraint and again at render time.
- *
- * The VIP link is deliberately absent: it is generated from Whop during
- * onboarding and there is no path for an affiliate to set it.
  */
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);

@@ -43,10 +43,9 @@ const num = (meta: Record<string, unknown>, key: string): number | null => {
 /**
  * Turns one row into a sentence.
  *
- * The meta is the point. "Payment not credited" on its own sends you to the
- * Whop dashboard to guess; "not credited — payment carries no
- * checkout_configuration_id" tells you the affiliate was never onboarded, which
- * is a thing you can go and fix.
+ * The meta is the point. "Details edited" on its own tells you nothing you can
+ * act on; "their link moved from ?r=a to ?r=b" names the thing that changed and
+ * the thing that broke because of it.
  */
 export function describeAudit(entry: AuditEntry): DescribedEntry {
 	const m = entry.meta ?? {};
@@ -70,11 +69,6 @@ export function describeAudit(entry: AuditEntry): DescribedEntry {
 			return str(m, "status") === "active"
 				? good("Access restored")
 				: bad("Access revoked — signed out, and their link stopped swapping");
-
-		case "affiliate.whop_onboarded":
-			return m.storedUrl === true
-				? good("Whop checkout created — their VIP link is live")
-				: plain("Whop checkout created, but the URL was on a sandbox host so it was not stored");
 
 		// ── Invites ─────────────────────────────────────────────────────────
 		case "invite.issued": {
@@ -133,24 +127,6 @@ export function describeAudit(entry: AuditEntry): DescribedEntry {
 
 		case "admin.revoked":
 			return bad("Removed someone's admin access");
-
-		// ── Whop ────────────────────────────────────────────────────────────
-		case "webhook.attributed":
-			return m.alreadySeen === true
-				? plain(`Sale ${str(m, "paymentId") ?? ""} redelivered — already recorded`)
-				: good(`Sale ${str(m, "paymentId") ?? ""} credited`);
-
-		case "webhook.not_attributed":
-			return bad(`Payment not credited — ${str(m, "reason") ?? "no reason recorded"}`);
-
-		case "webhook.ignored":
-			return plain(`Whop sent ${str(m, "type") ?? "an event"} — nothing to do with it`);
-
-		case "whop.backfill": {
-			const credited = num(m, "credited") ?? 0;
-			const scanned = num(m, "scanned") ?? 0;
-			return plain(`Backfill ran — ${scanned} payments checked, ${credited} credited`);
-		}
 
 		// ── GDPR ────────────────────────────────────────────────────────────
 		case "gdpr.exported":

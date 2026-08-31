@@ -183,18 +183,6 @@ export default defineNuxtConfig({
 		mailFromEmail: process.env.MAIL_FROM_EMAIL || "no-reply@mail.jointhevips.com",
 		mailFromName: process.env.MAIL_FROM_NAME || "Champions Academy",
 
-		// Whop — server-side only. The API key can read every payment the
-		// company has ever taken, so it never leaves the server and is only
-		// used through server/utils/whop.ts (affiliate-scoped) and
-		// server/utils/whopAdmin.ts (admin routes only).
-		whopApiKey: process.env.WHOP_API_KEY || "",
-		whopCompanyId: process.env.WHOP_BIZ_KEY || "",
-		whopWebhookSecret: process.env.WHOP_WEBHOOK_SECRET || "",
-		whopVipPlanId: process.env.WHOP_PLAN_ID || "",
-		// Whop's sandbox is a separate host and sandbox keys only work against
-		// it. Leave unset in production to use https://api.whop.com/api/v1.
-		whopBaseUrl: process.env.WHOP_BASE_URL || "",
-
 		// No PostHog *query* credentials here on purpose. Collection still runs
 		// in the browser with the write-only project key below; nothing reads
 		// back. The personal API key that used to sit here could read every

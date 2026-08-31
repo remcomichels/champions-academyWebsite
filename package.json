@@ -11,8 +11,7 @@
 		"lint": "eslint .",
 		"lint:fix": "eslint . --fix",
 		"typecheck": "nuxt typecheck",
-		"types:supabase": "supabase gen types typescript --project-id YOUR_SUPABASE_PROJECT_REF --schema public > app/types/supabase.d.ts",
-		"whop:surface": "node scripts/whop-surface.mjs"
+		"types:supabase": "supabase gen types typescript --project-id YOUR_SUPABASE_PROJECT_REF --schema public > app/types/supabase.d.ts"
 	},
 	"engines": {
 		"node": ">=24",
@@ -30,7 +29,6 @@
 		"@supabase/supabase-js": "^2.89.0",
 		"@unhead/vue": "^3.1.0",
 		"@vueuse/nuxt": "^14.1.0",
-		"@whop/sdk": "^0.0.42",
 		"autoprefixer": "^10.4.23",
 		"dotenv": "^17.2.3",
 		"eslint": "^10.3.0",

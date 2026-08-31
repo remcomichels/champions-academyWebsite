@@ -15,15 +15,11 @@ export interface AdminAffiliate {
 	slug: string;
 	displayName: string;
 	status: "active" | "revoked";
-	whopUsername: string | null;
 	notes: string | null;
-	hasWhopConfig: boolean;
-	hasVipLink: boolean;
 	hasTelegram: boolean;
 	hasCalendly: boolean;
 	hasLogin: boolean;
 	createdAt: string;
-	sales: number;
 	visits: number;
 	liveInvite: { prefix: string; expiresAt: string } | null;
 	/** Set only while they have asked to go and the grace period is running. */
@@ -78,7 +74,7 @@ export function useAdmin() {
 	/** Shown once, in a dialog, and never recoverable afterwards. */
 	const issuedInvite = ref<IssuedInvite | null>(null);
 
-	const createForm = reactive({ slug: "", displayName: "", whopUsername: "" });
+	const createForm = reactive({ slug: "", displayName: "" });
 	const createErrors = ref<Record<string, string | undefined>>({});
 	const creating = ref(false);
 
@@ -91,7 +87,7 @@ export function useAdmin() {
 	 * length of the closing frame.
 	 */
 	const editingName = ref("");
-	const editForm = reactive({ slug: "", displayName: "", whopUsername: "", notes: "" });
+	const editForm = reactive({ slug: "", displayName: "", notes: "" });
 	const editErrors = ref<Record<string, string | undefined>>({});
 	const saving = ref(false);
 
@@ -202,13 +198,11 @@ export function useAdmin() {
 				body: {
 					slug: createForm.slug,
 					displayName: createForm.displayName,
-					whopUsername: createForm.whopUsername || null,
 				},
 			});
 
 			createForm.slug = "";
 			createForm.displayName = "";
-			createForm.whopUsername = "";
 			banner.value = { variant: "success", text: "Affiliate created." };
 			await load();
 		}
@@ -230,7 +224,6 @@ export function useAdmin() {
 		banner.value = null;
 		editForm.slug = affiliate.slug;
 		editForm.displayName = affiliate.displayName;
-		editForm.whopUsername = affiliate.whopUsername ?? "";
 		editForm.notes = affiliate.notes ?? "";
 	}
 
@@ -259,7 +252,6 @@ export function useAdmin() {
 					slug: editForm.slug,
 					displayName: editForm.displayName,
 					// Empty string clears a nullable field; the server maps it to null.
-					whopUsername: editForm.whopUsername,
 					notes: editForm.notes,
 				},
 			});
@@ -379,36 +371,6 @@ export function useAdmin() {
 		}
 	}
 
-	async function whopOnboard(affiliate: AdminAffiliate) {
-		busyId.value = affiliate.id;
-		banner.value = null;
-
-		try {
-			const data = await $fetch<{
-				alreadyOnboarded: boolean;
-				urlStored?: boolean;
-				purchaseUrl?: string | null;
-			}>(`/api/admin/affiliates/${affiliate.id}/whop-onboard`, { method: "POST", body: {} });
-
-			banner.value = data.alreadyOnboarded
-				? { variant: "success", text: `${affiliate.slug} already has a checkout configuration.` }
-				: data.urlStored
-					? { variant: "success", text: `${affiliate.slug} onboarded — their VIP link is live.` }
-					: {
-							variant: "success",
-							text: `${affiliate.slug} onboarded, but the link is on a sandbox host so it was not stored. Their VIP buttons keep the site default.`,
-						};
-
-			await load();
-		}
-		catch (error) {
-			banner.value = { variant: "error", text: errorMessage(error, "Whop onboarding failed.") };
-		}
-		finally {
-			busyId.value = null;
-		}
-	}
-
 	return {
 		affiliates: filtered,
 		search,
@@ -441,6 +403,5 @@ export function useAdmin() {
 		revokeInvite,
 		setStatus,
 		viewAs,
-		whopOnboard,
 	};
 }

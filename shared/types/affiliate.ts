@@ -7,13 +7,14 @@
  */
 
 /**
- * The three swappable link roles.
+ * The two swappable link roles.
  *
- * Only `vip` is a Whop product and therefore the only one with purchase
- * attribution — `lite` is a Telegram invite and `calendly` is a booking page,
- * so neither can ever produce a conversion.
+ * There was a third, `vip`, which pointed at a Whop checkout and was the only
+ * one that could produce a sale. Whop is gone and the tier is sold through
+ * Telegram now, so nothing here is a purchase — `lite` is a Telegram invite and
+ * `calendly` is a booking page. Both are affiliate-supplied.
  */
-export type LinkRole = "vip" | "lite" | "calendly";
+export type LinkRole = "lite" | "calendly";
 
 /** What a Storyblok CTA blok carries. Empty string means "not a swappable link". */
 export type LinkRoleField = LinkRole | "";
@@ -29,12 +30,10 @@ export type AffiliateStatus = "active" | "revoked";
  * The referral payload that reaches the browser.
  *
  * This is serialised into `__NUXT__` on every referred page view, so it holds
- * public link data and nothing else — no internal affiliate id, no Whop
- * affiliate id, no checkout configuration id.
+ * public link data and nothing else — no internal affiliate id.
  */
 export interface ReferralLinks {
 	slug: string;
-	vip: string | null;
 	lite: string | null;
 	calendly: string | null;
 }

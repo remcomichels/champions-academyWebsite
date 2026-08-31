@@ -28,11 +28,11 @@
 				</li>
 			</ul>
 
-			<p v-else class="inbox-empty">Nothing yet. New sales show up here.</p>
+			<p v-else class="inbox-empty">Nothing yet. Activity on your account shows up here.</p>
 		</div>
 
-		<!-- Toasts for sales that land while the dashboard is open. aria-live so
-		     they are announced rather than being a purely visual event. -->
+		<!-- Toasts for activity that lands while the dashboard is open. aria-live
+		     so it is announced rather than being a purely visual event. -->
 		<div class="toasts" aria-live="polite" aria-atomic="false">
 			<div v-for="toast in toasts" :key="toast.id" class="toast">
 				{{ describe(toast) }}

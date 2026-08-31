@@ -6,7 +6,7 @@ import type { Trend } from "#shared/utils/trend";
  * Programme-wide analytics.
  *
  * The affiliate pages ask "how am I doing". This asks "how is the programme
- * doing, and who is carrying it", which is the same three tables read across
+ * doing, and who is carrying it", which is the same two tables read across
  * everybody instead of filtered to one.
  */
 
@@ -17,17 +17,16 @@ export interface LeaderRow {
 	status: string;
 	visits: number;
 	clicks: number;
-	sales: number;
 }
 
 export interface ProgramAnalyticsResponse {
 	days: number;
 	totals: {
-		visits: number; clicks: number; sales: number; countries: number;
-		affiliatesTotal: number; affiliatesActive: number; affiliatesSelling: number;
+		visits: number; clicks: number; countries: number;
+		affiliatesTotal: number; affiliatesActive: number;
 	};
-	trends: { visits: Trend | null; clicks: Trend | null; sales: Trend | null; active: Trend | null };
-	byDay: { day: string; visits: number; clicks: number; sales: number }[];
+	trends: { visits: Trend | null; clicks: Trend | null; active: Trend | null };
+	byDay: { day: string; visits: number; clicks: number }[];
 	sources: { label: string; visits: number; previousVisits: number }[];
 	countries: { country: string | null; visits: number }[];
 	clicksByRole: { role: string; clicks: number }[];
@@ -90,10 +89,10 @@ export function useAdminAnalytics() {
 			};
 		}));
 
-	/** Sales per day, plotted separately rather than as a second axis on the
-	 *  visits chart — two measures three orders of magnitude apart share no
-	 *  scale, and a dual axis is the one thing a chart may never do. */
-	const salesSeries = computed(() =>
+	/** Clicks per day, plotted separately rather than as a second axis on the
+	 *  visits chart — the two share no scale, and a dual axis is the one thing
+	 *  a chart may never do. */
+	const clicksSeries = computed(() =>
 		(data.value?.byDay ?? []).map((row) => {
 			const date = new Date(`${row.day}T00:00:00Z`);
 			return {
@@ -101,7 +100,7 @@ export function useAdminAnalytics() {
 				title: date.toLocaleDateString("en-GB", {
 					weekday: "short", day: "numeric", month: "short", timeZone: "UTC",
 				}),
-				value: row.sales,
+				value: row.clicks,
 			};
 		}));
 
@@ -130,19 +129,16 @@ export function useAdminAnalytics() {
 	 */
 	const leaders = computed(() => {
 		const rows = data.value?.leaderboard ?? [];
-		const top = Math.max(0, ...rows.map(row => row.sales));
+		const top = Math.max(0, ...rows.map(row => row.visits));
 
 		return rows.map((row, index) => ({
 			...row,
 			rank: index + 1,
-			// Against visits when nobody has sold yet, so the panel still ranks
-			// something rather than showing ten empty tracks.
-			share: top > 0
-				? (row.sales > 0 ? Math.max(row.sales / top, 0.03) : 0)
-				: 0,
+			// Floored, so an affiliate with real traffic against a much larger
+			// leader is still a bar rather than a dot against the track.
+			share: top > 0 && row.visits > 0 ? Math.max(row.visits / top, 0.03) : 0,
 			visitsLabel: number(row.visits),
 			clicksLabel: number(row.clicks),
-			salesLabel: number(row.sales),
 		}));
 	});
 
@@ -160,12 +156,12 @@ export function useAdminAnalytics() {
 	const activeHint = computed(() => {
 		const totals = data.value?.totals;
 		if (!totals) return null;
-		return `of ${number(totals.affiliatesTotal)} active · ${number(totals.affiliatesSelling)} selling`;
+		return `of ${number(totals.affiliatesTotal)} active`;
 	});
 
 	return {
 		days, data, pending, failed, load,
-		series, salesSeries, funnelSteps, leaders, countries,
+		series, clicksSeries, funnelSteps, leaders, countries,
 		periodLabel, activeHint,
 	};
 }

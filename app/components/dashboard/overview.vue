@@ -12,17 +12,6 @@
 
 				<div class="dashHero-actions">
 					<NuxtDashboardCopyField :value="summary.referralUrl" @copied="onCopied" />
-
-					<a
-						v-if="summary.links.vip"
-						class="btn btn--ghost"
-						:href="summary.links.vip"
-						target="_blank"
-						rel="noopener noreferrer"
-					>
-						<NuxtDashboardIcon name="external" />
-						VIP link
-					</a>
 				</div>
 			</div>
 
@@ -66,11 +55,6 @@
 			</section>
 		</header>
 
-		<!-- The VIP-link warning used to sit here, inline under the hero. It is
-		     an account-level fact rather than an Overview one, and it now runs
-		     as a fixed bar across the top of the viewport from the layout — see
-		     `.alertBar` there. -->
-
 		<!-- ── Figures ───────────────────────────────────────────────────── -->
 		<div class="statGrid">
 			<NuxtDashboardStatCard
@@ -92,15 +76,6 @@
 				:value="summary.visits.total"
 				icon="tag"
 				:hint="allTimeHint"
-			/>
-			<!-- The only figure in this row that is not a visit count. Three
-			     readings of traffic and no sales figure left the page unable to
-			     answer the question the affiliate actually has. -->
-			<NuxtDashboardStatCard
-				label="Total sales"
-				:value="summary.sales.total"
-				icon="sales"
-				:hint="salesHint"
 			/>
 		</div>
 
@@ -249,8 +224,8 @@ const series = computed(() => {
 		const key = date.toISOString().slice(0, 10);
 		out.push({
 			label: date.toLocaleDateString("en-GB", { day: "numeric", timeZone: "UTC" }),
-			// Same reason as the Sales chart: the axis is thinned, so the hover
-			// readout is the only thing that names most of these days.
+			// The axis is thinned, so the hover readout is the only thing that
+			// names most of these days.
 			title: date.toLocaleDateString("en-GB", {
 				weekday: "short",
 				day: "numeric",
@@ -292,19 +267,6 @@ const allTimeHint = computed(() => {
 	const recent = props.summary.visits.last30d;
 	if (!props.summary.visits.total) return null;
 	return `${recent.toLocaleString("en-GB")} in the last 30 days`;
-});
-
-/**
- * Sales converted from the visits beside them, which is the comparison the
- * figure is actually for. Null below one sale rather than showing "0.0%": a
- * rate needs something to be a rate of, and a new affiliate would otherwise
- * read a rounded zero as a verdict on their link.
- */
-const salesHint = computed(() => {
-	const sales = props.summary.sales.total;
-	const visits = props.summary.visits.total;
-	if (!sales || !visits) return null;
-	return `${((sales / visits) * 100).toFixed(1)}% of all-time visits`;
 });
 
 /**
@@ -456,7 +418,6 @@ const highlights = computed<HighlightCard[]>(() => {
 });
 
 const linkRows = computed(() => [
-	{ label: "VIP checkout", set: Boolean(props.summary.links.vip) },
 	{ label: "Telegram (Lite)", set: Boolean(props.summary.links.lite) },
 	{ label: "Calendly", set: Boolean(props.summary.links.calendly) },
 ]);

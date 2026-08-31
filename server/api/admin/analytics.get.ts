@@ -3,18 +3,16 @@ import { int, object, optional } from "../../utils/validate";
 interface ProgramAnalytics {
 	visits: number;
 	clicks: number;
-	sales: number;
 	country_count: number;
 	affiliates_total: number;
 	affiliates_active: number;
-	affiliates_selling: number;
-	by_day: { day: string; visits: number; clicks: number; sales: number }[];
+	by_day: { day: string; visits: number; clicks: number }[];
 	sources: { host: string | null; visits: number }[];
 	countries: { country: string | null; visits: number }[];
 	clicks_by_role: { role: string; clicks: number }[];
 	leaderboard: {
 		id: string; slug: string; displayName: string; status: string;
-		visits: number; clicks: number; sales: number;
+		visits: number; clicks: number;
 	}[];
 }
 
@@ -26,7 +24,7 @@ interface ProgramAnalytics {
  * affiliate routes — see the boundary note in server/utils/auth.ts.
  *
  * UTC rather than a timezone. The affiliate-facing charts bucket in the
- * affiliate's own zone so a sale at 01:00 in Amsterdam lands on the day it
+ * affiliate's own zone so a visit at 01:00 in Amsterdam lands on the day it
  * felt like; a programme spanning several zones has no such "own" zone, and
  * picking one affiliate's would quietly shift everyone else's days.
  */
@@ -71,20 +69,17 @@ export default defineEventHandler(async (event) => {
 		totals: {
 			visits: now.visits,
 			clicks: now.clicks,
-			sales: now.sales,
 			countries: now.country_count,
 			affiliatesTotal: now.affiliates_total,
 			affiliatesActive: now.affiliates_active,
-			affiliatesSelling: now.affiliates_selling,
 		},
 		trends: was
 			? {
 					visits: trend(now.visits, was.visits, period),
 					clicks: trend(now.clicks, was.clicks, period),
-					sales: trend(now.sales, was.sales, period),
 					active: trend(now.affiliates_active, was.affiliates_active, period),
 				}
-			: { visits: null, clicks: null, sales: null, active: null },
+			: { visits: null, clicks: null, active: null },
 
 		byDay: now.by_day,
 
@@ -104,13 +99,12 @@ export default defineEventHandler(async (event) => {
 		clicksByRole: now.clicks_by_role,
 		leaderboard: now.leaderboard,
 
-		// The three steps the programme actually funnels through. Sent as
-		// counts, not percentages, so the client can label them however it
-		// wants without re-deriving anything.
+		// The two steps the programme funnels through. Sent as counts, not
+		// percentages, so the client can label them however it wants without
+		// re-deriving anything.
 		funnel: [
 			{ label: "Link visits", value: now.visits },
-			{ label: "Plan clicks", value: now.clicks },
-			{ label: "Sales", value: now.sales },
+			{ label: "Link clicks", value: now.clicks },
 		],
 	};
 });

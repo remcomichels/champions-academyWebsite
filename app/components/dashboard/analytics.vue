@@ -248,7 +248,6 @@ const countries = computed(() =>
 	}));
 
 const ROLE_LABELS: Record<string, string> = {
-	vip: "VIP checkout",
 	lite: "Telegram (Lite)",
 	calendly: "Book a call",
 };

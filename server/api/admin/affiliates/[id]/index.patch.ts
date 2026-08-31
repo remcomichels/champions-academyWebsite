@@ -28,13 +28,12 @@ export default defineEventHandler(async (event) => {
 	const body = await readValidatedBody(event, object({
 		slug: optional(str({ min: 2, max: 32 })),
 		displayName: optional(displayName({ min: 1, max: 80 })),
-		whopUsername: optional(str({ max: 60 })),
 		notes: optional(str({ max: 1000 })),
 	}));
 
 	const { data: affiliate, error: loadError } = await db()
 		.from("affiliates")
-		.select("id, slug, display_name, whop_username, notes")
+		.select("id, slug, display_name, notes")
 		.eq("id", affiliateId)
 		.maybeSingle();
 
@@ -48,7 +47,6 @@ export default defineEventHandler(async (event) => {
 	// Display name is not nullable, so an empty one is a mistake rather than an
 	// instruction — the min:1 above rejects it before this.
 	if (body.displayName !== null) update.display_name = body.displayName;
-	if (body.whopUsername !== undefined) update.whop_username = body.whopUsername;
 	if (body.notes !== undefined) update.notes = body.notes;
 
 	let aliasExpiresAt: string | null = null;
@@ -79,7 +77,7 @@ export default defineEventHandler(async (event) => {
 		.from("affiliates")
 		.update(update)
 		.eq("id", affiliateId)
-		.select("id, slug, display_name, whop_username, notes")
+		.select("id, slug, display_name, notes")
 		.maybeSingle();
 
 	if (error) {
@@ -121,7 +119,6 @@ export default defineEventHandler(async (event) => {
 		changed: true,
 		slug: data!.slug as string,
 		displayName: data!.display_name as string,
-		whopUsername: data!.whop_username as string | null,
 		notes: data!.notes as string | null,
 		...(renaming ? { previousSlug, previousWorksUntil: aliasExpiresAt } : {}),
 	};

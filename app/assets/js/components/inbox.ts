@@ -1,7 +1,7 @@
 import { ref, computed, onMounted, onUnmounted, type Ref } from "vue";
 
 /**
- * Activity inbox and live sale toasts.
+ * Activity inbox and live toasts.
  *
  * Listens on /api/affiliate/stream (server-sent events). EventSource is used
  * rather than a WebSocket because the traffic is one-way and it reconnects by
@@ -68,13 +68,15 @@ export function useInbox() {
 		}, TOAST_MS));
 	}
 
-	function describe(item: InboxItem): string {
-		if (item.kind === "sale") {
-			const buyer = item.payload?.buyerUsername;
-			return typeof buyer === "string" && buyer
-				? `New sale — ${buyer} joined through your link`
-				: "New sale through your link";
-		}
+	/**
+	 * One line per notification.
+	 *
+	 * Generic on `kind`, and today nothing writes one — the only producer was
+	 * Whop's payment webhook. The machinery is kept rather than removed because
+	 * it is provider-agnostic: the broker-signup integration will write rows
+	 * here, and its kind gets a branch of its own then.
+	 */
+	function describe(_item: InboxItem): string {
 		return "Activity on your account";
 	}
 
@@ -123,7 +125,10 @@ export function useInbox() {
 
 		source = new EventSource("/api/affiliate/stream");
 
-		source.addEventListener("sale", (message) => {
+		// One listener for every kind — the kind travels in the payload rather
+		// than in the SSE event name, so a new kind on the server needs nothing
+		// registered here to arrive.
+		source.addEventListener("notification", (message) => {
 			try {
 				const item = JSON.parse((message as MessageEvent).data) as InboxItem;
 				unread.value += 1;

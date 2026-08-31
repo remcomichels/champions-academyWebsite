@@ -5,8 +5,8 @@ import { object, oneOf } from "../../utils/validate";
 /**
  * Records that a referred visitor clicked one of the affiliate's links.
  *
- * The only unauthenticated write in the app besides the Whop webhook, so the
- * rules it follows are worth stating:
+ * The only unauthenticated write in the app, so the rules it follows are worth
+ * stating:
  *
  *  - **The affiliate is never taken from the request.** It comes from the
  *    `__Host-ca_ref` cookie, which is httpOnly and was set by our own referral
@@ -36,7 +36,7 @@ export default defineEventHandler(async (event) => {
 	});
 
 	const body = await readValidatedBody(event, object({
-		role: oneOf("vip", "lite", "calendly"),
+		role: oneOf("lite", "calendly"),
 	}));
 
 	setResponseStatus(event, 204);

@@ -9,8 +9,8 @@ import { object, oneOf, uuid } from "../../../../utils/validate";
  *
  * Their cached links are dropped at the same time, so the swap stops on the
  * next request rather than whenever the five-minute TTL happens to lapse.
- * Their conversions and visit history are untouched, because losing access is
- * not the same as never having sold anything.
+ * Their visit and click history is untouched, because losing access is not the
+ * same as never having sent anybody.
  */
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);

@@ -15,7 +15,7 @@ async function lookup(slug: string): Promise<ReferralContext | null> {
 	// QR code or spoken in a video.
 	const { data: direct } = await db()
 		.from("affiliates")
-		.select("id, slug, status, vip_checkout_url, lite_telegram_url, calendly_url")
+		.select("id, slug, status, lite_telegram_url, calendly_url")
 		.eq("slug", slug)
 		.eq("status", "active")
 		.maybeSingle();
@@ -25,7 +25,7 @@ async function lookup(slug: string): Promise<ReferralContext | null> {
 	if (!row) {
 		const { data: alias } = await db()
 			.from("affiliate_slug_aliases")
-			.select("affiliates!inner(id, slug, status, vip_checkout_url, lite_telegram_url, calendly_url)")
+			.select("affiliates!inner(id, slug, status, lite_telegram_url, calendly_url)")
 			.eq("slug", slug)
 			.gt("expires_at", new Date().toISOString())
 			.maybeSingle();
@@ -41,7 +41,6 @@ async function lookup(slug: string): Promise<ReferralContext | null> {
 		// The canonical slug, not the alias that was requested — so the cookie
 		// and every later lookup settle on one value.
 		slug: row.slug as string,
-		vip: isAllowedLink("vip", row.vip_checkout_url) ? (row.vip_checkout_url as string) : null,
 		lite: isAllowedLink("lite", row.lite_telegram_url) ? (row.lite_telegram_url as string) : null,
 		calendly: isAllowedLink("calendly", row.calendly_url) ? (row.calendly_url as string) : null,
 	};
@@ -59,11 +58,10 @@ export const resolveAffiliateLinks = defineCachedFunction(lookup, {
 /**
  * Drops an affiliate's cached links so a status change lands immediately.
  *
- * Without this, revoking someone leaves their VIP link being served for up to
- * the five-minute TTL — and `swr` means the first request after that still gets
- * the stale value while it revalidates. The window is small and nobody's money
- * moves through it (Whop owns payouts, and ingestPayment refuses a sale from a
- * non-active affiliate anyway), but "revoked" should mean revoked.
+ * Without this, revoking someone leaves their links being served for up to the
+ * five-minute TTL — and `swr` means the first request after that still gets the
+ * stale value while it revalidates. The window is small and nothing is sold
+ * through those links, but "revoked" should mean revoked.
  *
  * Matched by suffix rather than by rebuilding Nitro's key. That key is
  * `base:group:name:key.json` with a default base and group this code does not

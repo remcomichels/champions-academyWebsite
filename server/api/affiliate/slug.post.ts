@@ -14,8 +14,8 @@ const COOLDOWN_DAYS = 30;
  *  - changes are limited to one a month, because every change leaves another
  *    alias behind and a slug that moves weekly is one nobody can rely on.
  *
- * Attribution is unaffected: conversions and visits are keyed on the affiliate
- * id, never the slug.
+ * Attribution is unaffected: visits and clicks are keyed on the affiliate id,
+ * never the slug.
  */
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);
