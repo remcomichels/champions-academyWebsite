@@ -90,13 +90,6 @@ export default defineNuxtConfig({
 	fonts: {
 		families: [
 			{ name: "Plus Jakarta Sans", provider: "none" },
-			// Declared rather than left to resolve, for the reason in the note
-			// above: the module fetches weight 400 only unless told otherwise.
-			// The one place it is used — the affiliate's name on Overview — is
-			// medium upright and nothing else, so that is all that gets
-			// downloaded. The italic came out when the name did: leaving it
-			// declared would have kept fetching a second face nothing sets.
-			{ name: "Playfair Display", weights: [500], styles: ["normal"] },
 		],
 	},
 

@@ -81,7 +81,7 @@
  * Deliberately one-way. There is no thread, no status and no reply — this is a
  * suggestion box that lands in the admin dashboard for reading, and saying so
  * on send is what stops it being mistaken for support. Support is its own page,
- * and it is linked from the rail beside this.
+ * reached from the help glyph beside this.
  */
 type Kind = "issue" | "idea";
 

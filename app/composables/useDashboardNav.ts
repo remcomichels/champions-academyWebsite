@@ -40,7 +40,7 @@ export interface DashboardNavItem {
 	heading?: string;
 }
 
-/** An affiliate's own work, then the pages you visit once and leave again. */
+/** An affiliate's own work, and only that. */
 export const affiliateNav: DashboardNavItem[] = [
 	{ to: "/dashboard", label: "Overview", icon: "home" },
 	{ to: "/dashboard/analytics", label: "Analytics", icon: "chart" },
@@ -48,10 +48,11 @@ export const affiliateNav: DashboardNavItem[] = [
 	// as a price tag, and the note on `tag` is explicit that it means traffic.
 	{ to: "/dashboard/sales", label: "Sales", icon: "sales" },
 	{ to: "/dashboard/links", label: "Links & Assets", icon: "link" },
-	// Account and Settings used to sit here. Both moved into the profile menu
-	// in the top bar, which is where someone looks for their own account rather
-	// than in a rail of places to work.
-	{ to: "/dashboard/support", label: "Support", icon: "help", group: true },
+	// Account, Settings and Support all used to sit here, below a rule. They
+	// are not places you work — you go, do one thing, and leave — so they live
+	// in the top bar instead: the account pair in the profile menu, Support
+	// behind the help glyph beside it. The rail is four destinations and no
+	// divider, which is the whole of what an affiliate actually does here.
 ];
 
 /**
@@ -82,8 +83,25 @@ export const adminNav: DashboardNavItem[] = [
 export const ADMIN_HOME = adminNav[0]!.to;
 export const AFFILIATE_HOME = affiliateNav[0]!.to;
 
+/**
+ * Reachable, but in no rail.
+ *
+ * Support left the sidebar for the top bar's help glyph. It still needs a label
+ * here: `dashboardNav` is what resolves a path to the page's accessible
+ * heading, and without an entry the support page's `<h1>` would read
+ * "Dashboard" — the fallback that exists for routes nobody named.
+ */
+const unlistedNav: DashboardNavItem[] = [
+	{ to: "/dashboard/support", label: "Support", icon: "help" },
+];
+
 /** Every set, for anything resolving a path to a label. */
-export const dashboardNav: DashboardNavItem[] = [...affiliateNav, ...adminNav, ...accountNav];
+export const dashboardNav: DashboardNavItem[] = [
+	...affiliateNav,
+	...adminNav,
+	...accountNav,
+	...unlistedNav,
+];
 
 /** True for any route the admin rail owns. */
 export const isAdminRoute = (path: string) => path.startsWith("/dashboard/admin");

@@ -3,7 +3,7 @@
 		<!-- ── Hero ──────────────────────────────────────────────────────── -->
 		<header class="dashHero">
 			<div class="dashHero-copy">
-				<p class="dashHero-title">Welcome back, <span class="dashHero-name">{{ firstName }}</span></p>
+				<p class="dashHero-title">Welcome back, {{ firstName }}</p>
 
 				<!-- The strapline explains the link, not the greeting, so it
 				     sits with the field it describes rather than under the
