@@ -9,12 +9,15 @@ import { randomBytes } from "node:crypto";
  * notifications and feedback, the visits and clicks their link collected — and
  * the affiliate row itself survives with every personal field blanked.
  *
- * `conversions` are what that distinction is for. Deleting the affiliate row
- * outright cascades into them, and those sales are aggregated programme-wide by
- * `program_analytics` — so a deletion would silently rewrite last quarter's
- * totals for everyone else. The money is Whop's record rather than ours, so
- * this is not about commission liability: it is that a report which changes
- * when an unrelated person closes their account is not a report.
+ * The programme-wide figures are what that distinction is for. Deleting the
+ * affiliate row outright cascades into everything hanging off it, and those
+ * rows are aggregated programme-wide by `program_analytics` — so a deletion
+ * would silently rewrite last quarter's totals for everyone else, and a report
+ * which changes when an unrelated person closes their account is not a report.
+ *
+ * Their own visits and clicks still go, because those name a person's audience.
+ * What survives is the affiliate row: an anonymous shell the aggregates can
+ * still be counted against.
  *
  * ── Why every table is named ────────────────────────────────────────────────
  * Most of these have `on delete cascade` and would go on their own if the row
@@ -83,7 +86,6 @@ export async function purgeAffiliate(affiliateId: string): Promise<PurgeResult> 
 		"referral_clicks",
 		"affiliate_invites",
 		"affiliate_slug_aliases",
-		"whop_stats_cache",
 	]) {
 		const { error: rowError } = await db().from(table).delete().eq("affiliate_id", affiliateId);
 		if (rowError) throw new Error(`purge: could not clear ${table} for ${affiliateId}: ${rowError.message}`);
@@ -101,10 +103,6 @@ export async function purgeAffiliate(affiliateId: string): Promise<PurgeResult> 
 			first_name: null,
 			last_name: null,
 			user_id: null,
-			whop_affiliate_id: null,
-			whop_username: null,
-			whop_checkout_configuration_id: null,
-			vip_checkout_url: null,
 			lite_telegram_url: null,
 			calendly_url: null,
 			avatar_path: null,

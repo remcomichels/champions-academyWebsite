@@ -15,13 +15,11 @@ export function useReferral() {
 		const context = useRequestEvent()?.context.referral as ReferralContext | undefined;
 
 		// Only public link data crosses into the payload. The internal affiliate
-		// id, the Whop affiliate id and the checkout configuration id all stay on
-		// the server — they would otherwise be readable in the page source of
-		// every referred visit.
+		// id stays on the server — it would otherwise be readable in the page
+		// source of every referred visit.
 		referral.value = context
 			? {
 					slug: context.slug,
-					vip: context.vip,
 					lite: context.lite,
 					calendly: context.calendly,
 				}

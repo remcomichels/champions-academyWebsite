@@ -35,7 +35,6 @@ export function useRoleHref() {
 		if (isAllowedLink(key, affiliateHref)) return affiliateHref;
 
 		const defaults: Record<LinkRole, string | null> = {
-			vip: resolveStoryblokLink(config.value?.default_vip),
 			lite: resolveStoryblokLink(config.value?.default_lite),
 			calendly: resolveStoryblokLink(config.value?.default_calendly),
 		};

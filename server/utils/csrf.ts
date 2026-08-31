@@ -7,9 +7,6 @@ import type { H3Event } from "h3";
  * from forms and fetch. This is the second layer: it catches the cases Lax
  * does not cover cleanly (some navigations, older browsers) and costs one
  * header comparison.
- *
- * Not applied to the Whop webhook — that is server-to-server, carries no
- * cookie, and authenticates by signature instead.
  */
 export function assertSameOrigin(event: H3Event): void {
 	const origin = getRequestHeader(event, "origin");

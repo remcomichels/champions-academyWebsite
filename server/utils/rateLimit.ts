@@ -43,24 +43,6 @@ export const RATE_LIMITS = {
 	 */
 	otpGlobal: { limit: 100, windowSeconds: 3600, lockSeconds: 900 },
 	/**
-	 * Whop webhook deliveries from one IP.
-	 *
-	 * Sized against the *sender*, not against affiliate traffic — this endpoint
-	 * receives one request per Whop payment event, not one per visitor. 600 a
-	 * minute is 864,000 a day; a programme taking a thousand sales a day
-	 * averages well under one a minute, so this is roughly three orders of
-	 * magnitude of headroom and only bites on a flood.
-	 *
-	 * A minute rather than an hour because a flood is a per-second problem: an
-	 * hourly ceiling either blocks a legitimate catch-up burst or is far too
-	 * loose to blunt anything.
-	 *
-	 * Tripping it is safe. We answer 429, which is not a 2xx, so Whop retries
-	 * with backoff and the event is delayed rather than lost — and the admin
-	 * backfill reconciles anything that burns its retry budget.
-	 */
-	webhookIp: { limit: 600, windowSeconds: 60, lockSeconds: 60 },
-	/**
 	 * Password reset requests from one IP.
 	 *
 	 * Mirrors loginIp: the two are the same shape of abuse from the same
@@ -113,10 +95,6 @@ export const otpIpBucket = (ip: string) => bucketKey("otp:ip", ip);
 // so this is the identity that actually matters, and an IP bucket would put a
 // whole office behind one person's throttle.
 export const feedbackBucket = (affiliateId: string) => bucketKey("feedback:aff", affiliateId);
-// Hashed like the rest. Whop's sending IP is not a visitor's, but this table
-// is meant to hold no raw addresses at all and one exception is how that stops
-// being true.
-export const webhookIpBucket = (ip: string) => bucketKey("whop:ip", ip);
 export const resetIpBucket = (ip: string) => bucketKey("reset:ip", ip);
 export const resetUserBucket = (email: string) => bucketKey("reset:user", email);
 export const emailChangeIpBucket = (ip: string) => bucketKey("emailchange:ip", ip);

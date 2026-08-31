@@ -44,14 +44,11 @@ export interface DashboardNavItem {
 export const affiliateNav: DashboardNavItem[] = [
 	{ to: "/dashboard", label: "Overview", icon: "home" },
 	{ to: "/dashboard/analytics", label: "Analytics", icon: "chart" },
-	// `sales`, not `tag`: the set draws one as a shopping bag and the other
-	// as a price tag, and the note on `tag` is explicit that it means traffic.
-	{ to: "/dashboard/sales", label: "Sales", icon: "sales" },
 	{ to: "/dashboard/links", label: "Links & Assets", icon: "link" },
 	// Account, Settings and Support all used to sit here, below a rule. They
 	// are not places you work — you go, do one thing, and leave — so they live
 	// in the top bar instead: the account pair in the profile menu, Support
-	// behind the help glyph beside it. The rail is four destinations and no
+	// behind the help glyph beside it. The rail is three destinations and no
 	// divider, which is the whole of what an affiliate actually does here.
 ];
 

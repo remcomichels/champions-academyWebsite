@@ -69,8 +69,8 @@ import { useFooter } from "~/assets/js/components/footer";
 const { footer } = useFooter();
 
 // Resolves each column link, applying link_role for the centrally managed ones
-// (Academy VIP / Academy LITE) and normal localised multilink resolution for
-// the rest.
+// (Telegram / book a call) and normal localised multilink resolution for the
+// rest.
 const { href: linkHref, attrs: linkAttrs, onClick: onLinkClick } = useMenuLink();
 
 const year = new Date().getFullYear();

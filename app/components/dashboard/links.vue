@@ -36,13 +36,6 @@
 			</NuxtAlertBanner>
 
 			<form class="dashForm" novalidate @submit.prevent="save">
-				<div class="readonlyField">
-					<span class="field-label">VIP checkout</span>
-					<code v-if="summary.links.vip" class="readonlyField-value">{{ summary.links.vip }}</code>
-					<code v-else class="readonlyField-value readonlyField-value--pending">Being set up for you</code>
-					<p class="field-message">Created for you from Whop — this is what gets you paid, so it isn't editable.</p>
-				</div>
-
 				<NuxtAuthField
 					v-model="form.liteTelegramUrl"
 					label="Telegram (Lite)"

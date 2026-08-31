@@ -19,7 +19,6 @@ export default defineEventHandler(async (event) => {
 		.from("affiliates")
 		.select(`
 			id, slug, display_name, status,
-			whop_username, whop_checkout_configuration_id, vip_checkout_url,
 			lite_telegram_url, calendly_url,
 			user_id, notes, created_at
 		`)
@@ -37,8 +36,7 @@ export default defineEventHandler(async (event) => {
 	const ids = (data ?? []).map(row => row.id as string);
 
 	// Counts, live-invite prefixes and pending deletions, batched rather than N+1.
-	const [conversions, visits, invites, deletions] = await Promise.all([
-		ids.length ? db().from("conversions").select("affiliate_id").in("affiliate_id", ids) : { data: [] },
+	const [visits, invites, deletions] = await Promise.all([
 		ids.length ? db().from("referral_visits").select("affiliate_id").in("affiliate_id", ids) : { data: [] },
 		ids.length
 			? db().from("affiliate_invites")
@@ -60,9 +58,9 @@ export default defineEventHandler(async (event) => {
 		//
 		// Surfaced here because nothing else surfaces it. The request writes a
 		// row and stops — the queue is deliberately not drained automatically,
-		// since deleting an affiliate cascades into the conversions that record
-		// commission already paid — so without this the only trace of somebody
-		// asking is a line in their own audit log that no admin screen reads.
+		// since erasing somebody is not a thing to do on a timer without a human
+		// seeing it — so without this the only trace of somebody asking is a
+		// line in their own audit log that no admin screen reads.
 		// The settings page tells them 14 days; this is what makes that a
 		// deadline somebody can actually meet.
 		ids.length
@@ -83,7 +81,6 @@ export default defineEventHandler(async (event) => {
 		return counts;
 	};
 
-	const sales = tally(conversions.data as { affiliate_id: unknown }[]);
 	const visitCounts = tally(visits.data as { affiliate_id: unknown }[]);
 
 	const pendingDeletion = new Map<string, { on: string; reason: string | null; note: string | null }>();
@@ -111,15 +108,12 @@ export default defineEventHandler(async (event) => {
 				slug: row.slug as string,
 				displayName: row.display_name as string,
 				status: row.status as string,
-				whopUsername: row.whop_username as string | null,
 				// For the edit form to prefill. Admin-only route, and notes are
 				// written by admins about affiliates in the first place.
 				notes: row.notes as string | null,
 				// Booleans rather than the URLs themselves: the table only needs to
 				// show what is set up, and there is no reason to spray every
 				// affiliate's links across an admin list.
-				hasWhopConfig: Boolean(row.whop_checkout_configuration_id),
-				hasVipLink: Boolean(row.vip_checkout_url),
 				hasTelegram: Boolean(row.lite_telegram_url),
 				hasCalendly: Boolean(row.calendly_url),
 				hasLogin: Boolean(row.user_id),
@@ -129,7 +123,6 @@ export default defineEventHandler(async (event) => {
 				// to read it, since the request row goes with the purge.
 				pendingDeletion: pendingDeletion.get(id) ?? null,
 				createdAt: row.created_at as string,
-				sales: sales.get(id) ?? 0,
 				visits: visitCounts.get(id) ?? 0,
 				liveInvite: liveInvites.get(id) ?? null,
 			};

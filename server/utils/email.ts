@@ -262,7 +262,7 @@ export async function sendWelcomeEmail(
 		html: layout(origin, `Welcome, ${name}`, `
       <p style="margin:0;">Your account is set up. This is your referral link — everyone who arrives through it is tracked to you:</p>
       <p style="margin:20px 0;padding:14px 16px;background:${PAGE};border:1px solid ${RULE};border-radius:8px;font:600 15px/1.5 -apple-system,'Segoe UI',Helvetica,Arial,sans-serif;color:${INK};word-break:break-all;">${link}</p>
-      <p style="margin:0;">Put it in a bio, a video description, a story — anywhere your audience already is. Visits and sales show up on your dashboard.</p>
+      <p style="margin:0;">Put it in a bio, a video description, a story — anywhere your audience already is. Every visit and click shows up on your dashboard.</p>
       ${button(`${origin}/dashboard`, "Open your dashboard")}
       <p style="margin:0;">Questions, or something looks wrong? <a href="${SUPPORT_URL}" style="color:${INK};">Message us on Telegram</a>.</p>
     `),
@@ -275,7 +275,7 @@ export async function sendWelcomeEmail(
 			link,
 			"",
 			"Put it in a bio, a video description, a story — anywhere your audience",
-			"already is. Visits and sales show up on your dashboard.",
+			"already is. Every visit and click shows up on your dashboard.",
 			"",
 			`Your dashboard: ${origin}/dashboard`,
 			"",

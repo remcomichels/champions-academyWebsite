@@ -32,19 +32,11 @@
 					:loading="pending"
 				/>
 				<NuxtDashboardStatCard
-					label="Plan clicks"
+					label="Link clicks"
 					:value="data?.totals.clicks ?? 0"
 					icon="link"
 					:trend="data?.trends.clicks ?? null"
-					hint="Tapped through to a plan"
-					:loading="pending"
-				/>
-				<NuxtDashboardStatCard
-					label="Sales"
-					:value="data?.totals.sales ?? 0"
-					icon="tag"
-					:trend="data?.trends.sales ?? null"
-					hint="Attributed through Whop"
+					hint="Tapped through to Telegram or a call"
 					:loading="pending"
 				/>
 				<NuxtDashboardStatCard
@@ -112,14 +104,14 @@
 							</span>
 
 							<span class="leaderboard-figures">
-								<span class="leaderboard-sales">{{ row.salesLabel }}</span>
-								<span class="leaderboard-sub">{{ row.visitsLabel }} visits · {{ row.clicksLabel }} clicks</span>
+								<span class="leaderboard-lead">{{ row.visitsLabel }}</span>
+								<span class="leaderboard-sub">{{ row.clicksLabel }} clicks</span>
 							</span>
 						</li>
 					</ol>
 
 					<p class="dashPanel-note">
-						Ranked on sales, then visits to separate everyone still on zero.
+						Ranked on visits, then clicks to separate everyone still on zero.
 						Revoked affiliates stay listed — their traffic happened, and
 						dropping them would make this disagree with the totals above.
 					</p>
@@ -179,18 +171,18 @@
 
 			<section class="dashPanel" :aria-busy="pending || undefined">
 				<div class="dashPanel-head">
-					<h2 class="dashPanel-title">Sales a day</h2>
-					<span class="dashPanel-count">{{ data?.totals.sales ?? 0 }} total</span>
+					<h2 class="dashPanel-title">Clicks a day</h2>
+					<span class="dashPanel-count">{{ data?.totals.clicks ?? 0 }} total</span>
 				</div>
 				<!-- Its own chart rather than a second series on the visits one.
-				     Sales and visits sit orders of magnitude apart, and putting
-				     them on two y-scales is the one thing a chart may never do. -->
+				     Clicks and visits sit well apart, and putting them on two
+				     y-scales is the one thing a chart may never do. -->
 				<NuxtDashboardBarChart
 					:class="{ 'dash-refreshing': pending }"
-					:points="salesSeries"
-					unit="sales"
-					unit-one="sale"
-					caption="Attributed through the Whop webhook."
+					:points="clicksSeries"
+					unit="clicks"
+					unit-one="click"
+					caption="Counted once per person per day, per link."
 				/>
 			</section>
 		</template>
@@ -202,7 +194,7 @@ import { useAdminAnalytics, RANGES } from "~/assets/js/components/adminAnalytics
 
 const {
 	days, data, pending, failed, load,
-	series, salesSeries, funnelSteps, leaders, countries,
+	series, clicksSeries, funnelSteps, leaders, countries,
 	periodLabel, activeHint,
 } = useAdminAnalytics();
 

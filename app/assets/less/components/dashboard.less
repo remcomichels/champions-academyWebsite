@@ -142,12 +142,6 @@
     // `width: 100vw` — the first stacked the sidebar on top of the page rather
     // than beside it, and being an ID it outranked every class here. The id is
     // gone from this layout, so the properties worth keeping are restated.
-    // Height of the fixed warning bar, or zero when there is none. Declared
-    // here because the bar is out of flow, so the layout, the rail and the
-    // column each have to make room for it and all three have to agree on the
-    // number. Everything below reads this unconditionally and gets 0 when no
-    // bar is up.
-    --alert-bar: 0px;
     // The top bar, which is fixed now rather than scrolling with the page.
     --top-bar: @vw56;
     // The rail's two widths, declared once on the common ancestor. The nav
@@ -160,11 +154,10 @@
     // and written this way they cannot drift apart at a breakpoint.
     --rail-open: @vw240;
     --rail-shut: var(--top-bar);
-    // What everything out of flow has to clear: the warning bar, when there is
-    // one, plus the top bar under it. Named once because the rail, the column
-    // and the bar itself all have to agree, and three copies of a calc is three
-    // chances to change two of them.
-    --chrome: calc(var(--alert-bar) + var(--top-bar));
+    // What everything out of flow has to clear. Named once because the rail,
+    // the column and the bar itself all have to agree, and three copies of the
+    // same number is three chances to change two of them.
+    --chrome: var(--top-bar);
 
     position: relative;
     display: flex;
@@ -177,8 +170,6 @@
     // rather than adding to it — no bar means no scrollbar either way.
     padding-top: var(--chrome);
     background-color: var(--background);
-
-    &.has-alertBar { --alert-bar: @vw36; }
 
     // The account rail does not peek — it is open and stays open. Overriding the
     // resting width is the whole mechanism: the rail reads `--rail-shut` for its
@@ -422,80 +413,6 @@
         left: auto;
         right: 0;
         transform: none;
-    }
-}
-
-// ── Warning bar ──────────────────────────────────────────────────────────────
-// Account-level warnings, pinned across the very top of the viewport — over the
-// rail, not beside it. This is the one thing on the dashboard that is allowed
-// to shout: it is not reporting a figure, it is telling the affiliate that
-// sales are going uncredited right now, and an inline notice sitting in the
-// page flow under the hero was being scrolled straight past.
-//
-// Solid fill rather than the tinted `.alert` treatment for the same reason.
-// `.alert` is for a message you have gone looking for — a form error, a save
-// confirmation — and stays quiet on purpose; this one has to be seen without
-// being looked for.
-//
-// z-index 55 puts it over the rail (50) but under the inbox dropdown (60) and
-// toasts (100), which are transient and should be able to cover it. Native
-// <dialog> renders in the top layer and beats all of them regardless.
-.alertBar {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 55;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: @vw8;
-    // Read from the same custom property the layout offsets itself by, so the
-    // bar's height and the space reserved for it cannot drift apart.
-    min-height: var(--alert-bar);
-    padding: @vw8 @vw24;
-    background-color: var(--warning);
-    text-align: center;
-
-    &-text {
-        font-size: max(0.68em, @vw12);
-        line-height: 1.4;
-        // Body copy inherits `white-space: pre-line` from _general.less, which
-        // turns a wrapped template string into stray line breaks.
-        white-space: normal;
-        // Not a token: the fill is a fixed amber in both themes, so the text on
-        // it has to be dark in both too. `--text` would flip to near-white in
-        // dark mode and land white-on-amber.
-        color: @black;
-    }
-
-    strong { font-weight: @bold; }
-}
-
-// Only the custom property moves per breakpoint — the bar reads its height
-// from it and so does every offset, so one number stays in charge. @vw44 is a
-// vw unit pinned to the 1440 baseline; left alone it would shrink to about
-// 18px on a phone and the bar would collapse under its own text.
-@media (max-width: 1080px) {
-    .dashLayout.has-alertBar { --alert-bar: @vw36-1080; }
-
-    .alertBar {
-        padding: @vw8-1080 @vw20-1080;
-
-        &-text { font-size: max(0.68em, @vw12-1080); }
-    }
-}
-
-@media (max-width: 600px) {
-    // Taller, because this message wraps to two lines at 320 and the bar is
-    // fixed — anything it cannot fit would sit on top of the page instead of
-    // pushing it down.
-    .dashLayout.has-alertBar { --alert-bar: @vw56-580; }
-
-    .alertBar {
-        padding: @vw8-580 @vw16-580;
-
-        &-text { font-size: max(0.68em, @vw12-580); }
     }
 }
 
@@ -834,7 +751,7 @@
 // could be transparent; fixed over content that slides underneath, it cannot.
 .dashBar {
     position: fixed;
-    top: var(--alert-bar);
+    top: 0;
     left: 0;
     right: 0;
     z-index: 52;
@@ -2432,10 +2349,10 @@
 
 // ── Onboarding ───────────────────────────────────────────────────────────────
 // ── Getting set up ───────────────────────────────────────────────────────────
-// A strip under the VIP notice, not a card in the grid. Bordered rather than
-// filled like `.dashPanel`, so it reads as a temporary band of business at the
-// top of the page — it is removed for good once the fourth step is done, and a
-// panel that vanishes leaves a more obvious hole than a strip does.
+// A strip near the top of the page, not a card in the grid. Bordered rather
+// than filled like `.dashPanel`, so it reads as a temporary band of business —
+// it is removed for good once the last step is done, and a panel that vanishes
+// leaves a more obvious hole than a strip does.
 // The setup card, in the hero's right-hand slot.
 //
 // It has been three things now. It started as a full-width bordered strip
@@ -2840,11 +2757,6 @@
         font-size: max(0.80em, @vw14);
         color: var(--text-secondary);
         overflow-wrap: anywhere;
-
-        &--pending {
-            font-style: italic;
-            color: var(--text-tertiary);
-        }
     }
 }
 
@@ -4234,7 +4146,7 @@
         text-align: right;
     }
 
-    &-sales {
+    &-lead {
         font-size: max(0.90em, @vw16);
         font-weight: @bold;
         line-height: 1;
@@ -5860,11 +5772,10 @@ html:has(.modal[open]) body {
     // cap only ever costs width here — released.
     .dashLayout-main { padding: @vw24-1080 @vw32-1080 @vw80-1080; max-width: none; }
 
-    // The bar's height is a custom property for the same reason the warning
-    // bar's is: the rail and the column both read it, and a vw unit pinned to
-    // 1440 would shrink it out from under its own contents.
+    // The bar's height is a custom property because the rail and the column
+    // both read it, and a vw unit pinned to 1440 would shrink it out from under
+    // its own contents.
     .dashLayout { --top-bar: @vw56-1080; }
-    .dashLayout.has-alertBar { --alert-bar: @vw36-1080; }
 
     .dashBar {
         gap: @vw12-1080;
@@ -6111,7 +6022,6 @@ html:has(.modal[open]) body {
     .dashLayout-main { padding: @vw20-580 @vw20-580 @vw64-580; }
 
     .dashLayout { --top-bar: @vw52-580; }
-    .dashLayout.has-alertBar { --alert-bar: @vw56-580; }
 
     .dashBar {
         gap: @vw10-580;

@@ -37,10 +37,6 @@ export interface AffiliateRow {
 	first_name: string | null;
 	last_name: string | null;
 	status: AffiliateStatus;
-	whop_affiliate_id: string | null;
-	whop_username: string | null;
-	whop_checkout_configuration_id: string | null;
-	vip_checkout_url: string | null;
 	lite_telegram_url: string | null;
 	calendly_url: string | null;
 	user_id: string | null;
@@ -55,8 +51,7 @@ export interface AffiliateRow {
 
 const AFFILIATE_COLUMNS = `
 	id, slug, display_name, first_name, last_name, status,
-	whop_affiliate_id, whop_username, whop_checkout_configuration_id,
-	vip_checkout_url, lite_telegram_url, calendly_url,
+	lite_telegram_url, calendly_url,
 	user_id, avatar_path, timezone, locale, slug_changed_at,
 	onboarding, notification_prefs, created_at
 `;

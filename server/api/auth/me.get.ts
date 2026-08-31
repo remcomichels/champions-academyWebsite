@@ -5,8 +5,8 @@
  * and the dashboard shell can call it unconditionally without treating a
  * normal logged-out state as an error.
  *
- * Only fields the browser is allowed to know are returned — no user id, no
- * Whop identifiers, no checkout configuration id.
+ * Only fields the browser is allowed to know are returned — no user id, and
+ * nothing that identifies the account beyond the dashboard shell's needs.
  */
 export default defineEventHandler(async (event) => {
 	const session = await getAuthSession(event);

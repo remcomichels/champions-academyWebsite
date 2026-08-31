@@ -4,6 +4,7 @@
     class="video-player"
     :class="{
       'is-playing': isPlaying,
+      'is-failed': hasFailed,
       'is-controls-visible': controlsVisible,
       'is-no-controls': !showControls,
       'is-fullscreen': isFullscreen,
@@ -15,7 +16,7 @@
   >
     <video
       ref="videoEl"
-      :poster="poster"
+      :poster="poster || undefined"
       :autoplay="autoplay"
       :muted="autoplay || isMuted"
       :loop="loop"
@@ -29,8 +30,12 @@
       @click="togglePlay"
     />
 
+    <p v-if="hasFailed" class="video-player__failed" role="status">
+      This video is unavailable.
+    </p>
+
     <!-- All custom UI -->
-    <div v-if="showControls" class="video-player__ui">
+    <div v-if="showControls && !hasFailed" class="video-player__ui">
       <!-- Gradient veil -->
       <div class="video-player__veil" />
 
@@ -185,6 +190,7 @@ const duration = ref(0)
 const isFullscreen = ref(false)
 const controlsVisible = ref(true)
 const isScrubbing = ref(false)
+const hasFailed = ref(false)
 
 // ── Computed ───────────────────────────────────────────────────────────────
 const progressPercent = computed(() => {
@@ -236,7 +242,14 @@ const togglePlay = () => {
   const video = videoEl.value
   if (!video) return
   if (video.paused) {
-    video.play()
+    // play() resolves asynchronously — it has to wait for enough data to start.
+    // Pausing before it settles rejects it with AbortError, and an unhandled
+    // rejection surfaces in the console as an uncaught error even though
+    // nothing is actually wrong. Anything that is a real fault still reaches
+    // the HLS error handler below.
+    video.play()?.catch((error) => {
+      if (error?.name !== 'AbortError') console.warn('[video] play failed:', error)
+    })
   } else {
     video.pause()
   }
@@ -324,23 +337,118 @@ const formatTime = (secs) => {
 }
 
 // ── Lifecycle ──────────────────────────────────────────────────────────────
+// Held so it can be destroyed. An Hls instance keeps buffering after its
+// component is gone: it owns timers, a worker and an open segment pipeline,
+// none of which the element being detached stops. Leaked instances from an
+// earlier mount also stay attached to the media element, so two of them end up
+// driving one <video> and fight over play/pause.
+let hls = null
+
+// Transient network trouble is worth retrying; a missing file is not. The cap
+// is what keeps the difference from turning into an infinite request loop.
+const MAX_NETWORK_RETRIES = 3
+let networkRetries = 0
+
+const onFullscreenChange = () => {
+  isFullscreen.value = !!document.fullscreenElement
+}
+
+/**
+ * Attaches the stream.
+ *
+ * Deferred until the player is near the viewport. The testimonials marquee
+ * renders its track twice for the seamless loop, so a page with twelve
+ * testimonials mounts twenty-four of these — twenty-four HLS instances all
+ * pulling segments from one host, against a browser cap of six connections to
+ * it. Attaching on approach keeps that to the handful actually on screen.
+ */
+const attach = () => {
+  const video = videoEl.value
+  if (!video || hls || video.src) return
+
+  if (Hls.isSupported()) {
+    hls = new Hls()
+
+    // Without this a failure is completely silent: no event, no state, a
+    // player that sits there looking loadable forever. hls.js can recover from
+    // most of it — a missing rendition is survivable, since dropping that one
+    // level still leaves the others to play.
+    hls.on(Hls.Events.ERROR, (_event, data) => {
+      if (!data.fatal) return
+
+      const giveUp = (reason) => {
+        console.error(`[video] ${props.videoId} could not be played: ${reason}`)
+        hasFailed.value = true
+        hls?.destroy()
+        hls = null
+      }
+
+      switch (data.type) {
+        case Hls.ErrorTypes.NETWORK_ERROR:
+          // A 404 is an answer, not a blip — the file is not there and asking
+          // again will not change that. Retrying one anyway is an endless loop
+          // of requests against a CDN, which is worse than the broken video it
+          // is trying to paper over.
+          if (data.response?.code === 404) {
+            giveUp(`${data.details} — 404, the asset does not exist on the CDN`)
+            break
+          }
+
+          if (networkRetries >= MAX_NETWORK_RETRIES) {
+            giveUp(`${data.details} — gave up after ${MAX_NETWORK_RETRIES} retries`)
+            break
+          }
+
+          networkRetries += 1
+          console.warn(
+            `[video] network error on ${props.videoId} (${data.details}), `
+            + `retry ${networkRetries}/${MAX_NETWORK_RETRIES}`,
+          )
+          // Backed off, so a struggling connection is not hammered.
+          setTimeout(() => hls?.startLoad(), networkRetries * 1000)
+          break
+
+        case Hls.ErrorTypes.MEDIA_ERROR:
+          console.warn(`[video] media error on ${props.videoId}, recovering:`, data.details)
+          hls.recoverMediaError()
+          break
+
+        default:
+          giveUp(data.details)
+      }
+    })
+
+    hls.loadSource(hlsUrl.value)
+    hls.attachMedia(video)
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    // Safari plays HLS natively and needs no library.
+    video.src = hlsUrl.value
+  }
+}
+
+let observer = null
+
 onMounted(() => {
   const video = videoEl.value
   if (!video) return
 
-  if (Hls.isSupported()) {
-    const hls = new Hls()
-    hls.loadSource(hlsUrl.value)
-    hls.attachMedia(video)
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = hlsUrl.value
-  }
-
   video.volume = volume.value
 
-  document.addEventListener('fullscreenchange', () => {
-    isFullscreen.value = !!document.fullscreenElement
-  })
+  if ('IntersectionObserver' in window) {
+    observer = new IntersectionObserver((entries) => {
+      if (!entries.some(entry => entry.isIntersecting)) return
+      attach()
+      // Once attached there is nothing left to watch for.
+      observer?.disconnect()
+      observer = null
+    }, { rootMargin: '200px' })
+
+    observer.observe(containerEl.value ?? video)
+  } else {
+    attach()
+  }
+
+  document.addEventListener('fullscreenchange', onFullscreenChange)
 
   _rafId = requestAnimationFrame(_tickProgress)
 })
@@ -348,5 +456,13 @@ onMounted(() => {
 onUnmounted(() => {
   clearTimeout(hideTimer)
   cancelAnimationFrame(_rafId)
+
+  observer?.disconnect()
+  observer = null
+
+  document.removeEventListener('fullscreenchange', onFullscreenChange)
+
+  hls?.destroy()
+  hls = null
 })
 </script>

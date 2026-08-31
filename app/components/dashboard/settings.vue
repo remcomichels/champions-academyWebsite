@@ -167,7 +167,7 @@
 		<section v-if="isPreferences" class="settingsBlock">
 			<header class="settingsBlock-head">
 				<h2 class="settingsBlock-title">Connections</h2>
-				<p class="settingsBlock-text">Link the platforms you post on, so your reach and what performs best sit beside your sales.</p>
+				<p class="settingsBlock-text">Link the platforms you post on, so your reach and what performs best sit beside your traffic.</p>
 			</header>
 
 			<div class="dashPanel teaser">
@@ -312,12 +312,11 @@
 		     the route that built it.
 
 		     "Request", not "Delete", because that is honestly what happens. The
-		     route queues the ask and a person acts on it — deleting an affiliate
-		     cascades into their conversions, which is the record of sales the
-		     commission was already paid on, so it is a decision with an
-		     accounting consequence rather than a button press. A control saying
-		     "Delete my account" would name something this deliberately does not
-		     do. -->
+		     route queues the ask and a person acts on it — erasing an affiliate
+		     is irreversible and rewrites what the programme's own figures are
+		     counted over, so it is a decision somebody makes rather than a
+		     button press. A control saying "Delete my account" would name
+		     something this deliberately does not do. -->
 		<section v-if="isPreferences" class="settingsBlock">
 			<header class="settingsBlock-head">
 				<h2 class="settingsBlock-title">Danger zone</h2>
@@ -335,12 +334,12 @@
 					<p v-if="pendingDelete" class="dangerZone-text">
 						Asked for. Nothing is touched until
 						<strong>{{ formatDate(pendingDelete.executeAfter) }}</strong>, so there is still
-						time to change your mind — after that the account and its sales history go.
+						time to change your mind — after that the account and its history go.
 					</p>
 
 					<p v-else class="dangerZone-text">
 						There is no undoing this once it goes through. You have 14 days to call it
-						off; after that the account, your link and every sale recorded against it
+						off; after that the account, your link and every visit recorded against it
 						are removed.
 					</p>
 				</div>
