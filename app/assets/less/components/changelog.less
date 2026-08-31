@@ -1,0 +1,264 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// The public changelog — /changelog.
+//
+// Written in the marketing system, not the dashboard's. The two look related
+// because they share the @vw scale and the type, but nothing here can use
+// `var(--surface)` or `var(--text)`: those tokens are declared under
+// `[data-theme]` on <html>, and that attribute is only ever set on /login and
+// /dashboard/**. On this page they would resolve to nothing at all.
+//
+// The dashboard keeps its own `.changelog` for the admin's preview list. This
+// is a separate namespace on purpose — same content, two colour systems, and
+// one class name serving both is how a page ends up half-styled by the wrong
+// half of the codebase.
+// ─────────────────────────────────────────────────────────────────────────────
+
+.changelogPage {
+
+    // Half of `.section`'s @vw250. That figure is set for a marketing block
+    // opening on a display-size Anton title, which needs the air to land; this
+    // page opens on a line of body text and a list, and the same gap left it
+    // sitting a screen below the header with nothing in between.
+    padding-top: @vw125;
+
+    // A flat pixel measure, and the same one the dashboard's Preferences column
+    // uses. The argument is identical: every other length on this page is a vw
+    // constant because it is a proportion, and a reading measure is not. It is
+    // the number of characters the eye can track before it loses the start of
+    // the next line, and that number does not change when somebody plugs in a
+    // wider monitor.
+    //
+    // No media queries under it: `max-width` is a ceiling, so below 768 the
+    // column simply takes whatever `.container` leaves it.
+    &-inner {
+        width: 100%;
+        max-width: 768px;
+        margin-inline: auto;
+    }
+
+    &-head {
+        margin: 0 0 @vw48 0;
+    }
+
+    // Body font, not Anton. Anton is the marketing voice — it is set to sell
+    // something, and a changelog is not selling anything. Set in the same face
+    // as the notes under it, one clear step up in size and weight, so the page
+    // reads as a document rather than as another section of the site.
+    &-title {
+        font-family: @body;
+        font-size: max(1.6em, @vw40);
+        font-weight: @bold;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        color: @title;
+    }
+
+    &-text {
+        font-family: @body;
+        // Floors at the inherited paragraph size — the raw vw falls under 9px
+        // on a phone, the same reason every other block here uses max().
+        font-size: max(1em, @vw18);
+        margin: @vw12 0 0 0;
+        opacity: 0.75;
+    }
+
+    // Loading, empty and failed all read as one quiet line under the heading.
+    // None of the three is worth a panel: there is nothing to look at yet, and
+    // a bordered box would draw the eye to the absence.
+    &-note {
+        font-family: @body;
+        font-size: max(1em, @vw16);
+        opacity: 0.6;
+    }
+}
+
+// ── The timeline ─────────────────────────────────────────────────────────────
+.timeline {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
+    // The line. Drawn on the list rather than on each entry because it has to
+    // run *between* entries as well as beside them — a per-entry border would
+    // break at every gap and read as a stack of rules instead of one thread.
+    border-left: max(1px, @vw1) solid @border;
+
+    &-entry {
+        position: relative;
+        display: grid;
+        // 30 / 70. Written as fractions rather than percentages so the gap is
+        // taken out of the track sizes instead of overflowing the row, and as
+        // `minmax(0, …)` so a long unbroken word in either column cannot push
+        // the grid wider than its measure.
+        grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+        gap: @vw40;
+        padding: 0 0 @vw48 @vw32;
+
+        &:last-child { padding-bottom: 0; }
+
+        // The node on the line. It sits on the cap-height of the title rather
+        // than at the top of the row, so it points at the entry's first line of
+        // text the way a bullet does.
+        //
+        // `border` in the page background, not a gap in the rule: the line runs
+        // behind it, and punching a hole would mean knowing the exact ground
+        // colour in two places.
+        &::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: @vw6;
+            width: @vw10;
+            height: @vw10;
+            // Centred on the rule rather than sitting beside it. `left: 0` is
+            // the inside edge of the border, so half the dot's own width is
+            // the whole correction.
+            transform: translateX(-50%);
+            border-radius: 50%;
+            background-color: @primary;
+        }
+    }
+
+    // ── Left column: what changed, when, and of what kind ────────────────────
+    &-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: @vw8;
+        min-width: 0;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: max(1em, @vw20);
+        font-weight: @bold;
+        line-height: 1.25;
+        color: @title;
+    }
+
+    &-when {
+        font-family: @body;
+        font-size: max(0.85em, @vw14);
+        // The dates form a column of their own down the page; lining figures
+        // keep them from jittering against each other.
+        font-variant-numeric: tabular-nums;
+        opacity: 0.55;
+    }
+
+    // ── The pill ─────────────────────────────────────────────────────────────
+    // Tinted rather than filled. Four of these run down a single column, and
+    // four solid blocks of colour would out-shout the notes they are labelling
+    // — the pill says what kind of change this is, it is not the headline.
+    &-pill {
+        display: inline-flex;
+        align-items: center;
+        margin-top: @vw4;
+        padding: @vw4 @vw12;
+        border: max(1px, @vw1) solid transparent;
+        border-radius: 999px;
+        font-family: @body;
+        font-size: max(0.7em, @vw12);
+        font-weight: @semiBold;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+
+        // Colour carries the one thing the reader is scanning for: whether this
+        // entry is something they get, something that got better, something
+        // that got fixed, or something that will cost them work.
+        &.is-feature {
+            color: @primary;
+            border-color: fade(@primary, 35%);
+            background-color: fade(@primary, 12%);
+        }
+
+        // The most common of the four, and therefore the quietest. If routine
+        // improvements were coloured, the colour on the other three would stop
+        // meaning anything.
+        &.is-improvement {
+            color: @white;
+            border-color: @border;
+            background-color: fade(@white, 8%);
+        }
+
+        &.is-fix {
+            color: @warning;
+            border-color: fade(@warning, 35%);
+            background-color: fade(@warning, 12%);
+        }
+
+        &.is-breaking {
+            color: @error;
+            border-color: fade(@error, 40%);
+            background-color: fade(@error, 14%);
+        }
+    }
+
+    // ── Right column: the note itself ────────────────────────────────────────
+    &-copy {
+        min-width: 0;
+    }
+
+    &-body {
+        font-family: @body;
+        font-size: max(1em, @vw16);
+        line-height: 1.6;
+        // Written in a textarea in the admin panel: the line breaks are the
+        // author's, and `_general.less` already sets `pre-line` on every <p> —
+        // stated here so it survives a change to that default.
+        white-space: pre-line;
+        opacity: 0.75;
+    }
+}
+
+// ── 1080 ─────────────────────────────────────────────────────────────────────
+@media (max-width: 1080px) {
+    .changelogPage {
+        // `.section` sets @vw200-1080 top *and* bottom here, so the bottom is
+        // restated rather than left to inherit a figure the top no longer uses.
+        padding-top: @vw100-1080;
+        padding-bottom: @vw200-1080;
+
+        &-head { margin-bottom: @vw48-1080; }
+        &-title { font-size: max(1.6em, @vw40-1080); }
+        &-text { margin-top: @vw12-1080; }
+    }
+
+    .timeline {
+        &-entry {
+            gap: @vw32-1080;
+            padding: 0 0 @vw48-1080 @vw24-1080;
+        }
+
+        &-meta { gap: @vw8-1080; }
+    }
+}
+
+// ── 600 ──────────────────────────────────────────────────────────────────────
+// The two columns become one. 30/70 of a phone is a title column too narrow to
+// hold "Breaking change" on one line and a note column too narrow to read, so
+// the row stacks and the line keeps doing its job down the left of both.
+@media (max-width: 600px) {
+    .changelogPage {
+        padding-top: @vw80-580;
+        padding-bottom: @vw160-580;
+
+        &-head { margin-bottom: @vw40-580; }
+    }
+
+    .timeline {
+        &-entry {
+            grid-template-columns: minmax(0, 1fr);
+            gap: @vw12-580;
+            padding: 0 0 @vw40-580 @vw20-580;
+        }
+
+        &-meta { gap: @vw6-580; }
+
+        &-entry::before {
+            top: @vw8-580;
+            width: @vw12-580;
+            height: @vw12-580;
+        }
+    }
+}

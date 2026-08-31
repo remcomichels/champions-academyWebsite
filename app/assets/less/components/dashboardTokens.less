@@ -219,6 +219,11 @@
     // themes and a pale one on light — a tint under the value, not a fill that
     // competes with the text sitting on it.
     --error-subtle: rgba(231, 76, 60, 0.12);
+    // And once more for the good news — the changelog's "New feature" pill is
+    // the only thing using it so far. 12% of @success, so the four pills in
+    // that list all sit at the same weight and it is the hue that separates
+    // them, not how loudly each one is filled.
+    --success-subtle: rgba(46, 204, 113, 0.12);
 }
 
 // `_general.less` pins `color-scheme: light !important` on both `:root` and

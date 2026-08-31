@@ -341,6 +341,18 @@ export default defineNuxtConfig({
 				'cache-control': 'no-store'
 			}
 			},
+			// The public changelog. It keeps the '/**' cache headers — it is the
+			// same for every visitor and there is nothing personal on it — and
+			// only adds the noindex. Public and unlisted are different things:
+			// anyone with the link can read it, search engines are asked not to
+			// list it. Deliberately *not* added to robots.txt as well, because a
+			// Disallow would stop a crawler fetching the page at all and it
+			// would therefore never see the noindex it is being told.
+			'/changelog': {
+			headers: {
+				'x-robots-tag': 'noindex, nofollow'
+			}
+			},
 			// Authenticated surfaces. Without these they inherit the '/**' rule
 			// above and a CDN would cache one affiliate's dashboard and serve it
 			// to the next visitor. More specific paths win and merge over '/**',
@@ -394,6 +406,10 @@ export default defineNuxtConfig({
 	 * ----------------------------- */
 	sitemap: {
 		autoI18n: false,
+		// Auto-discovered static routes are otherwise included, and /changelog
+		// is served noindex — listing it in the sitemap would be asking to have
+		// it crawled and telling it not to be indexed in the same breath.
+		exclude: ['/changelog'],
 		urls: [
 			{
 				loc: '/sitemap-test',
