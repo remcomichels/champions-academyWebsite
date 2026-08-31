@@ -3021,6 +3021,14 @@
     }
 
     &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    // Red on hover, not at rest. A row of permanently red bins reads as a list
+    // of errors; the colour belongs to the moment you are about to press one.
+    &--danger {
+        @media (hover: hover) {
+            &:hover:not(:disabled) { color: var(--error); }
+        }
+    }
 }
 
 // ── Appearance ───────────────────────────────────────────────────────────────
@@ -5696,19 +5704,57 @@ html:has(.modal[open]) body {
 }
 
 // ── Changelog ────────────────────────────────────────────────────────────────
+// ── The admin's list ─────────────────────────────────────────────────────────
+// Every entry, drafts included, each one editable.
+//
+// This was the affiliate-facing changelog until that moved to the public site
+// and became `.timeline` in the marketing system. Nothing shares this any more,
+// so it is free to be what the admin panel actually needs: a row you can act
+// on, rather than a note you can only read.
 .changelog {
     list-style: none;
 
     &-entry {
         display: grid;
-        // Date column, then the note. The dates line up down the left so the
-        // page scans as a timeline rather than a stack of headings.
-        grid-template-columns: calc(@vw120 + @vw20) minmax(0, 1fr);
+        // Date, the note, then the controls. The dates line up down the left so
+        // the page still scans as a record; the actions column is `auto` so it
+        // is exactly as wide as two glyphs and the note keeps the rest.
+        grid-template-columns: calc(@vw120 + @vw20) minmax(0, 1fr) auto;
         gap: @vw24;
         padding: @vw24 0;
         border-bottom: max(1px, @vw1) solid var(--border);
 
         &:last-child { border-bottom: none; }
+    }
+
+    // A draft is not a lesser entry, it is an unfinished one — so it is marked
+    // rather than dimmed. Fading the row would make the thing most likely to
+    // need attention the hardest thing on the page to read.
+    &-draft {
+        display: inline-flex;
+        align-items: center;
+        padding: @vw2 @vw8;
+        border: max(1px, @vw1) dashed var(--border-strong);
+        border-radius: 999px;
+        font-size: max(0.58em, @vw10);
+        font-weight: @semiBold;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--text-secondary);
+    }
+
+    // Top right of the row, side by side. `align-self` rather than
+    // `align-items`: this is a grid item, so without it the cell stretches to
+    // the height of the note beside it and the buttons ride down with it —
+    // which on a long entry leaves them level with the middle of a paragraph
+    // instead of with the title they belong to.
+    &-actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        align-self: start;
+        justify-content: flex-end;
+        gap: @vw2;
     }
 
     &-when {
@@ -5787,6 +5833,41 @@ html:has(.modal[open]) body {
     }
 }
 
+
+// ── The changelog admin page ─────────────────────────────────────────────────
+// Controls at the size the settings column uses, for the reason given there: a
+// bare `.btn` is `max(0.80em, @vw14)` with @vw12 @vw18 of padding, which is
+// nearly 19px on a wide monitor. Next to a 13px list of release notes the New
+// entry button was reading as the headline of the page.
+.adminChangelog {
+    .btn {
+        padding: @vw7 @vw14;
+        font-size: @settingsBody;
+    }
+
+    // The one control that is genuinely bigger than its text: a textarea sized
+    // to what is comfortable to write a paragraph in, not to its type.
+    &-text {
+        min-height: @vw120;
+        line-height: 1.55;
+        resize: vertical;
+    }
+}
+
+// The editor and its confirmation. Wider than the compact dialog's default,
+// which is drawn for one field and two buttons — this one holds a paragraph,
+// and at 480 the textarea was a column of four-word lines that made a short
+// note look like a long one.
+.modal--changelog {
+    width: min(@vw300 + @vw300, calc(100vw - @vw32));
+
+    // The dialog opens from a page whose buttons have already stepped down.
+    // One that opened over it at full size would look like a different panel.
+    .btn {
+        padding: @vw7 @vw14;
+        font-size: @settingsBody;
+    }
+}
 
 // ── Responsive ───────────────────────────────────────────────────────────────
 @media (max-width: 1080px) {
@@ -6079,11 +6160,16 @@ html:has(.modal[open]) body {
     .feedbackPanel-choices { grid-template-columns: @vw170-580; }
     .feedbackPanel-form { width: @vw170-580; }
 
+    // One column, and the controls land under the note they act on rather than
+    // beside it — at this width a third track leaves the title about eight
+    // characters. Right-aligned so they stay findable in the same place.
     .changelog-entry {
         grid-template-columns: minmax(0, 1fr);
         gap: @vw8-580;
         padding: @vw20-580 0;
     }
+
+    .changelog-actions { justify-content: flex-end; }
 
     .feedbackList-when { margin-left: 0; }
 
