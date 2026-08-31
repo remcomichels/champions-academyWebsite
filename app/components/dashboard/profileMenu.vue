@@ -32,16 +32,28 @@
 				<span>Account settings</span>
 			</NuxtLink>
 
-			<NuxtLink to="/dashboard/changelog" class="profileMenu-item" role="menuitem" @click="close">
+			<!-- The changelog lives on the public site now, so this leaves the
+			     dashboard. A new tab rather than a navigation: you open it from
+			     the middle of doing something else, and coming back should not
+			     mean re-finding where you were. `rel` because `target="_blank"`
+			     without it hands the opened page a handle on this one. -->
+			<a
+				href="/changelog"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="profileMenu-item"
+				role="menuitem"
+				@click="close"
+			>
 				<NuxtDashboardIcon name="changelog" />
 				<span>Changelog</span>
-			</NuxtLink>
+			</a>
 
 			<hr class="profileMenu-rule">
 
 			<!-- No icons on this group: four rows that differ only by a dot read
 			     as one control, and a glyph on each would break them apart. -->
-			<p class="profileMenu-groupLabel" id="theme-label">Theme</p>
+			<p id="theme-label" class="profileMenu-groupLabel">Theme</p>
 
 			<div class="profileMenu-choices" role="radiogroup" aria-labelledby="theme-label">
 				<button

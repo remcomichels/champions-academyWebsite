@@ -12,6 +12,18 @@
 			<form class="dashForm" novalidate @submit.prevent="save(false)">
 				<NuxtAuthField v-model="title" label="Title" :error="errors.title" required />
 
+				<!-- Required, and pre-set to the most common of the four rather
+				     than to a blank "choose one" row. A picker that starts empty
+				     is a second required field; this one starts at the answer it
+				     usually wants and asks to be corrected when it isn't. -->
+				<NuxtDashboardSelectField
+					:model-value="kind"
+					:options="kindOptions"
+					label="Kind"
+					hint="Shown as the pill on the public changelog."
+					@update:model-value="kind = $event as ChangelogKind"
+				/>
+
 				<div class="field">
 					<label class="field-label" for="changelog-body">What changed</label>
 					<textarea
@@ -52,6 +64,9 @@
 					</p>
 					<div class="changelog-copy">
 						<h4 class="changelog-title">{{ entry.title }}</h4>
+						<span class="changelog-kind" :class="`is-${entry.kind}`">
+							{{ CHANGELOG_LABELS[entry.kind] }}
+						</span>
 						<p class="changelog-body">{{ entry.body }}</p>
 					</div>
 				</li>
@@ -73,6 +88,9 @@
  * listed for the same reason: nothing reads them yet, and showing them would
  * imply a way to publish one, which there isn't.
  */
+import type { ChangelogEntry, ChangelogKind } from "#shared/types/changelog";
+import { CHANGELOG_KINDS, CHANGELOG_LABELS } from "#shared/types/changelog";
+
 definePageMeta({
 	layout: "dashboard",
 	middleware: ["auth", "admin"],
@@ -83,14 +101,10 @@ useSeoMeta({
 	robots: "noindex, nofollow",
 });
 
-interface ChangelogEntry {
-	id: number;
-	at: string;
-	title: string;
-	body: string;
-}
+const kindOptions = CHANGELOG_KINDS.map(value => ({ value, label: CHANGELOG_LABELS[value] }));
 
 const title = ref("");
+const kind = ref<ChangelogKind>("improvement");
 const body = ref("");
 const busy = ref(false);
 const banner = ref<{ variant: "success" | "error"; text: string } | null>(null);
@@ -98,9 +112,7 @@ const errors = reactive<{ title?: string; body?: string }>({});
 
 const { data, pending, refresh } = await useAsyncData<{ entries: ChangelogEntry[] }>(
 	"admin-changelog",
-	() => $fetch<{ entries: ChangelogEntry[] }>("/api/changelog", {
-		headers: import.meta.server ? useRequestHeaders(["cookie"]) : undefined,
-	}),
+	() => $fetch<{ entries: ChangelogEntry[] }>("/api/changelog"),
 );
 
 const entries = computed(() => data.value?.entries ?? []);
@@ -122,6 +134,7 @@ const save = async (draft = false) => {
 			body: {
 				title: title.value.trim(),
 				body: body.value.trim(),
+				kind: kind.value,
 				// The endpoint reads this as a string, so the flag is only ever
 				// sent when it is actually set.
 				...(draft ? { draft: "true" } : {}),
@@ -130,6 +143,7 @@ const save = async (draft = false) => {
 
 		title.value = "";
 		body.value = "";
+		kind.value = "improvement";
 		banner.value = {
 			variant: "success",
 			text: draft ? "Saved as a draft — nobody can see it yet." : "Published.",

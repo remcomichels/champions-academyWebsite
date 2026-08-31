@@ -38,8 +38,8 @@
 								v-if="ctaHref(blok)"
 								:to="ctaHref(blok)!"
 								v-bind="ctaAttrs(blok)"
-								@click="onCtaClick(blok)"
 								class="navLink button"
+								@click="onCtaClick(blok)"
 							>
 								<span class="textWrap button__primary">
 									{{ blok.label }}

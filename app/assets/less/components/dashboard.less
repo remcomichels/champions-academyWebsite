@@ -5556,6 +5556,16 @@ html:has(.modal[open]) body {
         display: flex;
         justify-content: flex-end;
         gap: @vw8;
+
+        // The same climb-down `.dashSettings` makes: a bare `.btn` is
+        // `max(0.80em, @vw14)` with @vw12 @vw18 of padding, which is nearly
+        // 19px on a wide monitor — Back and Send read larger than the textarea
+        // they sit under and take half the panel's width between them. Sized
+        // against Preferences so the two look like one dashboard.
+        .btn {
+            padding: @vw7 @vw14;
+            font-size: @settingsBody;
+        }
     }
 
     &-sent {
@@ -5710,6 +5720,7 @@ html:has(.modal[open]) body {
     &-copy {
         display: flex;
         flex-direction: column;
+        align-items: flex-start;
         gap: @vw8;
         min-width: 0;
     }
@@ -5719,6 +5730,52 @@ html:has(.modal[open]) body {
         font-size: max(0.90em, @vw16);
         font-weight: @bold;
         color: var(--text);
+    }
+
+    // The same four kinds the public page prints, drawn from the dashboard's
+    // theme tokens rather than the marketing palette — this list is the admin's
+    // preview of what shipped, so it has to say the same words in the same
+    // order of loudness, not in the same hex.
+    &-kind {
+        display: inline-flex;
+        align-items: center;
+        padding: @vw2 @vw10;
+        border: max(1px, @vw1) solid transparent;
+        border-radius: 999px;
+        font-size: max(0.58em, @vw10);
+        font-weight: @semiBold;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        white-space: nowrap;
+
+        // A status colour rather than the accent: the accent means
+        // "interactive" everywhere else on the dashboard, and a pill is not
+        // something you press.
+        &.is-feature {
+            color: var(--success);
+            border-color: var(--success);
+            background-color: var(--success-subtle);
+        }
+
+        // The routine one, and therefore the quiet one — if every entry's pill
+        // carried colour, none of them would.
+        &.is-improvement {
+            color: var(--text-secondary);
+            border-color: var(--border);
+            background-color: var(--surface-raised);
+        }
+
+        &.is-fix {
+            color: var(--warning);
+            border-color: var(--warning);
+            background-color: var(--warning-subtle);
+        }
+
+        &.is-breaking {
+            color: var(--error);
+            border-color: var(--error);
+            background-color: var(--error-subtle);
+        }
     }
 
     &-body {
