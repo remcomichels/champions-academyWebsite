@@ -43,3 +43,14 @@ export interface ChangelogEntry {
 	title: string;
 	body: string;
 }
+
+/**
+ * The same entry as the admin panel sees it, which is the only place a draft
+ * exists: `at` is null until one is published, so it carries the write date as
+ * well and says outright which of the two states it is in.
+ */
+export interface AdminChangelogEntry extends Omit<ChangelogEntry, "at"> {
+	at: string | null;
+	createdAt: string;
+	published: boolean;
+}

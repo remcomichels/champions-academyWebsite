@@ -20,8 +20,8 @@
  *
  * Every glyph is expressed purely as path data — circles included, drawn as
  * arcs — so the template is a single `v-for` and nothing here needs `v-html`.
- * Inline rather than a sprite or an icon package: there are sixteen of them,
- * they are all one or two paths, and a dependency for that would be silly.
+ * Inline rather than a sprite or an icon package: they are all one to four
+ * paths, and a dependency for that would be silly.
  *
  * `currentColor` throughout, so an icon takes the colour of whatever it sits
  * in and needs no theme handling of its own.
@@ -176,6 +176,20 @@ const icons: Record<string, string[]> = {
 	edit: [
 		"M11 5.5H5.5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V13",
 		"M16.4 4.1a1.9 1.9 0 0 1 2.7 2.7l-7.6 7.6-3.4.7.7-3.4 7.6-7.6Z",
+	],
+	// Two strokes, and no more. A plus with a circle round it reads as "info"
+	// at 16px, and one drawn as a filled cross reads as a close button turned
+	// 45 degrees.
+	plus: ["M12 5v14", "M5 12h14"],
+	// A bin: lid, body, and the two staves inside it. The body tapers by half a
+	// unit a side so it reads as a container seen from slightly above rather
+	// than as a rectangle under a line, which is what tells it apart from
+	// `sidebar` and the other boxes in this set at 16px.
+	trash: [
+		"M4 6.5h16",
+		"M9.5 6.5V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1.5",
+		"M6.5 6.5 7.4 19a1 1 0 0 0 1 .9h7.2a1 1 0 0 0 1-.9l.9-12.5",
+		"M10.5 10v6M13.5 10v6",
 	],
 	trendUp: ["M4 16.5 9.5 11l4 4 6.5-6.5", "M15 8.5h5v5"],
 	trendDown: ["M4 8.5 9.5 14l4-4 6.5 6.5", "M15 15.5h5v-5"],
