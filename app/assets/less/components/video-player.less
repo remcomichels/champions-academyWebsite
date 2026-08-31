@@ -18,6 +18,28 @@
     object-fit: cover;
   }
 
+  // ── Unavailable ─────────────────────────────────────────────────────────
+  // Centred over the black box the <video> still occupies. Said plainly rather
+  // than left as a dead frame: a player that looks loadable forever reads as
+  // the page being broken, which is worse than one video being missing.
+  &__failed {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: @vw16;
+    font-size: max(0.72em, @vw13);
+    text-align: center;
+    // A fixed light on the player's own black, so it does not flip with the
+    // theme and land dark-on-black.
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  // The frame is not interactive when there is nothing to play.
+  &.is-failed &__video { cursor: default; }
+
   // ── UI wrapper ──────────────────────────────────────────────────────────
   &__ui {
     position: absolute;
