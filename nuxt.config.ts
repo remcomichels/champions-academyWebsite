@@ -8,7 +8,6 @@ export default defineNuxtConfig({
     '@nuxt/fonts',
     '@nuxt/image',
     '@nuxtjs/seo',
-    '@nuxt/scripts',
     '@nuxtjs/i18n',
     '@storyblok/nuxt',
     '@vueuse/nuxt',
