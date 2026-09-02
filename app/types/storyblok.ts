@@ -175,7 +175,8 @@ export interface PaymentCardBlok {
 }
 
 /**
- * The "paymentPlans_block" — sub_title/title plus two 50% payment cards.
+ * The "paymentPlans_block" — sub_title/title plus the payment card. The field
+ * is a blocks list, but the layout is written for the single plan it holds.
  */
 export interface PaymentPlansBlok {
   _uid: string

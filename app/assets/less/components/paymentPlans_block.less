@@ -16,16 +16,19 @@
         }
     }
 
-    // ── Cards — two 50% columns ──────────────────────────────────────────────
+    // ── Card — one plan, centred at its old two-column width ─────────────────
     .cards-container {
         display: flex;
-        gap: @vw32;
+        justify-content: center;
         margin: @vw48 0 0 0;
     }
 
     .payment-card {
         position: relative;
-        flex: 1 1 0;
+        // Half the row less half the @vw32 gutter that used to run between the
+        // two plans — the width this card had as the right-hand column, so
+        // dropping the other one didn't stretch it across the container.
+        width: calc(50% - @vw16);
         display: flex;
         flex-direction: column;
         padding: @vw48 @vw32;
@@ -33,11 +36,11 @@
         border-radius: @vw10;
     }
 
-    // Light trail orbiting the featured (right) card: a ring-only overlay —
-    // the mask pair xor's the padding-box out of the full box, leaving just
-    // the 2px edge — filled with a conic gradient that fades from transparent
-    // into @primary at its head, rotated endlessly via --trail-angle.
-    .payment-card:last-child::before {
+    // Light trail orbiting the card: a ring-only overlay — the mask pair xor's
+    // the padding-box out of the full box, leaving just the 2px edge — filled
+    // with a conic gradient that fades from transparent into @primary at its
+    // head, rotated endlessly via --trail-angle.
+    .payment-card::before {
         content: '';
         position: absolute;
         inset: -1px;
@@ -142,8 +145,8 @@
     }
 
     // ── Show all / show less ─────────────────────────────────────────────────
-    // Only rendered when a card has more benefits than fit; plans run to a dozen
-    // entries, which pushed the price and CTA of the second card off the screen.
+    // Only rendered when the card has more benefits than fit; the plan runs to a
+    // dozen entries, which pushed the price and CTA below the fold.
     .payment-card-more {
         align-self: flex-end;
         display: flex;
@@ -286,8 +289,8 @@
         transition-property: opacity, transform;
     }
 
-    .payment-card:nth-child(1) { transition-delay: 0.15s; }
-    .payment-card:nth-child(2) { transition-delay: 0.25s; }
+    // The card follows the sub-title in rather than arriving alongside it.
+    .payment-card { transition-delay: 0.15s; }
 
     &.inView {
         .subTitle,
@@ -309,16 +312,16 @@
         }
 
         .cards-container {
-            gap: @vw24-1080;
             margin: @vw48-1080 0 0 0;
         }
 
         .payment-card {
+            width: calc(50% - @vw12-1080);
             padding: @vw32-1080;
             border-radius: @vw10-1080;
         }
 
-        .payment-card:last-child::before {
+        .payment-card::before {
             filter: drop-shadow(0 0 @vw6-1080 fade(@primary, 50%));
         }
 
@@ -399,10 +402,11 @@
         }
     }
 
-    // Layout switch — the two plans stack.
+    // Half the row is too narrow to hold a plan on a phone — the card takes the
+    // full container from here down.
     @media (max-width: 768px) {
-        .cards-container {
-            flex-direction: column;
+        .payment-card {
+            width: 100%;
         }
     }
 
@@ -418,7 +422,6 @@
         }
 
         .cards-container {
-            gap: @vw16-580;
             margin: @vw40-580 0 0 0;
         }
 
@@ -427,7 +430,7 @@
             border-radius: @vw16-580;
         }
 
-        .payment-card:last-child::before {
+        .payment-card::before {
             filter: drop-shadow(0 0 @vw6-580 fade(@primary, 50%));
         }
 

@@ -65,8 +65,8 @@ const props = defineProps({
 	},
 });
 
-// How many benefits show before the list is truncated. Plans run to a dozen
-// entries, which pushed the price and CTA of the second card off the screen.
+// How many benefits show before the list is truncated. The plan runs to a dozen
+// entries, which pushed the price and CTA below the fold.
 const VISIBLE_BENEFITS = 5;
 
 // Typed for the count and the truncation logic. The loop renders from
@@ -74,8 +74,8 @@ const VISIBLE_BENEFITS = 5;
 // broad SbBlokData and TextBlok isn't assignable to it.
 const benefits = computed<TextBlok[]>(() => props.blok.benefit ?? []);
 
-// Per-card, not per-block: the two plans have different benefit counts, so one
-// can be truncated while the other shows in full.
+// Lives on the card rather than the block, so the truncation state sits with
+// the list it controls.
 const expanded = ref(false);
 
 // Which rows collapse. Keyed by _uid rather than the v-for index, since the
@@ -89,8 +89,8 @@ function isExtra(uid: string): boolean {
 	return extraUids.value.has(uid);
 }
 
-// Ties the button to the list it controls. _uid is unique per card, so the two
-// cards' lists never collide.
+// Ties the button to the list it controls. Keyed on _uid so the id stays unique
+// if the block is ever given more than one card.
 const listId = computed(() => `benefits-${props.blok._uid}`);
 
 // renderSafeRichText escapes text nodes, strips javascript: hrefs, and returns
