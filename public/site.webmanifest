@@ -1,6 +1,6 @@
 {
-  "name": "Remco",
-  "short_name": "Remco",
+  "name": "Champions Academy",
+  "short_name": "Champions",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#F0F0F0",
+  "background_color": "#F0F0F0",
   "display": "standalone"
 }
