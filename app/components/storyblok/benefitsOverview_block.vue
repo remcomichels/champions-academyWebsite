@@ -4,7 +4,7 @@
 			<div class="text-container">
 				<p v-if="blok.sub_text" class="subText">{{ blok.sub_text }}</p>
 				<div class="title-row">
-					<h2 data-scroll-letters class="title">{{ blok.title }}</h2>
+					<h1 data-scroll-letters class="title">{{ blok.title }}</h1>
 					<p v-if="benefits.length" class="benefits-count">
 						<span class="benefits-count-number">{{ paddedCount }}</span>
 						<span class="benefits-count-label">
@@ -15,7 +15,12 @@
 			</div>
 
 			<!-- Hover-only blob here: no self-wandering on the overview page -->
-			<NuxtBenefitsGrid v-if="benefits.length" :items="benefits" :auto-wander="false" />
+			<NuxtBenefitsGrid
+				v-if="benefits.length"
+				:items="benefits"
+				:auto-wander="false"
+				:heading-level="2"
+			/>
 		</div>
 	</section>
 </template>

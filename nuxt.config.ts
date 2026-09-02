@@ -387,16 +387,22 @@ export default defineNuxtConfig({
 	 * ----------------------------- */
 	sitemap: {
 		autoI18n: false,
-		// Auto-discovered static routes are otherwise included, and /changelog
-		// is served noindex — listing it in the sitemap would be asking to have
-		// it crawled and telling it not to be indexed in the same breath.
-		exclude: ['/changelog'],
-		urls: [
-			{
-				loc: '/sitemap-test',
-				changefreq: 'monthly',
-				priority: 0.5,
-			},
+		// Auto-discovered static routes are otherwise included, and every route
+		// here is served noindex — listing one would be asking to have it
+		// crawled and telling it not to be indexed in the same breath.
+		//
+		// /login and the /dashboard tree need no entry: robots.txt below
+		// disallows them, and nuxt-sitemap drops anything robots blocks. These
+		// four are only noindex, which robots never sees, so they have to be
+		// named.
+		exclude: [
+			'/changelog',
+			// The affiliate sign-in flow: one form reached from /login, and two
+			// pages opened from a mailed link carrying their own token. None of
+			// them is a page anyone should arrive at from a search result.
+			'/confirm-email',
+			'/forgot-password',
+			'/reset-password',
 		],
 	},
 

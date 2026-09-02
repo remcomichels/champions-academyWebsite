@@ -6,10 +6,15 @@
                 <div class="preText-container">
                     <p class="preText">{{ blok.pre_text_line }}</p>
                 </div>
-				<div class="title-container">
-                    <h1 data-letters class="title"> {{ blok.title }} </h1>
-                    <h3 class="subTitle">{{ blok.sub_title }}</h3>
-                </div>
+                <!-- One h1 across both lines: the headline reads "Champions
+                     Academy", and it used to be an h1 holding the first word
+                     with an h3 under it — which put a one-word h1 on the page
+                     and skipped a heading level. The spans keep both halves
+                     styled exactly as they were. -->
+				<h1 class="title-container">
+                    <span data-letters class="title"> {{ blok.title }} </span>
+                    <span class="subTitle">{{ blok.sub_title }}</span>
+                </h1>
                 <div class="subText-container">
                     <p class="subText">{{ blok.text }}</p>
                 </div>

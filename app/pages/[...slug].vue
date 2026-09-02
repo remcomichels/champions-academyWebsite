@@ -1,4 +1,6 @@
 <script setup>
+import { isPageStory } from "#shared/utils/storyblok";
+
 const route = useRoute();
 const { locale } = useI18n();
 
@@ -9,12 +11,30 @@ const parts = Array.isArray(slugParam) ? slugParam : slugParam ? [slugParam] : [
 // Resulting path for Storyblok
 const url = parts.length ? parts.join("/") : "home";
 const storySlug = url.replace(/^\/+|\/+$/g, "");
-const isHomePage = parts.length === 0;
 
 // --- SEO ---
 const baseTitle = "Champions Academy";
-const homeTitle = "Champions Academy - the last membership you will ever need";
 const siteDescription = "A trading community built on real education, live mentorship, and proven SMC strategy — as one connected system.";
+
+// Per-page copy, keyed by Storyblok slug. Only routable pages need an entry —
+// the /benefits/* stories are items resolved into the benefits block, not
+// pages, and are kept out of the sitemap for that reason.
+//
+// Anything missing falls through to the slug-derived title and the site
+// description, so a new CMS page still needs no code change; it just reads
+// generically until someone writes it something here.
+const pageMeta = {
+  home: {
+    title: "Champions Academy - the last membership you will ever need",
+    description: siteDescription,
+  },
+  benefits: {
+    title: `Benefits | ${baseTitle}`,
+    description:
+      "Every benefit inside Champions Academy: FX signals and outlooks, the education library, the AI suite, instant funding and a community that trades together.",
+  },
+};
+
 const { url: siteUrl } = useSiteConfig();
 
 // One card for every page. There was previously a per-page fallback to
@@ -26,25 +46,30 @@ const { url: siteUrl } = useSiteConfig();
 // they are first given, so a sloppy one is awkward to take back.
 const ogImageUrl = `${siteUrl.replace(/\/+$/, "")}/images/og-image.png`;
 
-// Home gets the full tagline; inner pages get "Page | Champions Academy",
-// derived from the slug so a new CMS page needs no code change.
+// A listed page gets its own title; anything else gets "Page | Champions
+// Academy", derived from the slug. The derivation title-cases each word, so it
+// gets acronyms wrong ("Ai Suite") — a page whose name needs better than that
+// belongs in pageMeta.
 const pageTitle = () => {
-  if (isHomePage) return homeTitle;
+  const meta = pageMeta[storySlug];
+  if (meta) return meta.title;
   const slug = parts.at(-1) ?? "";
   const formatted = slug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
   return `${formatted} | ${baseTitle}`;
 };
 
+const pageDescription = () => pageMeta[storySlug]?.description ?? siteDescription;
+
 useSeoMeta({
   title: pageTitle,
-  description: siteDescription,
+  description: pageDescription,
   ogType: 'website',
   ogTitle: pageTitle,
-  ogDescription: siteDescription,
+  ogDescription: pageDescription,
   ogImage: ogImageUrl,
   twitterCard: 'summary_large_image',
   twitterTitle: pageTitle,
-  twitterDescription: siteDescription,
+  twitterDescription: pageDescription,
   twitterImage: ogImageUrl,
 });
 
@@ -76,6 +101,17 @@ if (error.value) {
 }
 
 if (!story.value) {
+	throw createError({
+		status: 404,
+		statusMessage: "Page Not Found",
+		fatal: true,
+	});
+}
+
+// Found, but not a page. A `benefit` story reached directly rendered a 200
+// with an empty <main> — worse than a 404, because a crawler that finds the
+// URL will happily index the emptiness. Same list the sitemap filters on.
+if (!isPageStory(story.value.content?.component)) {
 	throw createError({
 		status: 404,
 		statusMessage: "Page Not Found",

@@ -19,7 +19,7 @@
 					<span class="benefit-blob-shape" />
 				</div>
 			</div>
-			<h4 class="benefit-title">{{ story.name }}</h4>
+			<component :is="headingTag" class="benefit-title">{{ story.name }}</component>
 			<p v-if="story.content?.text" class="benefit-text">{{ story.content.text }}</p>
 		</article>
 
@@ -62,7 +62,20 @@ const props = defineProps({
 		type: String,
 		default: "sm:100vw md:50vw lg:34vw",
 	},
+	/**
+	 * Heading level for a card title, so the grid nests correctly wherever it
+	 * lands. On home it sits under the block's h2 and its h3 sub-title, so the
+	 * default is right; on /benefits the block title is the page h1 and the
+	 * cards are the level below it. Styling is on .benefit-title either way,
+	 * so this changes nothing visually.
+	 */
+	headingLevel: {
+		type: Number as PropType<2 | 3 | 4>,
+		default: 4,
+	},
 });
+
+const headingTag = computed(() => `h${props.headingLevel}`);
 
 interface CardMedia { src: string; alt: string }
 
