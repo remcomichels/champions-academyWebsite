@@ -145,6 +145,27 @@ export default defineNuxtConfig({
 					content: "light",
 				},
 			],
+			script: [
+				{
+					// Samsung Internet is the one browser that ignores the
+					// light-mode opt-out above. Its forced dark mode darkens the
+					// page background but leaves image pixels alone, so the
+					// marquee's cream logos disappear against it — and it exposes
+					// no signal while it is on (prefers-color-scheme keeps
+					// reporting light), so there is nothing to match on in CSS.
+					// The halo that keeps those logos readable hangs off this
+					// class in marquee_block.less.
+					//
+					// Sniffed in the browser rather than from the request UA
+					// because routeRules['/**'] caches the HTML at the CDN: a
+					// UA-dependent class baked into that HTML would be served to
+					// whoever the first visitor happened to be. Inline in <head>
+					// rather than in a plugin so the class lands before first
+					// paint instead of flashing unhaloed logos on hydration.
+					innerHTML:
+						"if(/SamsungBrowser/i.test(navigator.userAgent))document.documentElement.classList.add('samsung-internet')",
+				},
+			],
 		},
 	},
 
