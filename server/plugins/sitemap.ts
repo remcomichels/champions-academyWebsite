@@ -1,5 +1,9 @@
 import StoryblokClient from 'storyblok-js-client'
+import { isPageStory } from '#shared/utils/storyblok'
 
+// Backstop for anything that *is* a page but still should not be listed.
+// Which stories are pages at all is isPageStory's call, shared with the
+// router so a story kept out of the sitemap is the same one that 404s.
 const EXCLUDED_SLUGS = ['config']
 
 export default defineNitroPlugin((nitroApp) => {
@@ -17,6 +21,7 @@ export default defineNitroPlugin((nitroApp) => {
 		})
 
 		stories
+			.filter((story) => isPageStory(story.content?.component))
 			.filter((story) => !EXCLUDED_SLUGS.includes(story.full_slug))
 			.forEach((story) => {
 				ctx.urls.push({

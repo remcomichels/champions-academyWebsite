@@ -33,6 +33,14 @@
             }
 
             .title-container {
+                // Both halves were an h1 and an h3 before they became spans
+                // inside one h1 — without this their margins below would not
+                // apply and the two lines would run together.
+                .title,
+                .subTitle {
+                    display: block;
+                }
+
                 .title {
                     position: relative;
                     font-family: @heading;
