@@ -227,7 +227,7 @@ they cannot drift from the thing they describe. Re-run the command after
 changing a block in Storyblok or a table in Supabase, and commit the result.
 
 ```bash
-npm run types:supabase    # Supabase public schema → app/types/supabase.d.ts
+npm run types:supabase    # Supabase public schema → server/types/supabase.d.ts
 npm run types:storyblok   # Storyblok block schema → storyblok.gen.d.ts (path printed by the CLI)
 ```
 
@@ -235,6 +235,10 @@ Both need a one-time login (`supabase login`, `storyblok login` — the Storyblo
 CLI also accepts `STORYBLOK_LOGIN` / `STORYBLOK_TOKEN` from `.env` for CI) and
 an id in `.env`: `SUPABASE_PROJECT_REF` and `STORYBLOK_SPACE_ID`. Neither id is
 read by the app itself, only by these two commands.
+
+The Supabase types live under `server/` because nothing in the browser talks
+to the database — `db()` in `server/utils/supabase.ts` is typed with them, so a
+wrong column or table name is a build error.
 
 The Storyblok types are generated as `storyblok.gen.d.ts` so they cannot
 overwrite the hand-written `app/types/storyblok.ts`. Those two still need

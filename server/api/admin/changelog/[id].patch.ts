@@ -1,5 +1,6 @@
 import { int, object, oneOf, whenPresent, str } from "../../../utils/validate";
 import { CHANGELOG_KINDS } from "#shared/types/changelog";
+import type { TablesUpdate } from "#server/types/supabase";
 
 /**
  * Edits a changelog entry.
@@ -39,7 +40,7 @@ export default defineEventHandler(async (event) => {
 	if (loadError) throw createError({ statusCode: 503, statusMessage: "Could not load that entry" });
 	if (!existing) throw createError({ statusCode: 404, statusMessage: "That entry no longer exists" });
 
-	const update: Record<string, unknown> = {};
+	const update: TablesUpdate<"changelog"> = {};
 
 	if (body.title !== undefined) update.title = body.title.trim();
 	if (body.body !== undefined) update.body = body.body.trim();

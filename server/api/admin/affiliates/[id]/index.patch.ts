@@ -1,4 +1,5 @@
 import { displayName, object, optional, str, uuid } from "../../../../utils/validate";
+import type { TablesUpdate } from "#server/types/supabase";
 
 /**
  * Edits an affiliate.
@@ -41,7 +42,7 @@ export default defineEventHandler(async (event) => {
 	if (!affiliate) throw createError({ statusCode: 404, statusMessage: "Affiliate not found" });
 
 	const previousSlug = affiliate.slug as string;
-	const update: Record<string, unknown> = {};
+	const update: TablesUpdate<"affiliates"> = {};
 
 	// `optional()` maps "" to null, which is how a nullable field is cleared.
 	// Display name is not nullable, so an empty one is a mistake rather than an

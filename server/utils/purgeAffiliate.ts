@@ -79,6 +79,9 @@ export async function purgeAffiliate(affiliateId: string): Promise<PurgeResult> 
 	}
 
 	// Everything the affiliate produced or accumulated.
+	// `as const` keeps these as literal table names: the typed client checks
+	// each one exists and carries an affiliate_id, so a rename in the schema
+	// breaks the build instead of silently leaving rows behind on a purge.
 	for (const table of [
 		"notifications",
 		"feedback",
@@ -86,7 +89,7 @@ export async function purgeAffiliate(affiliateId: string): Promise<PurgeResult> 
 		"referral_clicks",
 		"affiliate_invites",
 		"affiliate_slug_aliases",
-	]) {
+	] as const) {
 		const { error: rowError } = await db().from(table).delete().eq("affiliate_id", affiliateId);
 		if (rowError) throw new Error(`purge: could not clear ${table} for ${affiliateId}: ${rowError.message}`);
 	}

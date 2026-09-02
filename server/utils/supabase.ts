@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "#server/types/supabase";
 
 /**
  * Supabase access. Server-only, by design.
@@ -8,7 +9,7 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  * client. Do not import this file from anything under `app/`.
  */
 
-let adminClient: SupabaseClient | null = null;
+let adminClient: SupabaseClient<Database> | null = null;
 
 /**
  * The secret-key client. **Bypasses RLS.**
@@ -17,7 +18,7 @@ let adminClient: SupabaseClient | null = null;
  * affiliate can reach, that scoping comes from `requireAffiliate()`, never
  * from a request parameter.
  */
-export function db(): SupabaseClient {
+export function db(): SupabaseClient<Database> {
 	if (adminClient) return adminClient;
 
 	const config = useRuntimeConfig();
@@ -31,7 +32,7 @@ export function db(): SupabaseClient {
 		});
 	}
 
-	adminClient = createClient(url, key, {
+	adminClient = createClient<Database>(url, key, {
 		auth: {
 			// No session storage on the server: every request is independent and
 			// there is no browser to persist to.

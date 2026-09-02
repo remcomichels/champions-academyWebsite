@@ -1,4 +1,5 @@
 import { displayName, object, optional, str, whenPresent } from "../../utils/validate";
+import type { TablesUpdate } from "#server/types/supabase";
 
 /**
  * Profile and notification preferences.
@@ -22,7 +23,7 @@ export default defineEventHandler(async (event) => {
 		locale: optional(str({ max: 10 })),
 	}));
 
-	const update: Record<string, unknown> = {};
+	const update: TablesUpdate<"affiliates"> = {};
 
 	// Skipped entirely when neither part was sent — which is the profile menu
 	// saving a timezone on its own. Before `whenPresent` this test could never
