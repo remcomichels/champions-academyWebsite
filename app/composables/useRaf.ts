@@ -4,7 +4,7 @@ import { gsap } from 'gsap'
 // useRaf
 //
 // One requestAnimationFrame loop for the whole app. Instead of every composable
-// spinning up its own rAF (marquee, magnetic float, etc.), subscribers ride
+// spinning up its own rAF (the marquee, scroll effects, etc.), subscribers ride
 // GSAP's existing ticker — the same clock that already drives every tween and
 // ScrollTrigger. Lenis is folded onto it too (see plugins/lenis.client.ts), so
 // at runtime there is a single rAF feeding everything.
