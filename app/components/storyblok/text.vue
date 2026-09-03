@@ -3,10 +3,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { TextBlok } from "~/types/blocks";
+
+defineProps<{ blok: TextBlok }>();
 </script>

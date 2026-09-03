@@ -11,9 +11,7 @@ Full API reference for every animation composable and helper in this boilerplate
 4. [useWordFade](#usewordfade)
 5. [useWordReveal](#usewordreveal)
 6. [useMarquee](#usemarquee)
-7. [initMagneticButtons](#initmagneticbuttons)
-8. [initVariableFontHover](#initvariablefonthover)
-9. [Data attribute quick reference](#data-attribute-quick-reference)
+7. [Data attribute quick reference](#data-attribute-quick-reference)
 
 ---
 
@@ -323,67 +321,6 @@ move at the same speed; when `x <= -trackWidth`, `x` snaps back by `trackWidth`.
 | `data-marquee-velocity-timeout` | `80` | ms after last scroll event before velocity decays to 0 |
 | `data-marquee-sample-window` | `120` | ms window for velocity sampling |
 | `data-scroll-speed` on `scrollEl` | `1` | Multiplier applied to base speed |
-
----
-
-## initMagneticButtons
-
-**File:** `app/assets/js/components/magnetic.ts`  
-**Mechanism:** sine-wave `requestAnimationFrame` loop, no GSAP  
-**Cleanup:** automatic — elements removed from DOM drop out of the shared tick
-
-### Signature
-
-```ts
-import { initMagneticButtons } from '~/assets/js/components/magnetic'
-
-initMagneticButtons(selector?: string)  // default '.magnetic'
-```
-
-Call after mount. The RAF loop starts on first call and self-stops when no `.magnetic` elements
-remain connected. Calling again with new elements re-uses the existing loop.
-
-### Data attributes (per element)
-
-| Attribute | Default | Description |
-|-----------|---------|-------------|
-| `data-float-range-x` | Half element width | Horizontal amplitude in px |
-| `data-float-range-y` | Half element height | Vertical amplitude in px |
-| `data-float-speed-x` | `0.001` | Horizontal sine frequency |
-| `data-float-speed-y` | `0.001` | Vertical sine frequency |
-
-Each element gets a ±15% random speed variation so multiple elements don't oscillate in sync.
-
----
-
-## initVariableFontHover
-
-**File:** `app/assets/js/components/mouse.ts`  
-**Mechanism:** splits text into `.char` spans, animates `font-variation-settings` via GSAP on mousemove
-
-### Signature
-
-```ts
-import { initVariableFontHover } from '~/assets/js/components/mouse'
-
-initVariableFontHover(selector: string, options?: VariableFontHoverOptions)
-```
-
-### Options
-
-| Option | Default | Description |
-|--------|---------|-------------|
-| `minWght` | `200` | Font weight at maximum proximity |
-| `maxWght` | `900` | Font weight at rest (no mouse nearby) |
-| `wdth` | `100` | Fixed `wdth` axis value |
-| `radiusMultiplier` | `3` | Influence radius = element height × this value |
-| `ignoreMobile` | `true` | Skip when `window.innerWidth <= mobileWidth` |
-| `mobileWidth` | `580` | Mobile cutoff width in px |
-
-Characters closest to the cursor receive the lowest `wght` (thinnest), characters farther away
-return to `maxWght`. GSAP `overwrite: true` prevents animation queue buildup on fast mouse moves.
-
-No cleanup API — `mousemove` / `mouseleave` listeners persist for the element's lifetime.
 
 ---
 

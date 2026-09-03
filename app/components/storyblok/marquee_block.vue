@@ -23,7 +23,7 @@
                     <div ref="trackA" class="marquee-content" aria-hidden="false">
                         <span v-for="(logo, index) in repeatedLogos" :key="`a-${logo.id}-${index}`" class="marquee-item">
                             <NuxtAppImage
-                                :src="logo.filename"
+                                :src="logo.filename || ''"
                                 :alt="logo.alt || 'Logo'"
                                 densities="x1"
                                 loading="lazy"
@@ -36,7 +36,7 @@
                     <div ref="trackB" class="marquee-content" aria-hidden="true">
                         <span v-for="(logo, index) in repeatedLogos" :key="`b-${logo.id}-${index}`" class="marquee-item">
                             <NuxtAppImage
-                                :src="logo.filename"
+                                :src="logo.filename || ''"
                                 :alt="logo.alt || 'Logo'"
                                 densities="x1"
                                 loading="lazy"
@@ -53,14 +53,11 @@
 </template>
 
 <script setup lang="ts">
+import type { MarqueeBlockBlok } from "~/types/blocks";
+
 import { computed, ref } from "vue";
 
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+const props = defineProps<{ blok: MarqueeBlockBlok }>();
 
 const repeatedLogos = computed(() => [
 	...(props.blok.item || []),

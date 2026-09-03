@@ -12,7 +12,7 @@
 					<StoryblokComponent
 						v-for="buttonBlok in blok.button"
 						:key="buttonBlok._uid"
-						:blok="buttonBlok"
+						:blok="asBlok(buttonBlok)"
 					/>
 				</div>
 			</div>
@@ -23,14 +23,11 @@
 </template>
 
 <script setup lang="ts">
+import type { BenefitsBlockBlok } from "~/types/blocks";
+
 import type { BenefitStoryRef } from "~/types/storyblok";
 
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+const props = defineProps<{ blok: BenefitsBlockBlok }>();
 
 // The `benefit` multi-options field stores story UUIDs; resolve_relations in
 // [...slug].vue swaps them for full story objects. Skip any that stayed

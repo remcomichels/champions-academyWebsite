@@ -22,7 +22,7 @@
 						<StoryblokComponent
 							v-for="testimonialBlok in blok.testimonial"
 							:key="`a-${testimonialBlok._uid}`"
-							:blok="testimonialBlok"
+							:blok="asBlok(testimonialBlok)"
 						/>
 					</div>
 
@@ -30,7 +30,7 @@
 						<StoryblokComponent
 							v-for="testimonialBlok in blok.testimonial"
 							:key="`b-${testimonialBlok._uid}`"
-							:blok="testimonialBlok"
+							:blok="asBlok(testimonialBlok)"
 						/>
 					</div>
 				</div>
@@ -40,12 +40,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { TestimonialsBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: TestimonialsBlockBlok }>();
 
 // Pause the marquee while the pointer is over it (eased by useMarquee)
 const marqueePaused = ref(false);

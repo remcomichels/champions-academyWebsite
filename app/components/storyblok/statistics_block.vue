@@ -6,7 +6,7 @@
                 <StoryblokComponent
                     v-for="statisticBlok in blok.statistic"
                     :key="statisticBlok._uid"
-                    :blok="statisticBlok"
+                    :blok="asBlok(statisticBlok)"
                 />
             </div>
 		</div>
@@ -14,12 +14,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { StatisticsBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: StatisticsBlockBlok }>();
 
 const root = useTemplateRef<HTMLElement>("root");
 const { initCountUp, destroy } = useCountUp(root);

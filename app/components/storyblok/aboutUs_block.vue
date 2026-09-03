@@ -25,7 +25,7 @@
 				<StoryblokComponent
 					v-for="cardBlok in cards"
 					:key="cardBlok._uid"
-					:blok="cardBlok"
+					:blok="asBlok(cardBlok)"
 					data-deck-card
 				/>
 			</div>
@@ -34,12 +34,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { AboutUsBlockBlok } from "~/types/blocks";
+
+const props = defineProps<{ blok: AboutUsBlockBlok }>();
 
 const cards = computed(() => props.blok.cards ?? []);
 

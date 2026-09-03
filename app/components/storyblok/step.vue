@@ -9,10 +9,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { StepBlok } from "~/types/blocks";
+
+defineProps<{ blok: StepBlok }>();
 </script>

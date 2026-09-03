@@ -11,7 +11,7 @@
 					<StoryblokComponent
 						v-for="teamCardBlok in blok.teamCard"
 						:key="teamCardBlok._uid"
-						:blok="teamCardBlok"
+						:blok="asBlok(teamCardBlok)"
 					/>
 				</div>
 
@@ -26,12 +26,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { TeamBlockBlok } from "~/types/blocks";
+
+const props = defineProps<{ blok: TeamBlockBlok }>();
 
 // renderSafeRichText resolves bold marks to <strong> and hard breaks to <br>,
 // and closes the injection vectors renderRichText leaves open.

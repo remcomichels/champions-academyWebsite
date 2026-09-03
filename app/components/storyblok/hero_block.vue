@@ -23,7 +23,7 @@
                 <StoryblokComponent
                     v-for="buttonBlok in blok.button"
                     :key="buttonBlok._uid"
-                    :blok="buttonBlok"
+                    :blok="asBlok(buttonBlok)"
                 />
             </div>
 		</div>
@@ -31,12 +31,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { HeroBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: HeroBlockBlok }>();
 
 const { initLetters, destroy } = useLetterAnimation()
 

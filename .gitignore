@@ -28,3 +28,9 @@ logs
 .keys.*
 # Claude Code checks worktrees out in-repo; they are local scratch, never committed.
 .claude/worktrees/
+
+# Storyblok CLI working directory. The generated types are committed — they are
+# source, and they import each other by relative path so they have to stay in
+# the CLI's own layout. The schema dump, logs and run reports are not.
+.storyblok/*
+!.storyblok/types/

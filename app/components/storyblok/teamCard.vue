@@ -17,12 +17,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { TeamCardBlok } from "~/types/blocks";
+
+const props = defineProps<{ blok: TeamCardBlok }>();
 
 // "Right" → image right / text left; "Left" → image left / text right.
 const positionClass = computed(() =>

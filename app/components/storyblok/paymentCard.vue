@@ -21,7 +21,7 @@
 				:inert="isExtra(textBlok._uid) && !expanded"
 			>
 				<div class="payment-card-benefit-inner">
-					<StoryblokComponent :blok="textBlok" />
+					<StoryblokComponent :blok="asBlok(textBlok)" />
 				</div>
 			</li>
 		</ul>
@@ -49,21 +49,18 @@
 			<StoryblokComponent
 				v-for="buttonBlok in blok.button"
 				:key="buttonBlok._uid"
-				:blok="buttonBlok"
+				:blok="asBlok(buttonBlok)"
 			/>
 		</div>
 	</article>
 </template>
 
 <script setup lang="ts">
+import type { PaymentCardBlok } from "~/types/blocks";
+
 import type { TextBlok } from "~/types/storyblok";
 
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+const props = defineProps<{ blok: PaymentCardBlok }>();
 
 // How many benefits show before the list is truncated. The plan runs to a dozen
 // entries, which pushed the price and CTA below the fold.

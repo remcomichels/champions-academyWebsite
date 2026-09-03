@@ -335,37 +335,7 @@ Lenis instance.
 
 ---
 
-## 10. Module-level helpers (not composables)
-
-Two helpers in `app/assets/js/components/` are plain functions, not Vue composables — they have
-no lifecycle management:
-
-**`initMagneticButtons(selector = '.magnetic')`** — floating sine-wave animation on `.magnetic`
-elements. Uses a shared `requestAnimationFrame` tick and a `Map` to track instances. Elements are
-garbage-collected from the map automatically when disconnected from the DOM (`!el.isConnected`).
-No explicit cleanup API. Call once after mount.
-
-Data attributes for per-element configuration:
-- `data-float-range-x`, `data-float-range-y` — amplitude in px (defaults to half element dimensions)
-- `data-float-speed-x`, `data-float-speed-y` — speed factor (default `0.001`)
-
-**`initVariableFontHover(selector, options)`** — variable-font `font-variation-settings` hover
-effect. Splits the element's text into `.char` spans and animates `wght` based on mouse proximity.
-Uses GSAP `to` with `overwrite: true` for smooth per-character updates. No cleanup API — listeners
-are added per-element and stay for the component's lifetime.
-
-Options: `minWght`, `maxWght`, `wdth`, `radiusMultiplier`, `ignoreMobile` (default `true`),
-`mobileWidth` (default `580`).
-
-Import these directly since they live in `app/assets/js/`:
-```ts
-import { initMagneticButtons } from '~/assets/js/components/magnetic'
-import { initVariableFontHover } from '~/assets/js/components/mouse'
-```
-
----
-
-## 11. SSR and client-only guards
+## 10. SSR and client-only guards
 
 All DOM access, `window`, `document`, and watcher registration must be guarded:
 
@@ -390,7 +360,7 @@ setup time — the actual DOM reads happen inside `onMounted`, which `useMarquee
 
 ---
 
-## 12. Anti-patterns to avoid
+## 11. Anti-patterns to avoid
 
 **Don't call `ScrollTrigger.killAll()`** — it kills every ScrollTrigger on the page, including
 those owned by other components. Kill only the instances your composable created (stored array).

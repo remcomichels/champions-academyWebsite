@@ -57,10 +57,10 @@ export default defineEventHandler(async (event) => {
 		throw createError({ statusCode: 500, statusMessage: "Could not load programme analytics" });
 	}
 
-	const now = current.data as ProgramAnalytics;
+	const now = current.data as unknown as ProgramAnalytics;
 	// The prior window is only ever read for its totals; a failure there costs
 	// the trends and nothing else, so it must not take the page down with it.
-	const was = (prior.data ?? null) as ProgramAnalytics | null;
+	const was = (prior.data ?? null) as unknown as ProgramAnalytics | null;
 
 	const period = days === 1 ? "vs yesterday" : `vs previous ${days} days`;
 
