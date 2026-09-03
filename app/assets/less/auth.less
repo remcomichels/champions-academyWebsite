@@ -1,0 +1,19 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Stylesheet entry point — the auth screens (/login, the mailed-link pages, and
+// the password form under /dashboard/account).
+//
+// Imported by layouts/auth.vue, and registered nowhere in nuxt.config.ts. That
+// is the whole point: `main.less` is the global stylesheet and loads on every
+// request, and until this split it carried the dashboard too — 112 KB of the
+// 216 KB every marketing visitor downloaded was a dashboard they will most
+// likely never open.
+//
+// Deliberately does NOT include components/dashboard.less. A sign-in screen is
+// a field, an alert and a button; it has no rail, no panels and no charts.
+//
+// Adding a rule for an auth screen? It goes in components/auth.less, or in the
+// shell partial if the dashboard needs it too.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@import './_authShell.less';
+@import './components/auth.less';

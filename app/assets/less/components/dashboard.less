@@ -12,40 +12,6 @@
 // touches a Less variable, so the green system is untouched.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// ── Radius ───────────────────────────────────────────────────────────────────
-// Two values, and only two. This file used to ship nine (2, 3, 4, 6, 8, 10, 12,
-// 16, 20 plus 50%), which is the loudest "not quite designed" tell there is —
-// mixed corners read as inconsistency rather than intent, and nobody can tell
-// you why the panel was 12 and the card next to it was 10.
-//
-// `@dashRadius` is every surface: panel, card, input, button, image, modal.
-// Nested elements get the same 8, not a smaller one — the "inner radius =
-// outer minus padding" trick is exactly what produced the 2/3/4 steps.
-//
-// `@dashRadiusPill` is anything capsule-shaped: badges, chips, avatars, dots,
-// toggles, progress bars. @vw300 rather than a raw 9999px because the vw scale
-// is the system here; a browser clamps border-radius to half the box, so the
-// same token gives a perfect capsule on a chip and a perfect circle on a dot.
-//
-// Chart data marks that sit in a grid or on an axis — heatmap cells, bar tops —
-// are square (0). A radius on a 4px-wide bar is noise, and square marks are
-// what both reference dashboards use.
-@dashRadius: @vw8;
-@dashRadiusPill: @vw300;
-
-// The one exception to "nested elements get the same 8".
-//
-// That rule holds everywhere a box sits *on* a surface. It does not hold where
-// a box sits *inside* one with only a few pixels of padding between them: a row
-// carrying the panel's own 8 inside a panel padded by 4 has a corner rounder
-// than the gap containing it, and the two arcs visibly fight. The old ladder
-// came from applying inner-minus-padding to everything; applying it in the one
-// place the geometry demands is not the same mistake.
-//
-// 4 is not a taste call — it is 8 minus the 4 of panel padding, which is the
-// radius that keeps the two arcs concentric. Used by the account menu's rows
-// and the timezone search field, and nowhere else.
-@dashRadiusInner: @vw4;
 
 // ── Chart bars ───────────────────────────────────────────────────────────────
 // The gutter between bars, and the cap on top of them. Tokens rather than two
@@ -1381,89 +1347,6 @@
     &-side { min-width: 0; }
 }
 
-// ── Buttons ──────────────────────────────────────────────────────────────────
-// The marketing `.button` is a green two-segment control with a detaching plus.
-// The dashboard needs a plain one, so it gets its own namespace rather than
-// overriding a shared class from underneath.
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: @vw8;
-    padding: @vw12 @vw18;
-    border-radius: @dashRadius;
-    border: max(1px, @vw1) solid transparent;
-    font-family: @body;
-    font-size: max(0.80em, @vw14);
-    font-weight: @semiBold;
-    line-height: 1.2;
-    white-space: nowrap;
-    cursor: pointer;
-    .transition();
-    transition-property: background-color, border-color, color, opacity;
-
-    .icon { font-size: max(0.90em, @vw16); }
-
-    &:focus-visible {
-        outline: max(2px, @vw2) solid var(--accent);
-        outline-offset: @vw2;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    // One per screen, for the actual next action.
-    &--primary {
-        background-color: var(--accent);
-        color: var(--on-accent);
-
-        @media (hover: hover) {
-            &:hover:not(:disabled) { background-color: var(--accent-hover); }
-        }
-
-        &:active:not(:disabled) { background-color: var(--accent-pressed); }
-    }
-
-    // The default. Most buttons are this.
-    &--subtle {
-        background-color: var(--surface-raised);
-        border-color: var(--border);
-        color: var(--text);
-
-        @media (hover: hover) {
-            &:hover:not(:disabled) { border-color: var(--border-strong); background-color: var(--surface-hover); }
-        }
-    }
-
-    &--ghost {
-        background: none;
-        border-color: var(--border);
-        color: var(--text-secondary);
-
-        @media (hover: hover) {
-            &:hover:not(:disabled) { color: var(--text); background-color: var(--surface-hover); }
-        }
-    }
-
-    // Outlined at rest, not bare. It had a transparent border and only grew one
-    // on hover, which is fine for a control among other controls — but this one
-    // now sits alone on a tinted panel where a borderless red word does not read
-    // as something you press. Nothing else used it, so the whole variant moves
-    // rather than gaining a modifier.
-    &--danger {
-        background: none;
-        border-color: var(--error);
-        color: var(--error);
-
-        @media (hover: hover) {
-            &:hover:not(:disabled) { background-color: var(--error-subtle); }
-        }
-    }
-
-    &--block { width: 100%; }
-}
 
 // ── Select trigger ───────────────────────────────────────────────────────────
 // What `NuxtDashboardSelectField` draws instead of a `<select>`, lifted out of

@@ -10,6 +10,13 @@
 </template>
 
 <script setup lang="ts">
+// The auth screens' stylesheet. Kept out of main.less — and so out of the CSS
+// every marketing page downloads — and imported here instead, which is what
+// scopes it to this layout. Nuxt inlines a layout's styles into the SSR'd HTML
+// rather than emitting a <link>, so /login still arrives fully styled on first
+// paint. See app/assets/less/auth.less.
+import "~/assets/less/auth.less";
+
 // No marketing header or footer: this page has one job, and the site nav is a
 // row of exits from it.
 //

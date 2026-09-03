@@ -36,8 +36,7 @@ interface UseIntroReturn {
 /**
  * First-load intro. The overlay is server-rendered so it covers the page from
  * the very first paint; on mount this slides it away and flips `introComplete`,
- * which is what un-gates the reveal composables (useInview, useLetterAnimation)
- * and the initPage-driven ones (useLineReveal, useWordReveal, useWordFade).
+ * which is what un-gates the reveal composables (useInview, useLetterAnimation).
  *
  * Plays once per full page load — app.vue mounts a single time, and
  * `introComplete` persists across SPA navigations, so it never replays on

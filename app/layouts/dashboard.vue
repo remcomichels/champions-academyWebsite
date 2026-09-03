@@ -150,6 +150,12 @@
 </template>
 
 <script setup lang="ts">
+// The dashboard's stylesheet. Kept out of main.less — and so out of the CSS
+// every marketing page downloads — and imported here instead, which is what
+// scopes it to this layout. Nuxt inlines a layout's styles into the SSR'd HTML
+// rather than emitting a <link>, so the first paint is still fully styled.
+// See app/assets/less/dashboard.less.
+import "~/assets/less/dashboard.less";
 import { ADMIN_HOME, AFFILIATE_HOME, isAdminRoute, matchNavItem } from "~/composables/useDashboardNav";
 
 const { isAdmin, affiliate, viewingAs, stopViewingAs, fetchMe } = useAuth();

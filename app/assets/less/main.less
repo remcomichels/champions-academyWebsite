@@ -24,11 +24,9 @@
 @import './components/faq_block.less';
 @import './components/cta_block.less';
 @import './components/changelog.less';
+@import './components/consent.less';
 
-// Dashboard / auth surfaces. The token file must load with them: it defines
-// the custom properties every rule below reads, and nothing else imports it.
-@import './components/dashboardTokens.less';
-@import './components/form.less';
-@import './components/alert.less';
-@import './components/auth.less';
-@import './components/dashboard.less';
+// The dashboard and auth surfaces are NOT imported here. They are their own
+// entry point — `dashboard.less` in this directory — loaded by the two layouts
+// that need them, so a marketing page no longer downloads half its CSS for a
+// dashboard it never renders. See the header of that file.

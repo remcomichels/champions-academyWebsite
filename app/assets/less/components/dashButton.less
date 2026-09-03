@@ -1,0 +1,87 @@
+// ── Buttons ──────────────────────────────────────────────────────────────────
+// The marketing `.button` is a green two-segment control with a detaching plus.
+// The dashboard needs a plain one, so it gets its own namespace rather than
+// overriding a shared class from underneath.
+//
+// Its own file because the auth screens need it too and they do not load
+// components/dashboard.less — a sign-in form is a field, an alert and a
+// button, not 6,000 lines of dashboard. Loaded by both entry points.
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: @vw8;
+    padding: @vw12 @vw18;
+    border-radius: @dashRadius;
+    border: max(1px, @vw1) solid transparent;
+    font-family: @body;
+    font-size: max(0.80em, @vw14);
+    font-weight: @semiBold;
+    line-height: 1.2;
+    white-space: nowrap;
+    cursor: pointer;
+    .transition();
+    transition-property: background-color, border-color, color, opacity;
+
+    .icon { font-size: max(0.90em, @vw16); }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    // One per screen, for the actual next action.
+    &--primary {
+        background-color: var(--accent);
+        color: var(--on-accent);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { background-color: var(--accent-hover); }
+        }
+
+        &:active:not(:disabled) { background-color: var(--accent-pressed); }
+    }
+
+    // The default. Most buttons are this.
+    &--subtle {
+        background-color: var(--surface-raised);
+        border-color: var(--border);
+        color: var(--text);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { border-color: var(--border-strong); background-color: var(--surface-hover); }
+        }
+    }
+
+    &--ghost {
+        background: none;
+        border-color: var(--border);
+        color: var(--text-secondary);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { color: var(--text); background-color: var(--surface-hover); }
+        }
+    }
+
+    // Outlined at rest, not bare. It had a transparent border and only grew one
+    // on hover, which is fine for a control among other controls — but this one
+    // now sits alone on a tinted panel where a borderless red word does not read
+    // as something you press. Nothing else used it, so the whole variant moves
+    // rather than gaining a modifier.
+    &--danger {
+        background: none;
+        border-color: var(--error);
+        color: var(--error);
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { background-color: var(--error-subtle); }
+        }
+    }
+
+    &--block { width: 100%; }
+}
