@@ -228,7 +228,7 @@ changing a block in Storyblok or a table in Supabase, and commit the result.
 
 ```bash
 npm run types:supabase    # Supabase public schema → server/types/supabase.d.ts
-npm run types:storyblok   # Storyblok block schema → storyblok.gen.d.ts (path printed by the CLI)
+npm run types:storyblok   # Storyblok block schema → .storyblok/types/<space>/storyblok.gen.d.ts
 ```
 
 Both need a one-time login (`supabase login`, `storyblok login` — the Storyblok
@@ -240,10 +240,10 @@ The Supabase types live under `server/` because nothing in the browser talks
 to the database — `db()` in `server/utils/supabase.ts` is typed with them, so a
 wrong column or table name is a build error.
 
-The Storyblok types are generated as `storyblok.gen.d.ts` so they cannot
-overwrite the hand-written `app/types/storyblok.ts`. Those two still need
-reconciling — the hand-written file has drifted (13 templates read
-`blok.anchor`; 3 interfaces declare it).
+The Storyblok types stay in the CLI's own directory because they import a
+shared base file by relative path; only that `types/` subtree is committed, not
+the schema dump or the logs beside it. They do not yet replace the hand-written
+`app/types/storyblok.ts` — reconciling the two is still to do.
 
 ---
 
