@@ -22,12 +22,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { TestimonialBlok } from "~/types/blocks";
+
+const props = defineProps<{ blok: TestimonialBlok }>();
 
 // The country field is a multi-option — Storyblok stores it as an array
 const country = computed<string>(() => props.blok.country?.[0] ?? "");

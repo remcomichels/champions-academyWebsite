@@ -19,12 +19,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { VideoBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: VideoBlockBlok }>();
 
 const { initLetters, destroy } = useLetterAnimation()
 

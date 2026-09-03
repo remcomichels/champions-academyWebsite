@@ -11,7 +11,7 @@
 				<StoryblokComponent
 					v-for="faqItemBlok in blok.faq_item"
 					:key="faqItemBlok._uid"
-					:blok="faqItemBlok"
+					:blok="asBlok(faqItemBlok)"
 				/>
 			</div>
 		</div>
@@ -19,12 +19,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { FaqBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: FaqBlockBlok }>();
 
 const { initLetters, destroy } = useLetterAnimation();
 

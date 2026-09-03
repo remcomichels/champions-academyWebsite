@@ -19,12 +19,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { FaqItemBlok } from "~/types/blocks";
+
+const props = defineProps<{ blok: FaqItemBlok }>();
 
 const open = ref(false);
 

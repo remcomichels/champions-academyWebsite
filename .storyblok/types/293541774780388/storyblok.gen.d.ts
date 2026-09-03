@@ -6,10 +6,10 @@ export interface AboutUsBlockBlok {
   title?: string;
   text?: string;
   cards?: CardBlok[];
+  anchor?: string;
   component: "aboutUs_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface AiPanelBlok {
@@ -23,16 +23,15 @@ export interface AiPanelBlok {
   component: "ai_panel";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface AmethystBlockBlok {
   auto_switch_seconds?: string;
   panels?: AiPanelBlok[];
+  anchor?: string;
   component: "amethyst_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface BenefitBlok {
@@ -41,7 +40,6 @@ export interface BenefitBlok {
   component: "benefit";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface BenefitsBlockBlok {
@@ -53,19 +51,19 @@ export interface BenefitsBlockBlok {
   benefit?: {
     [k: string]: unknown;
   }[];
+  anchor?: string;
   component: "benefits_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface BenefitsOverviewBlockBlok {
   sub_text?: string;
   title?: string;
+  anchor?: string;
   component: "benefitsOverview_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface ButtonBlok {
@@ -76,7 +74,6 @@ export interface ButtonBlok {
   component: "button";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface CardBlok {
@@ -85,7 +82,6 @@ export interface CardBlok {
   component: "card";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface ConfigBlok {
@@ -97,7 +93,6 @@ export interface ConfigBlok {
   component: "config";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface CtaBlockBlok {
@@ -106,10 +101,10 @@ export interface CtaBlockBlok {
   sub_title?: string;
   button?: ButtonBlok[];
   text?: string;
+  anchor?: string;
   component: "cta_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface FaqBlockBlok {
@@ -121,7 +116,6 @@ export interface FaqBlockBlok {
   component: "faq_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface FaqItemBlok {
@@ -130,7 +124,6 @@ export interface FaqItemBlok {
   component: "faq_item";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface FooterMenuBlok {
@@ -146,7 +139,6 @@ export interface FooterMenuBlok {
   component: "footer_menu";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface HeroBlockBlok {
@@ -155,19 +147,19 @@ export interface HeroBlockBlok {
   sub_title?: string;
   text?: string;
   button?: ButtonBlok[];
+  anchor?: string;
   component: "hero_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface MarqueeBlockBlok {
   title?: string;
   item?: StoryblokMultiasset;
+  anchor?: string;
   component: "marquee_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface MenuLinkBlok {
@@ -177,7 +169,6 @@ export interface MenuLinkBlok {
   component: "menu_link";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface PageBlok {
@@ -185,7 +176,6 @@ export interface PageBlok {
   component: "page";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface PaymentCardBlok {
@@ -199,17 +189,16 @@ export interface PaymentCardBlok {
   component: "paymentCard";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface PaymentPlansBlockBlok {
   sub_title?: string;
   title?: string;
   paymentCard?: PaymentCardBlok[];
+  anchor?: string;
   component: "paymentPlans_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface StatisticBlok {
@@ -218,15 +207,15 @@ export interface StatisticBlok {
   component: "statistic";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface StatisticsBlockBlok {
   statistic?: StatisticBlok[];
+  anchor?: string;
+  pre_text_line?: string;
   component: "statistics_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface StepBlok {
@@ -236,7 +225,6 @@ export interface StepBlok {
   component: "step";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface TeamBlockBlok {
@@ -249,7 +237,6 @@ export interface TeamBlockBlok {
   component: "team_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface TeamCardBlok {
@@ -260,7 +247,6 @@ export interface TeamCardBlok {
   component: "teamCard";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface TestimonialBlok {
@@ -273,7 +259,6 @@ export interface TestimonialBlok {
   component: "testimonial";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface TestimonialsBlockBlok {
@@ -281,10 +266,10 @@ export interface TestimonialsBlockBlok {
   title?: string;
   sub_title?: string;
   testimonial?: TestimonialBlok[];
+  anchor?: string;
   component: "testimonials_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface TextBlok {
@@ -292,17 +277,21 @@ export interface TextBlok {
   component: "text";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export interface VideoBlockBlok {
   sub_title?: string;
   title?: string;
   video_id?: string;
+  anchor?: string;
+  video_title?: string;
+  poster_image?: StoryblokAsset;
+  autoplay?: boolean;
+  loop?: boolean;
+  show_controls?: boolean;
   component: "video_block";
   _uid: string;
   _editable?: string | undefined;
-  [k: string]: unknown;
 }
 
 export type ContentType = BenefitBlok | ConfigBlok | PageBlok;

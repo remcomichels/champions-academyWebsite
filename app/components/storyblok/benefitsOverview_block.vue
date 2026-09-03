@@ -26,14 +26,11 @@
 </template>
 
 <script setup lang="ts">
+import type { BenefitsOverviewBlockBlok } from "~/types/blocks";
+
 import type { BenefitStoryRef } from "~/types/storyblok";
 
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+defineProps<{ blok: BenefitsOverviewBlockBlok }>();
 
 // Every story in the Storyblok `benefits/` folder, in the folder's own order —
 // adding a benefit in the CMS shows up here with no page edit. `is_startpage:

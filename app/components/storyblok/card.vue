@@ -7,10 +7,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { CardBlok } from "~/types/blocks";
+
+defineProps<{ blok: CardBlok }>();
 </script>

@@ -14,7 +14,7 @@
 				<StoryblokComponent
 					v-for="buttonBlok in blok.button"
 					:key="buttonBlok._uid"
-					:blok="buttonBlok"
+					:blok="asBlok(buttonBlok)"
 				/>
 			</div>
 
@@ -24,12 +24,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { CtaBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: CtaBlockBlok }>();
 
 const { initLetters, destroy } = useLetterAnimation();
 

@@ -10,7 +10,7 @@
 				<StoryblokComponent
 					v-for="cardBlok in blok.paymentCard"
 					:key="cardBlok._uid"
-					:blok="cardBlok"
+					:blok="asBlok(cardBlok)"
 				/>
 			</div>
 		</div>
@@ -18,12 +18,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { PaymentPlansBlockBlok } from "~/types/blocks";
+
+defineProps<{ blok: PaymentPlansBlockBlok }>();
 
 const { initLetters, destroy } = useLetterAnimation();
 

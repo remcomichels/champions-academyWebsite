@@ -19,12 +19,9 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+import type { StatisticBlok } from "~/types/blocks";
+
+const props = defineProps<{ blok: StatisticBlok }>();
 
 // Split a CMS count like "250+", "$1,500" or "98.5%" into the numeric target
 // and its surrounding prefix/suffix for useCountUp's data attributes.

@@ -10,7 +10,7 @@
 				<StoryblokComponent
 					v-for="stepBlok in blok.steps"
 					:key="stepBlok._uid"
-					:blok="stepBlok"
+					:blok="asBlok(stepBlok)"
 				/>
 			</div>
 
@@ -18,7 +18,7 @@
 				<StoryblokComponent
 					v-for="buttonBlok in blok.button"
 					:key="buttonBlok._uid"
-					:blok="buttonBlok"
+					:blok="asBlok(buttonBlok)"
 				/>
 			</div>
 		</div>
@@ -30,15 +30,12 @@
 </template>
 
 <script setup lang="ts">
+import type { AiPanelBlok } from "~/types/blocks";
+
 // One AI's content, rendered inside amethyst_block's switcher. The parent owns
 // the tabs, the slide transition and the auto-switch timer; this block is just
 // the layout. The title keeps `data-scroll-letters` so the initially-active
 // panel gets the letter reveal (driven by the parent) — panels swapped in later
 // simply render the title as-is, which is fine since nothing hides it.
-defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+defineProps<{ blok: AiPanelBlok }>();
 </script>

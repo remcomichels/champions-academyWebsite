@@ -29,7 +29,7 @@
 					<StoryblokComponent
 						v-if="activePanel"
 						:key="activePanel._uid"
-						:blok="activePanel"
+						:blok="asBlok(activePanel)"
 					/>
 				</Transition>
 			</div>
@@ -38,15 +38,11 @@
 </template>
 
 <script setup lang="ts">
-import type { AiPanelBlok } from "~/types/storyblok";
+import type { AmethystBlockBlok, AiPanelBlok } from "~/types/blocks";
+
 import { useAmethystSwitcher } from "~/assets/js/components/amethyst_block";
 
-const props = defineProps({
-	blok: {
-		type: Object,
-		required: true,
-	},
-});
+const props = defineProps<{ blok: AmethystBlockBlok }>();
 
 // Typed for the tab list (index + tab_label). `activePanel` below stays loose
 // because <StoryblokComponent>'s `blok` prop is the broad SbBlokData.
