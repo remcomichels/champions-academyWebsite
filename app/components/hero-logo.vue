@@ -3,19 +3,16 @@
 </template>
 
 <script setup lang="ts">
-import { initHeroLogo, type HeroLogoOptions } from "~/assets/js/components/hero-logo";
+// Type-only, so it is erased at build time and pulls neither this module nor
+// three.js into the chunk graph. The runtime import is the one below.
+import type { HeroLogoOptions } from "~/assets/js/components/hero-logo";
 
 const props = defineProps<{ framing?: HeroLogoOptions["framing"] }>();
 
 const container = useTemplateRef<HTMLElement>("container");
-let destroy: (() => void) | null = null;
 
-onMounted(() => {
-	if (container.value) destroy = initHeroLogo(container.value, { framing: props.framing });
-});
-
-onUnmounted(() => {
-	destroy?.();
-	destroy = null;
+useDeferredScene(container, async () => {
+	const { initHeroLogo } = await import("~/assets/js/components/hero-logo");
+	return el => initHeroLogo(el, { framing: props.framing });
 });
 </script>

@@ -1,0 +1,16 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Stylesheet entry point — the affiliate dashboard.
+//
+// Imported by layouts/dashboard.vue, and registered nowhere in nuxt.config.ts.
+// `main.less` is the global stylesheet that loads on every request; this one
+// loads only for someone actually inside the dashboard. Before the split, a
+// marketing page served all of it: 112 KB of the 216 KB on the wire was this.
+//
+// The sibling entry point is `auth.less`, which shares the shell partial below
+// but stops short of components/dashboard.less.
+//
+// Adding a dashboard component's LESS file? Register it here, not in main.less.
+// ─────────────────────────────────────────────────────────────────────────────
+
+@import './_authShell.less';
+@import './components/dashboard.less';

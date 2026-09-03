@@ -147,7 +147,8 @@
 </template>
 
 <script setup>
-import Hls from 'hls.js'
+// No `import Hls from 'hls.js'` here on purpose — it is loaded on demand in
+// attach(), which is where the reasoning lives.
 
 const props = defineProps({
   videoId: {
@@ -344,6 +345,21 @@ const formatTime = (secs) => {
 // driving one <video> and fight over play/pause.
 let hls = null
 
+// Guards for the window that opens once the library is fetched on demand
+// rather than bundled in (see attach()). Both close a hole that did not exist
+// while `new Hls()` ran synchronously.
+//
+// `attaching` — a second attach() call could otherwise slip past the `hls`
+// guard while the first is still awaiting the import, and two instances would
+// end up driving one <video>: exactly the fight described above.
+//
+// `unmounted` — a marquee scrolls these in and out constantly, so the import
+// can still be in flight when onUnmounted has already run its destroy. Without
+// this the instance would be created afterwards with nothing left holding it,
+// left buffering against the CDN for the life of the page.
+let attaching = false
+let unmounted = false
+
 // Transient network trouble is worth retrying; a missing file is not. The cap
 // is what keeps the difference from turning into an infinite request loop.
 const MAX_NETWORK_RETRIES = 3
@@ -361,10 +377,28 @@ const onFullscreenChange = () => {
  * testimonials mounts twenty-four of these — twenty-four HLS instances all
  * pulling segments from one host, against a browser cap of six connections to
  * it. Attaching on approach keeps that to the handful actually on screen.
+ *
+ * hls.js is fetched here rather than imported at the top of the file. Imported
+ * statically it is bundled into this component's chunk — 530 KB, preloaded
+ * with any page carrying a video block, whether or not a video is ever reached.
+ * That defeated the deferral above: the attach waited for the viewport, the
+ * download did not. As a dynamic import it becomes its own chunk, prefetched
+ * at idle priority and only ever executed by a player that is actually
+ * approaching.
  */
-const attach = () => {
+const attach = async () => {
+  if (!videoEl.value || hls || attaching || videoEl.value.src) return
+  attaching = true
+
+  const { default: Hls } = await import('hls.js')
+
+  // Re-read rather than reusing a reference captured before the await: the
+  // component may have been torn down and the ref emptied while it ran.
   const video = videoEl.value
-  if (!video || hls || video.src) return
+  if (unmounted || !video) {
+    attaching = false
+    return
+  }
 
   if (Hls.isSupported()) {
     hls = new Hls()
@@ -424,6 +458,8 @@ const attach = () => {
     // Safari plays HLS natively and needs no library.
     video.src = hlsUrl.value
   }
+
+  attaching = false
 }
 
 let observer = null
@@ -454,6 +490,10 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // Before anything else: an in-flight attach() reads this the moment its
+  // import resolves, and must find it already set.
+  unmounted = true
+
   clearTimeout(hideTimer)
   cancelAnimationFrame(_rafId)
 

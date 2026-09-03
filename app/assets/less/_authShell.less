@@ -1,0 +1,16 @@
+// The chrome both authenticated surfaces are built from: the theme tokens, and
+// the three controls that appear on every one of these screens.
+//
+// Underscore-prefixed because it is a partial, not an entry point — it is
+// pulled into `auth.less` and `dashboard.less` rather than loaded on its own.
+// LESS @import is compile-time inlining, so each of those entry points ends up
+// with its own self-contained copy. That duplication is deliberate and cheap:
+// ~600 lines carried twice, against the 6,200 of components/dashboard.less that
+// /login then never has to download at all.
+
+// Must come first: it declares the custom properties everything below reads.
+@import './components/dashboardTokens.less';
+
+@import './components/form.less';
+@import './components/alert.less';
+@import './components/dashButton.less';
