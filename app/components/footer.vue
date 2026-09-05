@@ -35,16 +35,27 @@
 				</div>
 			</div>
 
-			<div class="footer-sub">
-				<p class="footer-copyright">&copy; {{ year }} Champions Academy</p>
-				<!-- Withdrawing consent has to be as easy as giving it, so this sits
-				     on every page rather than only in the policy. Its own component
-				     inside ClientOnly: the composable reads a cookie, and calling it
-				     from this file's setup would put consent state in the SSR payload
-				     and make the page vary by cookie. -->
+			<!-- Legal row. Its own line above the sub row rather than inline with
+			     the copyright: two underlined controls dropped into a
+			     space-between row read as part of the disclaimer sitting next to
+			     them, and both of these are things a visitor comes to the footer
+			     deliberately looking for.
+
+			     Withdrawing consent has to be as easy as giving it, so the cookie
+			     control is on every page rather than only in the policy. Its own
+			     component inside ClientOnly: the composable reads a cookie, and
+			     calling it from this file's setup would put consent state in the
+			     SSR payload and make the page vary by cookie. ClientOnly skips
+			     the render, not the setup, so the boundary has to sit above it. -->
+			<div class="footer-legal">
+				<NuxtLink to="/privacy" class="footer-legalLink">Privacy policy</NuxtLink>
 				<ClientOnly>
 					<NuxtCookieSettingsButton />
 				</ClientOnly>
+			</div>
+
+			<div class="footer-sub">
+				<p class="footer-copyright">&copy; {{ year }} Champions Academy</p>
 				<p class="footer-disclaimer">{{ footer.subFooter_text }}</p>
 				<p class="footer-credit">
 					Crafted with care by

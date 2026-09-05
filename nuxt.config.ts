@@ -300,7 +300,12 @@ export default defineNuxtConfig({
 			// Swap in a PNG if a logo ever needs to appear in a knowledge panel.
 			logo: "/images/logo.svg",
 			description: "A trading community built on real education, live mentorship, and proven SMC strategy — as one connected system.",
-			email: "thechampionslifestyle@gmail.com",
+			// The same address the privacy policy gives out. Everything a person
+			// might write to the organisation about — legal, privacy, general
+			// enquiries — goes to one inbox that is actually watched; the
+			// personal address that used to sit here was a second one that
+			// answers the same mail.
+			email: "legal@championstradingmc.com",
 			// No telephone or postal address, by choice.
 			// Telegram is deliberately excluded: it points at a personal account
 			// rather than a brand profile, which is not what sameAs is for.

@@ -1,7 +1,13 @@
-// Consent withdrawal, on every page. Sits quietly next to the copyright rather
-// than shouting — but is never hidden, since withdrawing has to be as reachable
-// as the banner that asked in the first place.
-.footer-cookieSettings {
+// The two legal controls, on every page. They sit quietly on their own line
+// rather than shouting — but are never hidden, since withdrawing consent has to
+// be as reachable as the banner that asked in the first place, and the consent
+// banner links to the policy from every page it appears on.
+//
+// One rule for both: the <button> that reopens the consent choice and the
+// <NuxtLink> to the policy are different elements doing the same job in the same
+// row, and they would read as a mismatched pair if only one of them were styled.
+.footer-cookieSettings,
+.footer-legalLink {
     background: none;
     border: none;
     padding: 0;
@@ -99,13 +105,33 @@
         color: @text;
     }
 
+    // ── Legal row — privacy policy · cookie settings ────────────────────────
+    // Centred, and on its own line above the sub row. Two underlined controls
+    // inside the sub row's space-between layout sat between the copyright and
+    // the disclaimer and read as part of that fine print; on their own line they
+    // are the one thing on it, which is what makes them findable.
+    .footer-legal {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: @vw24;
+        padding: @vw24 0 0 0;
+        font-family: @body;
+        // Matches the sub row: the controls set `font-size: inherit`, so the
+        // size is decided here rather than on each of them.
+        font-size: max(0.75em, @vw14);
+    }
+
     // ── Sub row — copyright · disclaimer · credit ───────────────────────────
     .footer-sub {
         display: flex;
         justify-content: space-between;
         align-items: center;
         gap: @vw24;
-        padding: @vw24 0 0 0;
+        // Half the row above it: the legal row already opened the gap under the
+        // main row's border, and repeating it in full left the two lines further
+        // apart than either is from anything else.
+        padding: @vw12 0 0 0;
         font-family: @body;
         font-size: max(0.75em, @vw14);
     }
@@ -177,9 +203,15 @@
             font-size: max(1em, @vw16-1080);
         }
 
-        .footer-sub {
+        .footer-legal {
             gap: @vw24-1080;
             padding: @vw24-1080 0 0 0;
+            font-size: max(0.75em, @vw14-1080);
+        }
+
+        .footer-sub {
+            gap: @vw24-1080;
+            padding: @vw12-1080 0 0 0;
             font-size: max(0.75em, @vw14-1080);
         }
     }
@@ -251,9 +283,18 @@
             font-size: max(1em, @vw16-580);
         }
 
+        // Stays a single centred line here. Two short links fit a 320px
+        // viewport side by side, and stacking them would put four separate
+        // centred lines under the columns.
+        .footer-legal {
+            gap: @vw20-580;
+            padding: @vw24-580 0 0 0;
+            font-size: max(0.75em, @vw12-580);
+        }
+
         .footer-sub {
             gap: @vw12-580;
-            padding: @vw24-580 0 0 0;
+            padding: @vw12-580 0 0 0;
             font-size: max(0.75em, @vw12-580);
         }
     }

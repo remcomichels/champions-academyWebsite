@@ -1,0 +1,381 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// The privacy policy — /privacy.
+//
+// Same reasoning as changelog.less: written in the marketing colour system, not
+// the dashboard's. Nothing here can reach for `var(--surface)` or `var(--text)`
+// — those are declared under `[data-theme]` on <html>, which is only ever set
+// on /login and /dashboard/**, so on this page they resolve to nothing.
+//
+// A document, not a marketing section. It is set in @body throughout, at one
+// reading measure, with the section rules doing the work the `---` breaks do in
+// the source draft.
+// ─────────────────────────────────────────────────────────────────────────────
+
+.policyPage {
+
+    // Half of `.section`'s top padding, matching /changelog. Both pages open on
+    // a line of body text rather than a display-size title, and the full
+    // marketing gap leaves the first line sitting a screen below the header.
+    padding-top: @vw125;
+
+    // The same flat 768px measure the changelog and the dashboard's Preferences
+    // column use. Every other length on this page is a vw constant because it
+    // is a proportion; a reading measure is not one. This page is the longest
+    // stretch of continuous prose on the site, so the measure matters more here
+    // than anywhere else.
+    &-inner {
+        width: 100%;
+        max-width: 768px;
+        margin-inline: auto;
+    }
+
+    &-head {
+        margin: 0 0 @vw48 0;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: max(1.6em, @vw40);
+        font-weight: @bold;
+        line-height: 1.15;
+        letter-spacing: -0.01em;
+        color: @title;
+    }
+
+    &-text {
+        font-family: @body;
+        // Floors at the inherited paragraph size — the raw vw falls under 9px
+        // on a phone, the same reason the other blocks here use max().
+        font-size: max(1em, @vw18);
+        line-height: 1.55;
+        // `_general.less` sets `white-space: pre-line` on every <p>, which turns
+        // the source line wrapping of a hand-written paragraph into hard breaks
+        // in the browser. Every paragraph on this page is prose that must rewrap
+        // to its own measure, so the default is overridden here rather than
+        // relying on the template being written as unwrapped single lines.
+        white-space: normal;
+        margin: @vw16 0 0 0;
+        opacity: 0.75;
+    }
+
+    &-date {
+        font-family: @body;
+        font-size: max(0.85em, @vw14);
+        font-variant-numeric: tabular-nums;
+        white-space: normal;
+        margin: @vw20 0 0 0;
+        opacity: 0.55;
+    }
+}
+
+// ── Contents ─────────────────────────────────────────────────────────────────
+// Fourteen sections is past the point where scrolling to find one is
+// reasonable, and the sections people actually arrive looking for — their
+// rights, cookies, who we share with — are the back half of the document.
+.policy-toc {
+    padding: @vw24 @vw28;
+    border: max(1px, @vw1) solid @border;
+    border-radius: @vw8;
+
+    &-title {
+        font-family: @body;
+        font-size: max(0.7em, @vw12);
+        font-weight: @semiBold;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        opacity: 0.55;
+        margin: 0 0 @vw16 0;
+    }
+
+    // Two columns, and `column-count` rather than a grid: the list is one
+    // ordered sequence that happens to be set in two columns, so it should flow
+    // down the first and continue in the second. A grid would order it across.
+    &-list {
+        column-count: 2;
+        column-gap: @vw40;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+
+    &-item {
+        // Stops a numbered item breaking across the column boundary.
+        break-inside: avoid;
+        margin: 0 0 @vw8 0;
+    }
+}
+
+.policy-tocLink {
+    font-family: @body;
+    font-size: max(0.9em, @vw15);
+    line-height: 1.4;
+    color: inherit;
+    opacity: 0.75;
+    text-decoration: none;
+    .transition();
+    transition-property: opacity, color;
+
+    &:hover {
+        opacity: 1;
+        color: @primary;
+    }
+}
+
+// ── The document ─────────────────────────────────────────────────────────────
+.policy-section {
+    // The rule between sections. On the section rather than a standalone <hr>,
+    // so a section added or moved carries its own separator with it.
+    margin: @vw48 0 0 0;
+    padding: @vw48 0 0 0;
+    border-top: max(1px, @vw1) solid @border;
+
+    // Anchored from the table of contents, so the heading must not land under
+    // the fixed header when it is jumped to.
+    scroll-margin-top: @vw125;
+}
+
+.policy-heading {
+    font-family: @body;
+    font-size: max(1.15em, @vw24);
+    font-weight: @bold;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    color: @title;
+    margin: 0 0 @vw20 0;
+}
+
+// The bold run-in lines in the draft — "If you visit the website", "If you are
+// an affiliate". They group the list under them, so they are headings rather
+// than emphasised paragraphs, and they are set a step down from the section
+// heading to read that way.
+.policy-subheading {
+    font-family: @body;
+    font-size: max(1em, @vw17);
+    font-weight: @semiBold;
+    line-height: 1.35;
+    color: @title;
+    margin: @vw32 0 @vw12 0;
+
+    &:first-child {
+        margin-top: 0;
+    }
+}
+
+.policy-copy {
+    font-family: @body;
+    font-size: max(1em, @vw16);
+    line-height: 1.65;
+    // See the note on `.policyPage-text` — `_general.less` sets `pre-line`.
+    white-space: normal;
+    margin: 0 0 @vw16 0;
+    opacity: 0.75;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+// Emphasis inside the prose. The draft leans on bold to carry the sentences
+// that change what a reader does — "we do not sell", "we never see your card
+// details" — so it is set to full strength against the 0.75 body around it
+// rather than to a heavier weight alone.
+.policy-copy strong,
+.policy-item strong {
+    font-weight: @semiBold;
+    color: @title;
+}
+
+.policy-list {
+    list-style: none;
+    margin: 0 0 @vw16 0;
+    padding: 0;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.policy-item {
+    position: relative;
+    font-family: @body;
+    font-size: max(1em, @vw16);
+    line-height: 1.65;
+    padding-left: @vw20;
+    margin: 0 0 @vw10 0;
+    opacity: 0.75;
+
+    &:last-child {
+        margin-bottom: 0;
+    }
+
+    // The bullet sits on the first line's cap height rather than centred on the
+    // line box, so it stays put when an item wraps to three lines.
+    &::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.6em;
+        width: @vw5;
+        height: @vw5;
+        border-radius: 50%;
+        background-color: @primary;
+    }
+}
+
+// ── Service providers table ──────────────────────────────────────────────────
+// Its own scroll container. Three columns of provider names and jurisdictions
+// cannot be made to fit a 360px phone without either wrapping "United States"
+// down one letter per line or shrinking the type below reading size, so the
+// table keeps its width and scrolls inside this box while the page itself never
+// scrolls sideways.
+.policy-tableWrap {
+    margin: 0 0 @vw16 0;
+    overflow-x: auto;
+    // Keeps the focus ring on a scrolled-to cell from being clipped by the
+    // overflow container.
+    padding-bottom: @vw2;
+}
+
+.policy-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: @body;
+    font-size: max(0.9em, @vw15);
+    line-height: 1.5;
+    // Below this the columns collapse into unreadable slivers; past it the
+    // wrapper scrolls instead.
+    min-width: 460px;
+
+    th, td {
+        text-align: left;
+        vertical-align: top;
+        padding: @vw12 @vw16;
+        border-bottom: max(1px, @vw1) solid @border;
+    }
+
+    th {
+        font-weight: @semiBold;
+        color: @title;
+        white-space: nowrap;
+    }
+
+    td {
+        opacity: 0.75;
+    }
+
+    // The provider name column, and the jurisdiction — the two things someone
+    // scanning this table is actually looking for.
+    td strong {
+        font-weight: @semiBold;
+        color: @title;
+    }
+
+    tr:last-child td {
+        border-bottom: none;
+    }
+}
+
+// ── Inline controls and links ────────────────────────────────────────────────
+.policy-link {
+    color: @primary;
+    text-decoration: underline;
+    text-underline-offset: 0.2em;
+    .transition();
+    transition-property: opacity;
+
+    &:hover {
+        opacity: 0.7;
+    }
+}
+
+// Section 5 tells the reader they can change their analytics choice, so it
+// gives them the control rather than only describing where to find it —
+// withdrawing has to be as easy as giving. It is the footer's own component, so
+// the behaviour has one definition; only its placement is restyled here.
+.policy-consent {
+    // Spaced on both sides, not just above: it is a control sitting in a column
+    // of prose, and with only a top margin the paragraph under it closed up
+    // against the button and read as a caption belonging to it.
+    margin: @vw24 0 @vw24 0;
+
+    .footer-cookieSettings {
+        font-size: max(1em, @vw16);
+        opacity: 1;
+        color: @primary;
+    }
+}
+
+// ── 1080 ─────────────────────────────────────────────────────────────────────
+@media (max-width: 1080px) {
+    .policyPage {
+        // `.section` sets @vw200-1080 top and bottom, so the bottom is restated
+        // rather than left inheriting a figure the top no longer uses.
+        padding-top: @vw100-1080;
+        padding-bottom: @vw200-1080;
+
+        &-head { margin-bottom: @vw48-1080; }
+        &-title { font-size: max(1.6em, @vw40-1080); }
+        &-text { margin-top: @vw16-1080; }
+        &-date { margin-top: @vw20-1080; }
+    }
+
+    .policy-toc {
+        padding: @vw24-1080 @vw28-1080;
+
+        &-title { margin-bottom: @vw16-1080; }
+        &-list { column-gap: @vw40-1080; }
+        &-item { margin-bottom: @vw8-1080; }
+    }
+
+    .policy-section {
+        margin-top: @vw48-1080;
+        padding-top: @vw48-1080;
+        scroll-margin-top: @vw100-1080;
+    }
+
+    .policy-heading {
+        font-size: max(1.15em, @vw24-1080);
+        margin-bottom: @vw20-1080;
+    }
+
+    .policy-subheading {
+        margin: @vw32-1080 0 @vw12-1080 0;
+    }
+
+    .policy-copy { margin-bottom: @vw16-1080; }
+    .policy-list { margin-bottom: @vw16-1080; }
+    .policy-item { padding-left: @vw20-1080; margin-bottom: @vw10-1080; }
+    .policy-tableWrap { margin-bottom: @vw16-1080; }
+    .policy-table th, .policy-table td { padding: @vw12-1080 @vw16-1080; }
+    .policy-consent { margin: @vw24-1080 0 @vw24-1080 0; }
+}
+
+// ── 600 ──────────────────────────────────────────────────────────────────────
+// The contents drop to a single column. Two columns of a phone leaves each one
+// too narrow for "10. California residents" to sit on one line, and a table of
+// contents that wraps every other entry is harder to scan than a longer list.
+@media (max-width: 600px) {
+    .policyPage {
+        padding-top: @vw80-580;
+        padding-bottom: @vw160-580;
+
+        &-head { margin-bottom: @vw40-580; }
+    }
+
+    .policy-toc {
+        padding: @vw20-580 @vw20-580;
+
+        &-list { column-count: 1; }
+        &-item { margin-bottom: @vw10-580; }
+    }
+
+    .policy-section {
+        margin-top: @vw40-580;
+        padding-top: @vw40-580;
+        scroll-margin-top: @vw80-580;
+    }
+
+    .policy-heading { margin-bottom: @vw16-580; }
+    .policy-subheading { margin: @vw24-580 0 @vw12-580 0; }
+    .policy-item { padding-left: @vw18-580; }
+}

@@ -2,13 +2,15 @@
 
 > **Draft for review.** Written to match what the site actually does as of
 > August 2026. Have it checked by someone qualified before launch, particularly
-> Sections 6 and 7 (international transfers). Create it in Storyblok at slug
-> `privacy` — the consent banner and footer both link to `/privacy`.
+> Sections 6 and 7 (international transfers).
 >
-> **Fill in before publishing:** the legal entity name and registration details
-> in Section 1, and the effective date.
+> This is now published as a page in code, not in Storyblok: `app/pages/privacy.vue`,
+> served at `/privacy`, which the consent banner and the footer both link to.
+> This file is the wording; that file is what ships. Change them together.
+>
+> **Still open:** the legal entity registration details in Section 1.
 
-**Effective date:** [DATE]
+**Effective date:** 5 sep 2026
 
 This Privacy Policy explains how Champions Academy collects, uses, shares and
 protects your personal information when you visit https://www.jointhevips.com
@@ -29,10 +31,9 @@ financial advice.
 **Netherlands and Canada**, and all of them may access personal data held in our
 systems in order to run the service. No one outside that group has access.
 
-**Privacy contact:** thechampionslifestyle@gmail.com
+**Privacy contact:** legal@championstradingmc.com
 
-*[Add registered entity name, legal form and registration/KvK number, plus a
-registered address, if one exists.]*
+*Champions Trading MC Inc*
 
 ---
 
@@ -145,14 +146,15 @@ are located in **Canada**.
 Where personal data leaves the EEA we rely on:
 
 - the European Commission's **adequacy decision for Canada** (for commercial
-  organisations under PIPEDA); and
-- **Standard Contractual Clauses**, and where applicable the **EU–US Data
-  Privacy Framework**, for transfers to the United States.
+  organisations under PIPEDA);
+- **Standard Contractual Clauses** (EU Module Two, controller-to-processor)
+  for transfers to **Supabase** in the United States; and
+- the **EU–US Data Privacy Framework** for transfers to **PostHog** in the
+  United States, with Standard Contractual Clauses applying as a fallback
+  mechanism should PostHog's Data Privacy Framework certification lapse or
+  be invalidated.
 
 You can request details of the safeguards in place by contacting us.
-
-*[Confirm with your reviewer which mechanism each US provider relies on — this
-is the section most likely to need adjusting.]*
 
 ---
 
@@ -176,9 +178,10 @@ it, delete it, restrict or object to processing, receive a portable copy,
 withdraw consent, and complain to a data protection authority.
 
 **Affiliates can do this directly:** the Settings tab of the dashboard has
-one-click **Download my data** and **Delete my account**.
+one-click **Delete my account**. For a copy of everything we hold about you,
+ask at the address below.
 
-Everyone else can contact **thechampionslifestyle@gmail.com** and we will
+Everyone else can contact **legal@championstradingmc.com** and we will
 respond within one month.
 
 If you are in the EEA you may complain to your local authority; in the
@@ -223,5 +226,5 @@ effective date above. Material changes will be brought to your attention.
 ## 14. Contact
 
 **Champions Lifestyle**
-Email: thechampionslifestyle@gmail.com
+Email: legal@championstradingmc.com
 Website: https://www.jointhevips.com
