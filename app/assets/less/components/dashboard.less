@@ -2843,6 +2843,23 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: @vw12;
     width: 100%;
+
+    // Won on specificity rather than on source order.
+    //
+    // `.field-control` in form.less is `display: flex` — it wraps a single
+    // input so the password reveal can sit over it. This element carries both
+    // classes, and two single-class selectors are settled by whichever the
+    // bundler emitted last. In the production bundle that is this file, so the
+    // grid applied and the four previews sat 2x2. Under `nuxt dev` Vite injects
+    // each module's styles on its own and that order does not hold: flex won,
+    // and the cards laid themselves out as one row of four, each shrunk to the
+    // width of its own label.
+    //
+    // Pairing the two classes is 0-2-0 against 0-1-0 and wins in both, so the
+    // layout no longer depends on which stylesheet happens to come first.
+    &.field-control {
+        display: grid;
+    }
 }
 
 // One option: a picture of the theme, then a radio naming it.
