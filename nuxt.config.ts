@@ -1,4 +1,38 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+
+/**
+ * Whether crawlers may index this deployment.
+ *
+ * Allowed on the production deployment and in local development, refused
+ * everywhere else — a Vercel preview URL serves the same pages as production
+ * and, left crawlable, competes with the real site in the index.
+ *
+ * The test here used to be `NUXT_PUBLIC_SITE_URL === localhost`, with every
+ * other value getting `Disallow: /`. That is the right default for a
+ * boilerplate that must not index before it is finished, and exactly backwards
+ * once the site has launched: production was the one deployment it blocked, and
+ * nuxt-sitemap drops whatever robots blocks, so the sitemap went with it.
+ *
+ * Two signals, because each has a failure mode alone. VERCEL_ENV is set by
+ * Vercel on every build and is the authoritative answer there; the host check
+ * covers a build where system environment variables are not exposed. Both fail
+ * closed — an unrecognised deployment is not indexed.
+ */
+const siteHost = (() => {
+	try {
+		return new URL(process.env.NUXT_PUBLIC_SITE_URL ?? "").host;
+	}
+	catch {
+		return "";
+	}
+})();
+
+const isCrawlable
+	= process.env.VERCEL_ENV === "production"
+		|| siteHost === "www.jointhevips.com"
+		|| siteHost === "jointhevips.com"
+		|| siteHost === "localhost:3000";
+
 export default defineNuxtConfig({
   compatibilityDate: '2026-05-15',
   devtools: { enabled: true },
@@ -400,9 +434,12 @@ export default defineNuxtConfig({
 		groups: [
 			{
 				userAgent: ['*'],
-				disallow: process.env.NUXT_PUBLIC_SITE_URL === 'https://localhost:3000/'
+				// See `isCrawlable` at the top of this file. The blocked case is
+				// a bare '/' — it already covers every path, and listing the
+				// others alongside it only suggests they are the point.
+				disallow: isCrawlable
 					? ['/api/', '/login', '/dashboard']
-					: ['/', '/login', '/dashboard'],
+					: ['/'],
 			},
 		],
 	},

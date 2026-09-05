@@ -5,6 +5,8 @@
 .nitro
 .cache
 dist
+# Written by the Nuxt Vercel preset on every local build.
+.vercel
 
 # Node dependencies
 node_modules
