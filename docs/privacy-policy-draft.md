@@ -48,6 +48,13 @@ systems in order to run the service. No one outside that group has access.
   against that affiliate. This is stored as a one-way hash of your IP address
   and browser, which changes daily. **We do not store your IP address or browser
   string for this purpose**, and the hash cannot be reversed to identify you.
+- If you arrive without a referral link and then open one of our Telegram or
+  booking links, we assign you to one of the owners of Champions Academy, shared
+  evenly between them. That decides which of their Telegram groups the link
+  opens, and is remembered for 30 days so you keep reaching the same place. It is
+  recorded the same way as above, with the same daily one-way hash — **no IP
+  address or browser string is stored**. **Nothing is assigned until you open one
+  of those links**; simply reading the site assigns you to nobody.
 
 **If you are an affiliate**
 
@@ -115,9 +122,12 @@ set. Elsewhere, analytics runs by default.
 the footer of every page. Withdrawing is as easy as giving consent, and takes
 effect immediately.
 
-Cookies strictly necessary for the site to work — such as keeping you signed in
-and remembering which affiliate referred you — are always set, as they are
-required to provide the service you asked for.
+Cookies strictly necessary for the site to work — such as keeping you signed in,
+remembering which affiliate referred you, and remembering which owner's Telegram
+group your Join link opens — are always set, as they are required to provide the
+service you asked for. The last of those is not set while you are only reading
+the site: it is written at the moment you open one of those links, because that
+is when it is needed to send you anywhere.
 
 We do **not** use advertising or retargeting pixels on this website.
 

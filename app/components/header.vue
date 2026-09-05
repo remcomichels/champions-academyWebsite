@@ -42,7 +42,6 @@
 								:to="ctaHref(blok)!"
 								v-bind="ctaAttrs(blok)"
 								class="navLink button"
-								@click="onCtaClick(blok)"
 							>
 								<span class="textWrap button__primary">
 									{{ blok.label }}
@@ -85,5 +84,5 @@ const linkTo = useStoryblokLink();
 
 // The CTA carries a link_role, so its href comes from the referring affiliate
 // or the config default rather than from its own link field.
-const { href: ctaHref, attrs: ctaAttrs, onClick: onCtaClick } = useMenuLink();
+const { href: ctaHref, attrs: ctaAttrs } = useMenuLink();
 </script>

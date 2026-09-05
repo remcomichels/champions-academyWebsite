@@ -113,6 +113,7 @@ export type Database = {
           created_by: string | null
           display_name: string
           first_name: string | null
+          house_share: boolean
           id: string
           last_name: string | null
           lite_telegram_url: string | null
@@ -134,6 +135,7 @@ export type Database = {
           created_by?: string | null
           display_name: string
           first_name?: string | null
+          house_share?: boolean
           id?: string
           last_name?: string | null
           lite_telegram_url?: string | null
@@ -155,6 +157,7 @@ export type Database = {
           created_by?: string | null
           display_name?: string
           first_name?: string | null
+          house_share?: boolean
           id?: string
           last_name?: string | null
           lite_telegram_url?: string | null
@@ -487,6 +490,7 @@ export type Database = {
           occurred_at: string
           path: string | null
           referrer_host: string | null
+          source: string
           visitor_hash: string
         }
         Insert: {
@@ -497,6 +501,7 @@ export type Database = {
           occurred_at?: string
           path?: string | null
           referrer_host?: string | null
+          source?: string
           visitor_hash: string
         }
         Update: {
@@ -507,6 +512,7 @@ export type Database = {
           occurred_at?: string
           path?: string | null
           referrer_host?: string | null
+          source?: string
           visitor_hash?: string
         }
         Relationships: [

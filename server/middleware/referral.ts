@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import type { H3Event } from "h3";
 
 /**
@@ -19,7 +18,7 @@ import type { H3Event } from "h3";
 
 export const REF_COOKIE = "__Host-ca_ref";
 
-const REF_COOKIE_OPTIONS = {
+export const REF_COOKIE_OPTIONS = {
 	// Nothing in the browser reads this. Resolution is entirely server-side,
 	// so XSS cannot rewrite attribution and third-party scripts cannot see
 	// which affiliate sent the visitor.
@@ -38,13 +37,13 @@ const REF_COOKIE_OPTIONS = {
  * count that anyone could inflate by refreshing.
  */
 function logVisit(event: H3Event, affiliateId: string, path: string): void {
-	const day = new Date().toISOString().slice(0, 10);
-	const pepper = useRuntimeConfig().visitPepper as string;
+	const day = visitDay();
 
-	// Pseudonymous and rotates daily. No IP or user agent is ever stored.
-	const visitorHash = createHash("sha256")
-		.update(`${pepper}|${clientIp(event)}|${getRequestHeader(event, "user-agent") ?? ""}|${day}`)
-		.digest("hex");
+	// Pseudonymous and rotates daily. No IP or user agent is ever stored. The
+	// recipe lives in server/utils/visitor.ts because /go/[role] has to produce
+	// the identical hash for the same visitor — if the two ever drift, the
+	// unique indexes stop deduping and every figure over them doubles.
+	const hash = visitorHash(event, day);
 
 	let referrerHost: string | null = null;
 	try {
@@ -60,8 +59,12 @@ function logVisit(event: H3Event, affiliateId: string, path: string): void {
 		.insert({
 			affiliate_id: affiliateId,
 			day,
-			visitor_hash: visitorHash,
+			visitor_hash: hash,
 			path,
+			// This function only ever runs on a `?r=` hit, so the visit is
+			// always a real referral. The house split writes its own rows from
+			// /go/[role] and marks them there.
+			source: "link",
 			referrer_host: referrerHost,
 			country: getRequestHeader(event, "x-vercel-ip-country") ?? null,
 		})

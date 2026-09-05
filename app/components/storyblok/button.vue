@@ -6,7 +6,6 @@
 		:to="href"
 		v-bind="linkAttrs"
 		class="button-link parent-link"
-		@click="onClick"
 	>
 		{{ blok.title }}
 		<span class="link-line" />
@@ -19,13 +18,12 @@
 		:to="href"
 		v-bind="linkAttrs"
 		class="button button__secondary"
-		@click="onClick"
 	>
 		{{ blok.title }}
 	</NuxtLink>
 
 	<!-- primary (default): label segment + plus segment -->
-	<NuxtLink v-else-if="href" v-editable="blok" :to="href" v-bind="linkAttrs" class="button" @click="onClick">
+	<NuxtLink v-else-if="href" v-editable="blok" :to="href" v-bind="linkAttrs" class="button">
 		<span class="textWrap button__primary">{{ blok.title }}</span>
 		<span class="plus icon-plus" />
 	</NuxtLink>
@@ -43,7 +41,6 @@ const props = defineProps({
 });
 
 const roleHref = useRoleHref();
-const recordClick = useLinkClick();
 
 // A button with a link_role is centrally managed: its href comes from the
 // referring affiliate or the config-story default, and the CMS link field is
@@ -63,7 +60,4 @@ const linkAttrs = computed(() =>
 
 // Fall back to primary for bloks created before the variant field existed
 const variant = computed(() => props.blok.variant || "primary");
-
-/** Only managed links are counted; an ordinary CMS link is nobody's metric. */
-const onClick = () => recordClick(props.blok.link_role);
 </script>

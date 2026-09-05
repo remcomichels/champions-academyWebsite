@@ -69,6 +69,16 @@
 							or browser string for this purpose</strong>, and the hash cannot be
 							reversed to identify you.
 						</li>
+						<li class="policy-item">
+							If you arrive without a referral link and then open one of our Telegram or
+							booking links, we assign you to one of the owners of Champions Academy,
+							shared evenly between them. That decides which of their Telegram groups
+							the link opens, and is remembered for 30 days so you keep reaching the
+							same place. It is recorded the same way as above, with the same daily
+							one-way hash — <strong>no IP address or browser string is stored</strong>.
+							<strong>Nothing is assigned until you open one of those links</strong>;
+							simply reading the site assigns you to nobody.
+						</li>
 					</ul>
 
 					<h3 class="policy-subheading">If you are an affiliate</h3>
@@ -184,8 +194,11 @@
 
 					<p class="policy-copy">
 						Cookies strictly necessary for the site to work — such as keeping you signed
-						in and remembering which affiliate referred you — are always set, as they are
-						required to provide the service you asked for.
+						in, remembering which affiliate referred you, and remembering which owner's
+						Telegram group your Join link opens — are always set, as they are required to
+						provide the service you asked for. The last of those is not set while you are
+						only reading the site: it is written at the moment you open one of those
+						links, because that is when it is needed to send you anywhere.
 					</p>
 					<p class="policy-copy">
 						We do <strong>not</strong> use advertising or retargeting pixels on this

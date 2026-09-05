@@ -2,6 +2,7 @@ import { int, object, oneOf, optional } from "../../utils/validate";
 
 interface TrafficBreakdowns {
 	total: number;
+	house_total: number;
 	country_count: number;
 	click_total: number;
 	sources: { host: string | null; visits: number }[];
@@ -83,6 +84,11 @@ export default defineEventHandler(async (event) => {
 		days,
 		timezone,
 		total: breakdowns.total ?? 0,
+		// The part of `total` that arrived with no referral link of its own and
+		// was assigned by the house split. Zero for everyone not in the rotation,
+		// which is all but the two owners — the dashboard hides the tile when it
+		// is zero rather than showing everybody a figure that can only ever be 0.
+		houseTotal: breakdowns.house_total ?? 0,
 		countryCount: breakdowns.country_count ?? 0,
 		clickTotal: breakdowns.click_total ?? 0,
 		sources: breakdowns.sources ?? [],
@@ -92,6 +98,7 @@ export default defineEventHandler(async (event) => {
 
 		previous: {
 			total: previous.total ?? 0,
+			houseTotal: previous.house_total ?? 0,
 			countryCount: previous.country_count ?? 0,
 			clickTotal: previous.click_total ?? 0,
 			// The prior window's ranked sources, so each row on "Where they came

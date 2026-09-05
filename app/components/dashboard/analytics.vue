@@ -44,6 +44,15 @@
 				:loading="trafficPending"
 			/>
 			<NuxtDashboardStatCard
+				v-if="showHouse"
+				label="From the 50/50 split"
+				:value="traffic?.houseTotal ?? 0"
+				icon="tag"
+				:trend="houseTrend"
+				hint="Arrived without a link"
+				:loading="trafficPending"
+			/>
+			<NuxtDashboardStatCard
 				label="Countries"
 				:value="traffic?.countryCount ?? 0"
 				icon="tag"
@@ -59,6 +68,14 @@
 			refreshing your own link won't inflate either and no ad blocker can thin
 			them out — and the gap between the two is the people who arrived and went
 			no further.
+		</p>
+
+		<p v-if="showHouse" class="dashNote">
+			<strong>From the 50/50 split</strong> is people who reached the site
+			without anyone's link and were shared evenly between the owners when they
+			tapped a plan. They are already counted in <strong>Link visits</strong> —
+			this is the part of it nobody referred, shown separately so the two are
+			never confused.
 		</p>
 
 		<!-- Two rows of two. The heatmap sits in the narrower column because its
@@ -141,10 +158,12 @@ interface TrafficResponse {
 	days: number;
 	timezone: string;
 	total: number;
+	houseTotal: number;
 	countryCount: number;
 	clickTotal: number;
 	previous: {
 		total: number;
+		houseTotal: number;
 		countryCount: number;
 		clickTotal: number;
 		sources: { host: string | null; visits: number }[];
@@ -197,6 +216,18 @@ const visitsTrend = computed(() =>
 const clicksTrend = computed(() =>
 	(traffic.value
 		? trend(traffic.value.clickTotal, traffic.value.previous.clickTotal, priorLabel.value)
+		: null));
+
+// Shown only to the affiliates in the house rotation. Driven by the figure
+// itself rather than by a flag on the session: an owner taken out of the
+// rotation keeps the tile while the window still contains their share, and
+// loses it once it does not — which is the honest thing for it to do.
+const showHouse = computed(() =>
+	Boolean(traffic.value && (traffic.value.houseTotal > 0 || traffic.value.previous.houseTotal > 0)));
+
+const houseTrend = computed(() =>
+	(traffic.value
+		? trend(traffic.value.houseTotal, traffic.value.previous.houseTotal, priorLabel.value)
 		: null));
 
 const countriesTrend = computed(() =>

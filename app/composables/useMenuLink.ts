@@ -6,11 +6,15 @@ import type { MenuLinkItem } from "~/types/storyblok";
  * The header CTA and the footer columns render their own `<NuxtLink>` rather
  * than going through `button.vue`, so they need the same `link_role` handling
  * applied here instead.
+ *
+ * There is no click handler any more. A managed link points at /go/<role>, and
+ * that redirect records the click server-side — which a sendBeacon could not do
+ * reliably, since the page is being torn down as it fires and an ad blocker can
+ * drop it outright.
  */
 export function useMenuLink() {
 	const roleHref = useRoleHref();
 	const linkPath = useStoryblokLink();
-	const recordClick = useLinkClick();
 
 	const href = (item: MenuLinkItem): string | null =>
 		// Managed links are absolute external URLs, so they must not be run
@@ -23,8 +27,5 @@ export function useMenuLink() {
 			? { target: "_blank", rel: "noopener noreferrer" }
 			: storyblokLinkAttrs(item.link);
 
-	/** Only managed links are counted; an ordinary CMS link is nobody's metric. */
-	const onClick = (item: MenuLinkItem) => recordClick(item.link_role);
-
-	return { href, attrs, onClick };
+	return { href, attrs };
 }
