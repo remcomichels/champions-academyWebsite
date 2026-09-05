@@ -131,7 +131,7 @@ We do **not** use advertising or retargeting pixels on this website.
 | **PostHog** | Website analytics | **United States** |
 | **Storyblok** | Website content | European Union |
 | **Bunny.net** | Video delivery | Global CDN |
-| **Vercel** | Website hosting | Global CDN |
+| **Vercel** | Website hosting | Global CDN, **United States** |
 
 Each processes data only on our instructions.
 
@@ -139,19 +139,21 @@ Each processes data only on our instructions.
 
 ## 7. International transfers
 
-Some of our providers store data outside the European Economic Area, principally
-in the **United States** (Supabase, PostHog). Some of our administrators
-are located in **Canada**.
+Some of our providers store or process data outside the European Economic Area,
+principally in the **United States** (Supabase, PostHog, Vercel). Some of our
+administrators are located in **Canada**.
 
-Where personal data leaves the EEA we rely on:
+Where personal data leaves the EEA or the United Kingdom we rely on:
 
 - the European Commission's **adequacy decision for Canada** (for commercial
-  organisations under PIPEDA);
-- **Standard Contractual Clauses** (EU Module Two, controller-to-processor)
-  for transfers to **Supabase** in the United States; and
-- the **EU–US Data Privacy Framework** for transfers to **PostHog** in the
-  United States, with Standard Contractual Clauses applying as a fallback
-  mechanism should PostHog's Data Privacy Framework certification lapse or
+  organisations under PIPEDA), and the equivalent **UK adequacy regulations**
+  for transfers from the United Kingdom;
+- **Standard Contractual Clauses** (EU Module Two, controller-to-processor),
+  with the **UK Addendum** where the transfer is from the United Kingdom, for
+  transfers to **Supabase** in the United States; and
+- the **EU–US Data Privacy Framework** and its **UK Extension** for transfers
+  to **PostHog** and **Vercel** in the United States, with Standard Contractual
+  Clauses applying as a fallback mechanism should either certification lapse or
   be invalidated.
 
 You can request details of the safeguards in place by contacting us.

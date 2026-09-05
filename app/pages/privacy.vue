@@ -221,26 +221,32 @@
 				<section id="international-transfers" class="policy-section">
 					<h2 class="policy-heading">7. International transfers</h2>
 					<p class="policy-copy">
-						Some of our providers store data outside the European Economic Area,
-						principally in the <strong>United States</strong> (Supabase, PostHog). Some of
-						our administrators are located in <strong>Canada</strong>.
+						Some of our providers store or process data outside the European Economic
+						Area, principally in the <strong>United States</strong> (Supabase, PostHog,
+						Vercel). Some of our administrators are located in <strong>Canada</strong>.
 					</p>
-					<p class="policy-copy">Where personal data leaves the EEA we rely on:</p>
+					<p class="policy-copy">
+						Where personal data leaves the EEA or the United Kingdom we rely on:
+					</p>
 					<ul class="policy-list">
 						<li class="policy-item">
 							the European Commission's <strong>adequacy decision for Canada</strong>
-							(for commercial organisations under PIPEDA);
+							(for commercial organisations under PIPEDA), and the equivalent
+							<strong>UK adequacy regulations</strong> for transfers from the United
+							Kingdom;
 						</li>
 						<li class="policy-item">
 							<strong>Standard Contractual Clauses</strong> (EU Module Two,
-							controller-to-processor) for transfers to <strong>Supabase</strong> in the
-							United States; and
+							controller-to-processor), with the <strong>UK Addendum</strong> where the
+							transfer is from the United Kingdom, for transfers to
+							<strong>Supabase</strong> in the United States; and
 						</li>
 						<li class="policy-item">
-							the <strong>EU–US Data Privacy Framework</strong> for transfers to
-							<strong>PostHog</strong> in the United States, with Standard Contractual
-							Clauses applying as a fallback mechanism should PostHog's Data Privacy
-							Framework certification lapse or be invalidated.
+							the <strong>EU–US Data Privacy Framework</strong> and its
+							<strong>UK Extension</strong> for transfers to <strong>PostHog</strong>
+							and <strong>Vercel</strong> in the United States, with Standard
+							Contractual Clauses applying as a fallback mechanism should either
+							certification lapse or be invalidated.
 						</li>
 					</ul>
 					<p class="policy-copy">
@@ -444,7 +450,7 @@ const providers = [
 	{ name: "PostHog", handles: "Website analytics", where: "United States" },
 	{ name: "Storyblok", handles: "Website content", where: "European Union" },
 	{ name: "Bunny.net", handles: "Video delivery", where: "Global CDN" },
-	{ name: "Vercel", handles: "Website hosting", where: "Global CDN" },
+	{ name: "Vercel", handles: "Website hosting", where: "Global CDN, United States" },
 ];
 
 const { url: siteUrl } = useSiteConfig();
