@@ -38,20 +38,21 @@ export default defineEventHandler(async (event) => {
 	// Counts, live-invite prefixes and pending deletions, batched rather than N+1.
 	const [visits, invites, deletions] = await Promise.all([
 		ids.length ? db().from("referral_visits").select("affiliate_id").in("affiliate_id", ids) : { data: [] },
+		// Every invite for these affiliates, not only the live ones.
+		//
+		// It used to filter to unredeemed, unrevoked and unexpired here, which
+		// answered "is there a code outstanding?" and nothing else. The table
+		// now also says whether somebody never had a code, has one waiting, or
+		// let one lapse — and "lapsed" is precisely the row that filter threw
+		// away. Both facts are derived below from the same rows.
+		//
+		// Ordered newest first so the first row seen for an affiliate is their
+		// most recent invite.
 		ids.length
 			? db().from("affiliate_invites")
-				.select("affiliate_id, code_prefix, expires_at")
+				.select("affiliate_id, code_prefix, expires_at, redeemed_at, revoked_at, created_at")
 				.in("affiliate_id", ids)
-				.is("redeemed_at", null)
-				.is("revoked_at", null)
-				// Expiry counts as gone. Without this an unredeemed code that
-				// lapsed still reported as outstanding, which hid "Issue code"
-				// behind "Revoke code" in the panel — so missing the window meant
-				// having to revoke a already-dead code before issuing a live one.
-				// The row itself stays put for the audit trail; invite.post.ts
-				// revokes whatever is outstanding before inserting, expired
-				// included, so the one-live-invite index is never at risk.
-				.gt("expires_at", new Date().toISOString())
+				.order("created_at", { ascending: false })
 			: { data: [] },
 
 		// Affiliates who have asked to be deleted.
@@ -92,12 +93,31 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
+	const now = Date.now();
+
 	const liveInvites = new Map<string, { prefix: string; expiresAt: string }>();
+	// The most recent invite per affiliate, whatever became of it — this is what
+	// tells "never invited" apart from "invited, and the window closed".
+	const latestInvite = new Map<string, { expired: boolean }>();
+
 	for (const row of (invites.data ?? []) as Record<string, unknown>[]) {
-		liveInvites.set(row.affiliate_id as string, {
-			prefix: row.code_prefix as string,
-			expiresAt: row.expires_at as string,
-		});
+		const affiliateId = row.affiliate_id as string;
+		const expiresAt = row.expires_at as string;
+		const live = !row.redeemed_at && !row.revoked_at && new Date(expiresAt).getTime() > now;
+
+		// Rows arrive newest first, so the first one seen wins. `liveInvite` is
+		// still at most one by construction — the partial unique index allows
+		// only one unredeemed, unrevoked invite per affiliate.
+		if (live && !liveInvites.has(affiliateId)) {
+			liveInvites.set(affiliateId, {
+				prefix: row.code_prefix as string,
+				expiresAt,
+			});
+		}
+
+		if (!latestInvite.has(affiliateId)) {
+			latestInvite.set(affiliateId, { expired: !live });
+		}
 	}
 
 	return {
@@ -125,6 +145,21 @@ export default defineEventHandler(async (event) => {
 				createdAt: row.created_at as string,
 				visits: visitCounts.get(id) ?? 0,
 				liveInvite: liveInvites.get(id) ?? null,
+				// Where this affiliate is in getting an account, as one value the
+				// table can render as a dot. Derived rather than stored, so it
+				// cannot fall out of step with the rows it describes.
+				//
+				//   active   they have a login and are using it
+				//   pending  a code is out and has not been redeemed
+				//   expired  a code was issued and the window closed unused
+				//   none     never invited
+				inviteState: (row.user_id
+					? "active"
+					: liveInvites.has(id)
+						? "pending"
+						: latestInvite.has(id)
+							? "expired"
+							: "none") as "active" | "pending" | "expired" | "none",
 			};
 		}),
 	};

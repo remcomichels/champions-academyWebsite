@@ -4723,6 +4723,57 @@ html:has(.modal[open]) body {
     }
 }
 
+// Where an affiliate is in getting an account. Sits above the three setup
+// checks because it is the line that says whether anything is waiting on
+// somebody — the checks only start meaning anything once they are in.
+//
+// Colour and wording both carry it. A dot alone would put the whole state on a
+// hue, which is the one channel a colourblind reader may not have; the label is
+// the answer and the dot is what makes the column scannable.
+.inviteState {
+    display: flex;
+    align-items: center;
+    gap: @vw6;
+    margin-bottom: @vw6;
+    font-size: max(0.62em, @vw11);
+    color: var(--text-tertiary);
+
+    &-dot {
+        flex: none;
+        width: @vw8;
+        height: @vw8;
+        border-radius: 50%;
+        background-color: currentColor;
+    }
+
+    // Signed up and done. Quiet on purpose: it is the resting state and most
+    // rows will be it, so colouring it loudly would drown the two that need
+    // somebody to do something.
+    &.is-active {
+        color: var(--success);
+    }
+
+    // A code is out. The one state that is actually waiting on a person.
+    &.is-pending {
+        color: var(--warning);
+    }
+
+    &.is-expired {
+        color: var(--error);
+    }
+
+    // Never invited. No dot colour of its own — nothing has gone wrong, it just
+    // has not started.
+    &.is-none {
+        color: var(--text-tertiary);
+
+        .inviteState-dot {
+            background-color: transparent;
+            border: max(1px, @vw1) solid var(--border);
+        }
+    }
+}
+
 .adminChecks {
     display: flex;
     flex-wrap: wrap;

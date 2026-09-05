@@ -22,6 +22,11 @@ export interface AdminAffiliate {
 	createdAt: string;
 	visits: number;
 	liveInvite: { prefix: string; expiresAt: string } | null;
+	/**
+	 * Where they are in getting an account: signed up, code waiting, code
+	 * lapsed, or never invited. Derived server-side from the invite rows.
+	 */
+	inviteState: "active" | "pending" | "expired" | "none";
 	/** Set only while they have asked to go and the grace period is running. */
 	pendingDeletion: { on: string; reason: string | null; note: string | null } | null;
 }
@@ -34,6 +39,20 @@ export interface AdminAffiliate {
  * answer, phrased to be read afterwards by somebody scanning a table. Sharing
  * one list would force one wording to do both jobs.
  */
+/**
+ * The account states, in the words an admin scanning the table needs.
+ *
+ * "Pending" rather than "invited": what matters is that somebody is waiting on
+ * an action, not that an email-shaped thing was sent — nothing is sent, the
+ * code is handed over by the owner.
+ */
+export const INVITE_STATE_LABELS: Record<AdminAffiliate["inviteState"], string> = {
+	active: "Signed up",
+	pending: "Code pending",
+	expired: "Code expired",
+	none: "No code yet",
+};
+
 export const DELETION_REASON_LABELS: Record<string, string> = {
 	not_using: "Not using it",
 	not_earning: "Not earning enough",

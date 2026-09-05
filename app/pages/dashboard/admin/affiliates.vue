@@ -13,20 +13,6 @@
 			{{ banner.text }}
 		</NuxtAlertBanner>
 
-		<!-- Shown once. There is no way to see this code again, by design. -->
-		<section v-if="issuedInvite" class="dashPanel inviteDialog">
-			<h2 class="dashPanel-title">Invite code for {{ issuedInvite.displayName }}</h2>
-			<NuxtDashboardCopyField :value="issuedInvite.code" />
-			<p class="dashPanel-note">
-				Send this to {{ issuedInvite.slug }} directly. It works once, expires
-				{{ formatDate(issuedInvite.expiresAt) }}, and <strong>will not be shown
-					again</strong> — if it's lost, issue a new one.
-			</p>
-			<button type="button" class="btn btn--subtle" @click="issuedInvite = null">
-				Done
-			</button>
-		</section>
-
 		<section class="dashPanel">
 			<h2 class="dashPanel-title">Add an affiliate</h2>
 			<form class="adminForm" novalidate @submit.prevent="create">
@@ -104,13 +90,26 @@
 								</span>
 							</td>
 							<td>
+								<!-- The account state first, because it is the one that says
+								     whether anything is waiting on somebody. The three checks
+								     under it are what they have filled in once they are in. -->
+								<p class="inviteState" :class="`is-${affiliate.inviteState}`">
+									<span class="inviteState-dot" aria-hidden="true" />
+									{{ INVITE_STATE_LABELS[affiliate.inviteState] }}
+								</p>
+
 								<ul class="adminChecks">
 									<li :class="{ 'is-done': affiliate.hasLogin }">Login</li>
 									<li :class="{ 'is-done': affiliate.hasTelegram }">Telegram</li>
 									<li :class="{ 'is-done': affiliate.hasCalendly }">Calendly</li>
 								</ul>
+								<!-- The prefix, not the code. Only the first group is stored —
+								     enough to tell two outstanding invites apart, never enough
+								     to redeem one. Worded so it cannot be mistaken for a
+								     truncated code somebody could go looking for the rest of. -->
 								<span v-if="affiliate.liveInvite" class="adminTable-invite">
-									code {{ affiliate.liveInvite.prefix }}… until {{ formatDate(affiliate.liveInvite.expiresAt) }}
+									invite starting {{ affiliate.liveInvite.prefix }}, valid until
+									{{ formatDate(affiliate.liveInvite.expiresAt) }}
 								</span>
 							</td>
 							<td>{{ affiliate.visits }}</td>
@@ -134,6 +133,21 @@
 										:disabled="busyId === affiliate.id"
 										@click="issueInvite(affiliate)"
 									>Issue code</button>
+
+									<!-- The recovery path, and one click.
+									     A code is shown once and never stored in the clear, so
+									     losing it means issuing another — and this used to be
+									     reachable only by revoking first, which is two steps
+									     where the frightening-sounding one comes first. The
+									     endpoint already revokes whatever is outstanding before
+									     it inserts, so this is the same operation without the
+									     detour. -->
+									<button
+										v-if="affiliate.liveInvite"
+										type="button"
+										:disabled="busyId === affiliate.id"
+										@click="confirmReissue(affiliate)"
+									>Reissue code</button>
 
 									<button
 										v-if="affiliate.liveInvite"
@@ -261,12 +275,54 @@
 				</form>
 			</div>
 		</dialog>
+
+		<!-- The code, shown once and only here.
+		     A modal rather than a panel on the page: this is the single moment
+		     the plaintext exists anywhere, the server keeps only a hash of it,
+		     and the button that produces it sits in a table that can be a long
+		     way down. A panel above the fold is a panel that gets missed, and
+		     the cost of missing it is reissuing. showModal() also puts it in
+		     the top layer with the background inert, so there is nothing else
+		     on screen to read instead — which is how the row's prefix came to
+		     be mistaken for the code. -->
+		<dialog ref="inviteDialog" class="modal modal--compact" @close="onInviteClose" @click="onInviteClick">
+			<div class="modal-panel">
+				<header class="modal-head">
+					<h2 class="modal-title">Invite code for {{ issuedInvite?.displayName }}</h2>
+					<button type="button" class="modal-close" aria-label="Close" @click="issuedInvite = null">
+						<NuxtDashboardIcon name="close" />
+					</button>
+				</header>
+
+				<div class="modal-body">
+					<p class="modal-lead">
+						Send this to {{ issuedInvite?.slug }} directly — by Telegram or on a
+						call. They enter it at sign-in under
+						<strong>"I have an invite code"</strong>.
+					</p>
+
+					<NuxtDashboardCopyField v-if="issuedInvite" :value="issuedInvite.code" class="inviteCode" />
+
+					<p class="modal-warning">
+						It works once, expires {{ issuedInvite ? formatDate(issuedInvite.expiresAt) : "" }},
+						and <strong>will not be shown again</strong> — only a hash of it is
+						stored. If it is lost, issue a new one, which revokes this.
+					</p>
+				</div>
+
+				<footer class="modal-foot">
+					<button type="button" class="btn btn--primary" @click="issuedInvite = null">
+						I've copied it
+					</button>
+				</footer>
+			</div>
+		</dialog>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useTemplateRef, watch } from "vue";
-import { useAdmin, type AdminAffiliate, type AdminUser, DELETION_REASON_LABELS } from "~/assets/js/components/admin";
+import { useAdmin, type AdminAffiliate, type AdminUser, DELETION_REASON_LABELS, INVITE_STATE_LABELS } from "~/assets/js/components/admin";
 
 definePageMeta({
 	layout: "dashboard",
@@ -328,6 +384,49 @@ function onDialogClick(event: MouseEvent) {
 // The same hold on the page as the account dialogs, for the same reason: Lenis
 // scrolls programmatically and does not care what `overflow` says.
 useScrollLock(computed(() => editing.value !== null));
+
+// The invite dialog, wired exactly like the edit one above. `issuedInvite` stays
+// the single source of truth and the element follows it.
+//
+// Opening focus is left where showModal puts it — on the close button — rather
+// than moved to the copy control: the code is the thing to read, and pulling
+// focus onto a button would have a screen reader announce "Copy" before the
+// text it copies.
+const inviteDialog = useTemplateRef<HTMLDialogElement>("inviteDialog");
+
+watch(issuedInvite, async (invite) => {
+	await nextTick();
+	const dialog = inviteDialog.value;
+	if (!dialog) return;
+
+	if (invite && !dialog.open) dialog.showModal();
+	else if (!invite && dialog.open) dialog.close();
+});
+
+// Escape closes the dialog without clearing the state behind it. Guarded, or
+// dismissing via either button would recurse.
+function onInviteClose() {
+	if (issuedInvite.value) issuedInvite.value = null;
+}
+
+// A click on the <dialog> itself is the backdrop; content hits .modal-panel.
+function onInviteClick(event: MouseEvent) {
+	if (event.target === inviteDialog.value) issuedInvite.value = null;
+}
+
+useScrollLock(computed(() => issuedInvite.value !== null));
+
+/**
+ * Reissuing kills the outstanding code, so it is worth a beat.
+ *
+ * Confirmed rather than instant because the usual reason to reach for it is
+ * having lost the code — and if the affiliate is already holding one, this
+ * silently stops it working and they get a dead code with no explanation.
+ */
+function confirmReissue(affiliate: AdminAffiliate) {
+	const message = `Issue a new code for ${affiliate.slug}? The one outstanding stops working immediately, so only do this if it was lost or never reached them.`;
+	if (window.confirm(message)) issueInvite(affiliate);
+}
 
 /** Revoking ends their sessions and kills their links — worth a confirm. */
 function confirmStatus(affiliate: AdminAffiliate, status: AdminAffiliate["status"]) {
