@@ -116,6 +116,18 @@ export function useLetterAnimation(
       type: 'lines,words,chars',
       linesClass: 'line',
       charsClass: 'letter',
+      // SplitText's default ('auto') hides the generated chars from assistive
+      // tech and puts an aria-label carrying the original text back on the
+      // element it split. That is right for a heading, which is what nearly
+      // every target here is — but aria-label is prohibited on a generic
+      // element like a <span>, where it is ignored outright. Left on 'auto'
+      // such a target loses its text entirely: the chars are hidden and the
+      // label that was meant to replace them does not apply.
+      //
+      // `data-letters-aria="hidden"` opts those out. The element is hidden
+      // whole, and whichever ancestor permits a name carries the text instead
+      // (see hero_block.vue, the one place this is needed).
+      aria: el.dataset.lettersAria === 'hidden' ? 'hidden' : 'auto',
     })
     gsap.set(el.querySelectorAll('.letter'), {
       filter: `blur(${blurAmount}px)`,

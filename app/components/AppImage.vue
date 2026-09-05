@@ -1,11 +1,21 @@
 <template>
+  <!--
+    `loading` is declared before `v-bind="$attrs"` on purpose: later bindings
+    win, so this is a default a call site can still override with
+    `loading="eager"`. Anything painted above the fold should do exactly that —
+    lazy-loading the image a visitor is already looking at delays it for no
+    gain. Everything else on these pages is well below the fold, and eager was
+    costing ~538 KB of images fetched before anyone scrolled to them.
+  -->
   <img
     v-if="passthrough"
+    loading="lazy"
     v-bind="$attrs"
     :src="src"
   >
   <NuxtImg
     v-else
+    loading="lazy"
     v-bind="$attrs"
     :src="src"
     :width="dimensions?.width"

@@ -3,11 +3,14 @@
 		<div class="headerWrapper">
 			<div class="navCol left">
 				<NuxtLink :to="localePath(`/`)" class="logoLink">
+					<!-- The one image on these pages that is above the fold on
+					     every route, so it opts out of the lazy default in
+					     NuxtAppImage. -->
 					<NuxtAppImage
 						class="logoImage"
 						:src="`/images/logo.svg`"
 						:alt="`Champions Academy Logo`"
-
+						loading="eager"
 					/>
 				</NuxtLink>
 			</div>
