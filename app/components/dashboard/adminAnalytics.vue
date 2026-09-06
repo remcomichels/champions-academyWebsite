@@ -106,6 +106,12 @@
 							<span class="leaderboard-figures">
 								<span class="leaderboard-lead">{{ row.visitsLabel }}</span>
 								<span class="leaderboard-sub">{{ row.clicksLabel }} clicks</span>
+								<!-- Only on rows that have one, which is the owners in the
+								     house rotation. Everyone else would carry a zero that
+								     means "not applicable" rather than "none yet". -->
+								<span v-if="row.houseLabel" class="leaderboard-house">
+									{{ row.houseLabel }} from the split
+								</span>
 							</span>
 						</li>
 					</ol>
@@ -114,6 +120,11 @@
 						Ranked on visits, then clicks to separate everyone still on zero.
 						Revoked affiliates stay listed — their traffic happened, and
 						dropping them would make this disagree with the totals above.
+						<template v-if="data?.totals.houseVisits">
+							<strong>From the split</strong> is the part of a total that arrived
+							without anyone's link and was assigned by the house rotation — it is
+							already counted in the number above it, not added to it.
+						</template>
 					</p>
 				</section>
 

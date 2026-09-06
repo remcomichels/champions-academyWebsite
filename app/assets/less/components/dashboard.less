@@ -4059,6 +4059,17 @@
         font-variant-numeric: tabular-nums;
         color: var(--text-tertiary);
     }
+
+    // The house share of a row's total. Tinted rather than left in the tertiary
+    // grey the clicks line uses: two identical sub-lines under one figure read
+    // as a single wrapped sentence, and these say different kinds of thing —
+    // one is what happened next, the other is where the traffic came from.
+    // Only ever rendered on the rows that have one.
+    &-house {
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+    }
 }
 
 // ── Viewing-as banner ────────────────────────────────────────────────────────

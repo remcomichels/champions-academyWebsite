@@ -16,13 +16,15 @@ export interface LeaderRow {
 	displayName: string;
 	status: string;
 	visits: number;
+	/** The part of `visits` assigned by the house split rather than earned. */
+	houseVisits: number;
 	clicks: number;
 }
 
 export interface ProgramAnalyticsResponse {
 	days: number;
 	totals: {
-		visits: number; clicks: number; countries: number;
+		visits: number; houseVisits: number; clicks: number; countries: number;
 		affiliatesTotal: number; affiliatesActive: number;
 	};
 	trends: { visits: Trend | null; clicks: Trend | null; active: Trend | null };
@@ -139,6 +141,9 @@ export function useAdminAnalytics() {
 			share: top > 0 && row.visits > 0 ? Math.max(row.visits / top, 0.03) : 0,
 			visitsLabel: number(row.visits),
 			clicksLabel: number(row.clicks),
+			// Shown per row only where there is one, so the column does not
+			// appear as a zero against every affiliate outside the rotation.
+			houseLabel: row.houseVisits > 0 ? number(row.houseVisits) : null,
 		}));
 	});
 

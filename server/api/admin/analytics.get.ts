@@ -2,6 +2,7 @@ import { int, object, optional } from "../../utils/validate";
 
 interface ProgramAnalytics {
 	visits: number;
+	house_visits: number;
 	clicks: number;
 	country_count: number;
 	affiliates_total: number;
@@ -12,7 +13,7 @@ interface ProgramAnalytics {
 	clicks_by_role: { role: string; clicks: number }[];
 	leaderboard: {
 		id: string; slug: string; displayName: string; status: string;
-		visits: number; clicks: number;
+		visits: number; houseVisits: number; clicks: number;
 	}[];
 }
 
@@ -68,6 +69,9 @@ export default defineEventHandler(async (event) => {
 		days,
 		totals: {
 			visits: now.visits,
+			// The pool the house rotation divides. Zero until somebody is in it,
+			// which is what the admin page keys the column off.
+			houseVisits: now.house_visits,
 			clicks: now.clicks,
 			countries: now.country_count,
 			affiliatesTotal: now.affiliates_total,
