@@ -55,14 +55,14 @@ const faq = [
 	},
 	{
 		q: "How long does my link keep working after someone clicks it?",
-		a: "30 days. Once someone arrives through your link the site keeps showing them your Telegram and booking links for the next 30 days, whether they act on the first visit or come back a fortnight later.",
+		a: "30 days. Once someone arrives through your link the site keeps sending them to your Telegram for the next 30 days, whether they act on the first visit or come back a fortnight later.",
 	},
 	{
-		q: "I changed my Telegram or Calendly link, why does the site still show the old one?",
+		q: "I changed my Telegram link, why does the site still use the old one?",
 		a: "Links are cached for about five minutes. Wait a few minutes and reload the page you're checking.",
 	},
 	{
-		q: "What happens if I leave my Telegram or Calendly blank?",
+		q: "What happens if I leave my Telegram blank?",
 		a: "That button keeps the standard site link. Nothing breaks — you just don't get the traffic from it.",
 	},
 	{

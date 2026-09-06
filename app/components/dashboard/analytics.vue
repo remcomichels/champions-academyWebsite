@@ -278,6 +278,10 @@ const countries = computed(() =>
 		return { label, visits: row.visits };
 	}));
 
+// `calendly` is kept although nothing writes it any more. Thirty-five clicks
+// were recorded against it before the booking link was removed, and they are
+// still inside the windows this page can select — without the label they would
+// render as the raw key. It goes when those rows age out.
 const ROLE_LABELS: Record<string, string> = {
 	lite: "Telegram (Lite)",
 	calendly: "Book a call",

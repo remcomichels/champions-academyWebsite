@@ -90,6 +90,9 @@ export function describeAudit(entry: AuditEntry): DescribedEntry {
 			return plain(`Changed their own link from ?r=${str(m, "from") ?? "—"} to ?r=${str(m, "to") ?? "—"}`);
 
 		case "links.updated": {
+			// `calendly` is only ever true on entries written before the booking
+			// link was removed. Reading it keeps those lines saying what actually
+			// happened rather than quietly dropping half of it.
 			const set = [m.lite === true && "Telegram", m.calendly === true && "Calendly"].filter(Boolean);
 			return plain(set.length ? `Saved their links — ${set.join(" and ")} set` : "Cleared their links");
 		}

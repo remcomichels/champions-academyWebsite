@@ -28,28 +28,26 @@ async function lookup(): Promise<Record<LinkRole, string | null>> {
 		const content = data?.story?.content ?? {};
 
 		// A multilink field: `url` for an external URL, `cached_url` for
-		// everything else. Both defaults here are external by nature — Telegram
-		// and Calendly — but reading both costs nothing and avoids a silent null
-		// if one is ever set through the story picker.
+		// everything else. The default is external by nature — a Telegram invite
+		// — but reading both costs nothing and avoids a silent null if it is ever
+		// set through the story picker.
 		const read = (field: { url?: string; cached_url?: string } | undefined): string | null =>
 			field?.url || field?.cached_url || null;
 
 		const lite = read(content.default_lite);
-		const calendly = read(content.default_calendly);
 
 		// Validated here as well as at render time. These come from the CMS,
 		// where anyone with editor access can put an arbitrary URL in the field,
 		// and this one feeds a redirect the server issues itself.
 		return {
 			lite: isAllowedLink("lite", lite) ? lite : null,
-			calendly: isAllowedLink("calendly", calendly) ? calendly : null,
 		};
 	}
 	catch {
 		// A CMS outage must not turn every Join button into an error page. The
 		// caller treats null as "no destination" and answers 404, which is the
 		// same thing the button did before this route existed: nothing.
-		return { lite: null, calendly: null };
+		return { lite: null };
 	}
 }
 

@@ -1,12 +1,15 @@
 import { object, optional, str } from "../../utils/validate";
+import type { LinkRole } from "#shared/types/affiliate";
 import { allowedHostsFor } from "#shared/utils/isAllowedLink";
 
 /**
- * Saves the two links an affiliate supplies.
+ * Saves the link an affiliate supplies.
  *
- * These are the only affiliate-controlled values that end up as an `href` on
- * the public marketing site, so the host allow-list is enforced here as well
- * as in the database CHECK constraint and again at render time.
+ * There were two until the Calendly booking link went with the offer that
+ * needed it. This is the only affiliate-controlled value that decides where a
+ * visitor is sent from the public marketing site, so the host allow-list is
+ * enforced here as well as in the database CHECK constraint and again at the
+ * redirect.
  */
 export default defineEventHandler(async (event) => {
 	assertSameOrigin(event);
@@ -17,10 +20,9 @@ export default defineEventHandler(async (event) => {
 		// Empty string clears the field, which is how an affiliate removes a
 		// link rather than being stuck with a typo forever.
 		liteTelegramUrl: optional(str({ max: 500 })),
-		calendlyUrl: optional(str({ max: 500 })),
 	}));
 
-	const reject = (field: string, role: "lite" | "calendly") =>
+	const reject = (field: string, role: LinkRole) =>
 		createError({
 			statusCode: 400,
 			statusMessage: `Must be an https link on ${allowedHostsFor(role).join(" or ")}`,
@@ -31,15 +33,10 @@ export default defineEventHandler(async (event) => {
 		throw reject("liteTelegramUrl", "lite");
 	}
 
-	if (body.calendlyUrl !== null && !isAllowedLink("calendly", body.calendlyUrl)) {
-		throw reject("calendlyUrl", "calendly");
-	}
-
 	const { error } = await db()
 		.from("affiliates")
 		.update({
 			lite_telegram_url: body.liteTelegramUrl,
-			calendly_url: body.calendlyUrl,
 		})
 		.eq("id", affiliate.id);
 
@@ -56,14 +53,12 @@ export default defineEventHandler(async (event) => {
 		subjectAffiliateId: affiliate.id,
 		meta: {
 			lite: Boolean(body.liteTelegramUrl),
-			calendly: Boolean(body.calendlyUrl),
 		},
 	});
 
 	return {
 		links: {
 			lite: body.liteTelegramUrl,
-			calendly: body.calendlyUrl,
 		},
 		// The cached entry was just dropped, so the marketing site picks these
 		// up on its next request rather than whenever the TTL lapses.

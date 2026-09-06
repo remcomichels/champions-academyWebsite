@@ -17,7 +17,6 @@ export interface AdminAffiliate {
 	status: "active" | "revoked";
 	notes: string | null;
 	hasTelegram: boolean;
-	hasCalendly: boolean;
 	hasLogin: boolean;
 	createdAt: string;
 	visits: number;

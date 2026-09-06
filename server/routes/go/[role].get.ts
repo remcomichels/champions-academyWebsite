@@ -2,7 +2,7 @@ import type { H3Event } from "h3";
 import { REF_COOKIE, REF_COOKIE_OPTIONS } from "../../middleware/referral";
 import type { LinkRole, ReferralContext } from "#shared/types/affiliate";
 
-const ROLES: LinkRole[] = ["lite", "calendly"];
+const ROLES: LinkRole[] = ["lite"];
 
 /**
  * The destination behind every managed CTA.

@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
 		.from("affiliates")
 		.select(`
 			id, slug, display_name, status,
-			lite_telegram_url, calendly_url,
+			lite_telegram_url,
 			user_id, notes, created_at
 		`)
 		.order("created_at", { ascending: false });
@@ -135,7 +135,6 @@ export default defineEventHandler(async (event) => {
 				// show what is set up, and there is no reason to spray every
 				// affiliate's links across an admin list.
 				hasTelegram: Boolean(row.lite_telegram_url),
-				hasCalendly: Boolean(row.calendly_url),
 				hasLogin: Boolean(row.user_id),
 				// Null unless they have asked to be deleted. The date is when the
 				// grace period they were promised runs out, and the reason is

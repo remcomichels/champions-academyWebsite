@@ -92,7 +92,7 @@
 							times you signed in.
 						</li>
 						<li class="policy-item">
-							The links you provide, such as your Telegram or Calendly link.
+							The Telegram link you provide.
 						</li>
 						<li class="policy-item">
 							A log of security-relevant actions on your account, such as sign-ins,
@@ -357,9 +357,9 @@
 				<section id="other-sites" class="policy-section">
 					<h2 class="policy-heading">12. Links to other sites</h2>
 					<p class="policy-copy">
-						Our website links to third-party platforms including Telegram, Calendly,
-						YouTube and Instagram. We are not responsible for their privacy practices and
-						encourage you to read their policies.
+						Our website links to third-party platforms including Telegram, YouTube and
+						Instagram. We are not responsible for their privacy practices and encourage
+						you to read their policies.
 					</p>
 				</section>
 

@@ -107,7 +107,6 @@ export async function purgeAffiliate(affiliateId: string): Promise<PurgeResult> 
 			last_name: null,
 			user_id: null,
 			lite_telegram_url: null,
-			calendly_url: null,
 			avatar_path: null,
 			notes: null,
 			// Revoked, not active. Nothing can sign in as this row any more and

@@ -38,15 +38,14 @@ export function useRoleHref() {
 
 		const key = role as LinkRole;
 
-		// Validated on the way out as well as on the way in. The affiliate's
-		// Telegram and Calendly URLs are typed in by the affiliate, so bad data
+		// Validated on the way out as well as on the way in. The Telegram URL is
+		// typed in by the affiliate, so bad data
 		// that somehow reached the database still cannot make a button appear
 		// that points nowhere useful.
 		const affiliateHref = referral.value?.[key] ?? null;
 
 		const defaults: Record<LinkRole, string | null> = {
 			lite: resolveStoryblokLink(config.value?.default_lite),
-			calendly: resolveStoryblokLink(config.value?.default_calendly),
 		};
 
 		const reachable = isAllowedLink(key, affiliateHref) || isAllowedLink(key, defaults[key]);
@@ -61,7 +60,7 @@ export function useRoleHref() {
 		if (import.meta.dev) {
 			console.warn(
 				`[useRoleHref] no usable link for role "${key}". `
-				+ `Check default_${key === "calendly" ? "calendly" : key} on the Storyblok config story `
+				+ `Check default_${key} on the Storyblok config story `
 				+ `— it must be an https URL on ${allowedHostsFor(key).join(" or ")}.`,
 			);
 		}

@@ -16,7 +16,6 @@ export interface ConfigContent {
 	footer_menu?: FooterMenu[];
 	/** Default checkout / contact links, used when no affiliate is referring. */
 	default_lite?: StoryblokMultilink;
-	default_calendly?: StoryblokMultilink;
 }
 
 export function useConfig() {

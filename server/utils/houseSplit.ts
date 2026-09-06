@@ -9,7 +9,7 @@ import type { ReferralContext } from "#shared/types/affiliate";
 async function lookup(): Promise<ReferralContext[]> {
 	const { data } = await db()
 		.from("affiliates")
-		.select("id, slug, lite_telegram_url, calendly_url")
+		.select("id, slug, lite_telegram_url")
 		.eq("house_share", true)
 		.eq("status", "active")
 		// Ordered so the rotation is stable. Without it Postgres may return the
@@ -22,7 +22,6 @@ async function lookup(): Promise<ReferralContext[]> {
 		affiliateId: row.id as string,
 		slug: row.slug as string,
 		lite: isAllowedLink("lite", row.lite_telegram_url) ? (row.lite_telegram_url as string) : null,
-		calendly: isAllowedLink("calendly", row.calendly_url) ? (row.calendly_url as string) : null,
 	}));
 }
 

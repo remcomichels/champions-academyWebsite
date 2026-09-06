@@ -275,10 +275,12 @@ const allTimeHint = computed(() => {
  * is done from the field directly above this card, and a first visit is
  * something that happens rather than something you action — so they carry no
  * destination and render as plain text.
+ *
+ * Three steps since the Calendly link went. The count is derived from this
+ * list and from `steps` on the summary, so nothing had to be renumbered.
  */
 const steps = computed(() => [
 	{ key: "lite", label: "Add your Telegram link", done: props.summary.onboarding.steps.liteTelegramAdded, to: "/dashboard/links" },
-	{ key: "calendly", label: "Add your Calendly link", done: props.summary.onboarding.steps.calendlyAdded, to: "/dashboard/links" },
 	{ key: "shared", label: "Copy your referral link", done: props.summary.onboarding.steps.linkShared, to: null },
 	{ key: "visit", label: "Get your first link visit", done: props.summary.onboarding.steps.firstVisitReceived, to: null },
 ]);
@@ -419,7 +421,6 @@ const highlights = computed<HighlightCard[]>(() => {
 
 const linkRows = computed(() => [
 	{ label: "Telegram (Lite)", set: Boolean(props.summary.links.lite) },
-	{ label: "Calendly", set: Boolean(props.summary.links.calendly) },
 ]);
 
 async function onCopied() {

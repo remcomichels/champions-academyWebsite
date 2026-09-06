@@ -108,7 +108,6 @@ export type Database = {
       affiliates: {
         Row: {
           avatar_path: string | null
-          calendly_url: string | null
           created_at: string
           created_by: string | null
           display_name: string
@@ -130,7 +129,6 @@ export type Database = {
         }
         Insert: {
           avatar_path?: string | null
-          calendly_url?: string | null
           created_at?: string
           created_by?: string | null
           display_name: string
@@ -152,7 +150,6 @@ export type Database = {
         }
         Update: {
           avatar_path?: string | null
-          calendly_url?: string | null
           created_at?: string
           created_by?: string | null
           display_name?: string

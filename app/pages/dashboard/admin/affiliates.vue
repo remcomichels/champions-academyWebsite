@@ -101,7 +101,6 @@
 								<ul class="adminChecks">
 									<li :class="{ 'is-done': affiliate.hasLogin }">Login</li>
 									<li :class="{ 'is-done': affiliate.hasTelegram }">Telegram</li>
-									<li :class="{ 'is-done': affiliate.hasCalendly }">Calendly</li>
 								</ul>
 								<!-- The prefix, not the code. Only the first group is stored —
 								     enough to tell two outstanding invites apart, never enough

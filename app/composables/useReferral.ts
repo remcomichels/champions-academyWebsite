@@ -21,7 +21,6 @@ export function useReferral() {
 			? {
 					slug: context.slug,
 					lite: context.lite,
-					calendly: context.calendly,
 				}
 			: null;
 	}

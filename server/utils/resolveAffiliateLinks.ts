@@ -15,7 +15,7 @@ async function lookup(slug: string): Promise<ReferralContext | null> {
 	// QR code or spoken in a video.
 	const { data: direct } = await db()
 		.from("affiliates")
-		.select("id, slug, status, lite_telegram_url, calendly_url")
+		.select("id, slug, status, lite_telegram_url")
 		.eq("slug", slug)
 		.eq("status", "active")
 		.maybeSingle();
@@ -25,7 +25,7 @@ async function lookup(slug: string): Promise<ReferralContext | null> {
 	if (!row) {
 		const { data: alias } = await db()
 			.from("affiliate_slug_aliases")
-			.select("affiliates!inner(id, slug, status, lite_telegram_url, calendly_url)")
+			.select("affiliates!inner(id, slug, status, lite_telegram_url)")
 			.eq("slug", slug)
 			.gt("expires_at", new Date().toISOString())
 			.maybeSingle();
@@ -42,7 +42,6 @@ async function lookup(slug: string): Promise<ReferralContext | null> {
 		// and every later lookup settle on one value.
 		slug: row.slug as string,
 		lite: isAllowedLink("lite", row.lite_telegram_url) ? (row.lite_telegram_url as string) : null,
-		calendly: isAllowedLink("calendly", row.calendly_url) ? (row.calendly_url as string) : null,
 	};
 }
 

@@ -7,14 +7,19 @@
  */
 
 /**
- * The two swappable link roles.
+ * The swappable link role. One, now.
  *
- * There was a third, `vip`, which pointed at a Whop checkout and was the only
- * one that could produce a sale. Whop is gone and the tier is sold through
- * Telegram now, so nothing here is a purchase — `lite` is a Telegram invite and
- * `calendly` is a booking page. Both are affiliate-supplied.
+ * There were three. `vip` pointed at a Whop checkout and was the only one that
+ * could produce a sale; it went when the tier moved to Telegram. `calendly` was
+ * a booking page and went with the offer that needed it. What remains is `lite`
+ * — the affiliate's own Telegram invite — which is the only link the marketing
+ * site swaps per referral.
+ *
+ * Kept as a union of one rather than collapsed to a bare string: the role is
+ * still a closed set that the host allow-list, the /go route and the click
+ * table all key on, and a second one is a plausible thing to want again.
  */
-export type LinkRole = "lite" | "calendly";
+export type LinkRole = "lite";
 
 /** What a Storyblok CTA blok carries. Empty string means "not a swappable link". */
 export type LinkRoleField = LinkRole | "";
@@ -35,7 +40,6 @@ export type AffiliateStatus = "active" | "revoked";
 export interface ReferralLinks {
 	slug: string;
 	lite: string | null;
-	calendly: string | null;
 }
 
 /** Server-side referral context, before the private fields are stripped. */
@@ -43,10 +47,9 @@ export interface ReferralContext extends ReferralLinks {
 	affiliateId: string;
 }
 
-/** The four onboarding steps shown on the dashboard Overview. */
+/** The three onboarding steps shown on the dashboard Overview. */
 export interface OnboardingProgress {
 	liteTelegramAdded: boolean;
-	calendlyAdded: boolean;
 	linkShared: boolean;
 	firstVisitReceived: boolean;
 }

@@ -62,7 +62,7 @@ systems in order to run the service. No one outside that group has access.
   we never see or store your actual password).
 - Your session records, including approximate device type, IP address and the
   times you signed in.
-- The links you provide, such as your Telegram or Calendly link.
+- The Telegram link you provide.
 - A log of security-relevant actions on your account, such as sign-ins,
   password changes and link changes.
 
@@ -222,9 +222,9 @@ delete it promptly.
 
 ## 12. Links to other sites
 
-Our website links to third-party platforms including Telegram, Calendly,
-YouTube and Instagram. We are not responsible for their privacy practices and
-encourage you to read their policies.
+Our website links to third-party platforms including Telegram, YouTube and
+Instagram. We are not responsible for their privacy practices and encourage you
+to read their policies.
 
 ---
 

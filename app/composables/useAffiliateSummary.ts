@@ -8,7 +8,6 @@ export interface AffiliateSummary {
 	referralUrl: string;
 	links: {
 		lite: string | null;
-		calendly: string | null;
 	};
 	visits: {
 		today: number;
@@ -44,7 +43,6 @@ export interface AffiliateSummary {
 	onboarding: {
 		steps: {
 			liteTelegramAdded: boolean;
-			calendlyAdded: boolean;
 			linkShared: boolean;
 			firstVisitReceived: boolean;
 		};

@@ -38,7 +38,6 @@ export interface AffiliateRow {
 	last_name: string | null;
 	status: AffiliateStatus;
 	lite_telegram_url: string | null;
-	calendly_url: string | null;
 	user_id: string | null;
 	avatar_path: string | null;
 	timezone: string;
@@ -51,7 +50,7 @@ export interface AffiliateRow {
 
 const AFFILIATE_COLUMNS = `
 	id, slug, display_name, first_name, last_name, status,
-	lite_telegram_url, calendly_url,
+	lite_telegram_url,
 	user_id, avatar_path, timezone, locale, slug_changed_at,
 	onboarding, notification_prefs, created_at
 `;

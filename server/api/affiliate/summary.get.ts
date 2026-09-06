@@ -58,7 +58,6 @@ export default defineEventHandler(async (event) => {
 	// "shared" is a recorded action, because copying a link leaves no trace.
 	const steps = {
 		liteTelegramAdded: Boolean(affiliate.lite_telegram_url),
-		calendlyAdded: Boolean(affiliate.calendly_url),
 		linkShared: onboarding.linkShared === true,
 		firstVisitReceived: Boolean(firstVisit.data),
 	};
@@ -80,7 +79,6 @@ export default defineEventHandler(async (event) => {
 
 		links: {
 			lite: link("lite", affiliate.lite_telegram_url),
-			calendly: link("calendly", affiliate.calendly_url),
 		},
 
 		visits: {

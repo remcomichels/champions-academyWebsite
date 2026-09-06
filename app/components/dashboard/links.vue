@@ -45,15 +45,6 @@
 					hint="Must be a t.me link."
 				/>
 
-				<NuxtAuthField
-					v-model="form.calendlyUrl"
-					label="Calendly"
-					type="url"
-					placeholder="https://calendly.com/you/intro"
-					:error="errors.calendlyUrl"
-					hint="Must be a calendly.com link."
-				/>
-
 				<button type="submit" class="btn btn--primary dashForm-submit" :disabled="pending">
 					{{ pending ? "Saving…" : "Save links" }}
 				</button>
@@ -84,7 +75,6 @@ const qrSrc = "/api/affiliate/qr";
 
 const form = reactive({
 	liteTelegramUrl: props.summary.links.lite ?? "",
-	calendlyUrl: props.summary.links.calendly ?? "",
 });
 
 const errors = ref<Record<string, string | undefined>>({});
@@ -105,7 +95,6 @@ async function save() {
 			method: "PATCH",
 			body: {
 				liteTelegramUrl: form.liteTelegramUrl.trim(),
-				calendlyUrl: form.calendlyUrl.trim(),
 			},
 		});
 
