@@ -9,9 +9,12 @@
 -- an affiliate sees counts for their own link and nothing about anybody else,
 -- and this keeps that true.
 --
--- Built by patching the previous definition rather than retyping it, so the
--- signature, every key name and every other figure are byte-identical to
--- 20260826153549_program_analytics.sql. Only the two additions differ.
+-- Patched from the definition in 20260831134747_remove_whop.sql, which is the
+-- current one — not from 20260826153549, which created this function and has
+-- since been superseded. The first attempt at this migration patched the older
+-- text and failed on `public.conversions`, a table the whop removal dropped in
+-- the same migration that rewrote this function to stop reading it. When two
+-- migrations define the same function, the later one is the source.
 
 create or replace function public.program_analytics(
   p_since    timestamptz,
@@ -37,15 +40,6 @@ as $$
     from public.referral_clicks
     where occurred_at >= p_since and occurred_at < p_until
   ),
-  s as (
-    select affiliate_id, occurred_at
-    from public.conversions
-    -- Matches affiliate_sales: a conversion with no timestamp cannot be placed
-    -- on the series, so it is excluded from both windows rather than landing in
-    -- one period's count and not the other's.
-    where occurred_at is not null
-      and occurred_at >= p_since and occurred_at < p_until
-  ),
 
   -- Every day in the window, so a day with no traffic plots as a zero instead
   -- of being missing and letting the chart join across the gap.
@@ -64,10 +58,6 @@ as $$
     select (occurred_at at time zone p_timezone)::date as day, count(*)::int as n
     from c group by 1
   ),
-  s_day as (
-    select (occurred_at at time zone p_timezone)::date as day, count(*)::int as n
-    from s group by 1
-  ),
 
   src as (
     select referrer_host as host, count(*)::int as visits
@@ -75,16 +65,15 @@ as $$
   ),
   ctry as (
     select country, count(*)::int as visits
-    from v where country is not null group by 1 order by 2 desc limit 12
+    from v group by 1 order by 2 desc limit 12
   ),
   roles as (
     select role, count(*)::int as clicks from c group by 1 order by 2 desc
   ),
 
-  -- Ranked on sales first because that is what the programme is for, then
-  -- visits to break ties among everyone on zero. Revoked affiliates are
-  -- included: their traffic happened, and dropping them would make the
-  -- leaderboard disagree with the totals above it.
+  -- Ranked on visits, then clicks to separate everyone still on zero. Revoked
+  -- affiliates are included: their traffic happened, and dropping them would
+  -- make the leaderboard disagree with the totals above it.
   leaders as (
     select a.id, a.slug, a.display_name, a.status,
            coalesce(lv.n, 0) as visits,
@@ -92,8 +81,7 @@ as $$
            -- link. Zero for everyone outside the rotation, which is all but the
            -- two owners.
            coalesce(lv.house, 0) as house_visits,
-           coalesce(lc.n, 0) as clicks,
-           coalesce(ls.n, 0) as sales
+           coalesce(lc.n, 0) as clicks
     from public.affiliates a
     left join (
       select affiliate_id,
@@ -102,11 +90,10 @@ as $$
       from v group by 1
     ) lv on lv.affiliate_id = a.id
     left join (select affiliate_id, count(*)::int n from c group by 1) lc on lc.affiliate_id = a.id
-    left join (select affiliate_id, count(*)::int n from s group by 1) ls on ls.affiliate_id = a.id
     -- Reserved slugs are seeded as revoked rows with no traffic and would
     -- otherwise pad the tail of the board.
-    where coalesce(lv.n, 0) + coalesce(lc.n, 0) + coalesce(ls.n, 0) > 0
-    order by sales desc, visits desc
+    where coalesce(lv.n, 0) + coalesce(lc.n, 0) > 0
+    order by visits desc, clicks desc
     limit p_leaders
   )
 
@@ -115,24 +102,20 @@ as $$
     -- The pool, programme-wide: what the owners in the rotation are dividing.
     'house_visits', (select count(*)::int from v where source = 'house'),
     'clicks', (select count(*)::int from c),
-    'sales',  (select count(*)::int from s),
     'country_count', (select count(distinct country)::int from v where country is not null),
-    -- "Selling" and "earning" are different questions from "exists": an
-    -- affiliate who has never been sent a code still counts in the total.
+    -- "Sending traffic" is a different question from "exists": an affiliate who
+    -- has never been sent a code still counts in the total.
     'affiliates_total',  (select count(*)::int from public.affiliates where status = 'active'),
     'affiliates_active', (select count(distinct affiliate_id)::int from v),
-    'affiliates_selling',(select count(distinct affiliate_id)::int from s),
     'by_day', (
       select coalesce(jsonb_agg(jsonb_build_object(
         'day', d.day,
         'visits', coalesce(vd.n, 0),
-        'clicks', coalesce(cd.n, 0),
-        'sales',  coalesce(sd.n, 0)
+        'clicks', coalesce(cd.n, 0)
       ) order by d.day), '[]'::jsonb)
       from days d
       left join v_day vd on vd.day = d.day
       left join c_day cd on cd.day = d.day
-      left join s_day sd on sd.day = d.day
     ),
     'sources', (
       select coalesce(jsonb_agg(jsonb_build_object('host', host, 'visits', visits)
@@ -146,7 +129,7 @@ as $$
     'leaderboard', (
       select coalesce(jsonb_agg(jsonb_build_object(
         'id', id, 'slug', slug, 'displayName', display_name, 'status', status,
-        'visits', visits, 'houseVisits', house_visits, 'clicks', clicks, 'sales', sales
-      ) order by sales desc, visits desc), '[]'::jsonb) from leaders)
+        'visits', visits, 'houseVisits', house_visits, 'clicks', clicks
+      ) order by visits desc, clicks desc), '[]'::jsonb) from leaders)
   );
 $$;
