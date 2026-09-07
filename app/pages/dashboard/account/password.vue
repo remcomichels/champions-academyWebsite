@@ -1,63 +1,78 @@
 <template>
-	<div class="auth">
-		<div class="auth-card">
-			<header class="auth-head">
-				<span class="auth-mark" aria-hidden="true">CA</span>
-				<p class="auth-preTitle">Champions Academy</p>
-				<h1 class="auth-title">
-					{{ done ? "Password changed" : "Change your password" }}
-				</h1>
-				<p class="auth-subTitle">
-					{{ done
-						? "Every other device has been signed out. This one stays signed in."
-						: "Welcome back! Choose a new strong password and save it to proceed" }}
-				</p>
-			</header>
-
-			<NuxtAlertBanner v-if="done" variant="success">
-				Your password has been changed.
-			</NuxtAlertBanner>
-
-			<NuxtAlertBanner v-else-if="formError" variant="error">
-				{{ formError }}
-			</NuxtAlertBanner>
-
-			<form v-if="!done" class="auth-form" novalidate @submit.prevent="submit">
-				<NuxtAuthField
-					v-model="currentPassword"
-					label="Current password"
-					type="password"
-					autocomplete="current-password"
-					:error="errors.currentPassword"
-					:disabled="pending"
-					required
-				/>
-
-				<NuxtAuthField
-					v-model="newPassword"
-					label="New password"
-					type="password"
-					autocomplete="new-password"
-					:error="errors.newPassword"
-					:disabled="pending"
-					hint="At least 12 characters. Length beats symbols."
-					required
-				/>
-
-				<button type="submit" class="btn btn--primary auth-submit" :disabled="pending">
-					{{ pending ? "Saving…" : "Save new password" }}
-				</button>
-			</form>
-
-			<footer class="auth-foot">
-				<NuxtLink to="/dashboard/account" class="auth-switch">
-					{{ done ? "Back to your account" : "Cancel" }}
-				</NuxtLink>
-				<p v-if="!done" class="auth-help">
-					<NuxtLink to="/forgot-password">Forgotten your password?</NuxtLink>
-				</p>
-			</footer>
+	<div class="authSplit">
+		<div class="authSplit-ghost" aria-hidden="true">
+			<NuxtAuthGhost />
 		</div>
+
+		<section class="authSplit-form">
+			<div class="authPane">
+				<div class="authPane-glass">
+					<div class="auth">
+						<div class="auth-card">
+							<header class="auth-head" aria-live="polite">
+								<span v-if="done" class="auth-check" aria-hidden="true">
+									<NuxtDashboardIcon name="check" />
+								</span>
+
+								<h1 class="auth-title">
+									{{ done ? "Password changed" : "Change your password" }}
+								</h1>
+
+								<p class="auth-subTitle">
+									{{ done
+										? "Every other device has been signed out. This one stays signed in."
+										: "Choose a new password and save it to continue." }}
+								</p>
+							</header>
+
+							<NuxtAlertBanner v-if="formError" variant="error">
+								{{ formError }}
+							</NuxtAlertBanner>
+
+							<form v-if="!done" class="auth-form" novalidate @submit.prevent="submit">
+								<NuxtAuthField
+									v-model="currentPassword"
+									label="Current password"
+									type="password"
+									autocomplete="current-password"
+									placeholder="Your current password"
+									:error="errors.currentPassword"
+									:disabled="pending"
+									required
+								/>
+
+								<NuxtAuthField
+									v-model="newPassword"
+									label="New password"
+									type="password"
+									autocomplete="new-password"
+									placeholder="At least 12 characters"
+									:error="errors.newPassword"
+									:disabled="pending"
+									required
+								/>
+
+								<p class="auth-recover">
+									<NuxtLink to="/forgot-password">Forgotten your password?</NuxtLink>
+								</p>
+
+								<button type="submit" class="btn btn--primary auth-submit" :disabled="pending">
+									{{ pending ? "Saving…" : "Save new password" }}
+								</button>
+							</form>
+
+							<div v-if="!done" class="auth-or" role="presentation">
+								<span>or</span>
+							</div>
+
+							<NuxtLink to="/dashboard/account" class="auth-alt">
+								{{ done ? "Back to your account" : "Cancel" }}
+							</NuxtLink>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 	</div>
 </template>
 

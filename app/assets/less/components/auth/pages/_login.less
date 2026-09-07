@@ -1,0 +1,92 @@
+// ───────────────────────────────────────────
+/* Log-in page */
+// ───────────────────────────────────────────
+//
+// The only screen with a second pane: a photograph with the avatar over it,
+// opposite the card.
+
+.authSplit {
+    &-visual {
+        overflow: hidden;
+
+        // The scrim. Black in all three themes rather than `var(--background)`:
+        // the photograph does not change with the theme, and in `light` that
+        // token would wash it to a pale haze instead of dimming it.
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: @vw20;
+            background-color: fade(@black, 46%);
+            pointer-events: none;
+        }
+    }
+
+    &-backdrop {
+        position: absolute;
+        inset: 0;
+        // Explicit, not `auto`: an <img> is a replaced element, so an absolute
+        // box with `auto` dimensions takes them from the file and over-
+        // constrains the insets.
+        width: 100%;
+        height: 100%;
+        border-radius: @vw20;
+        object-fit: cover;
+        object-position: center;
+        // At full strength the orange sky and a purple avatar are two loud
+        // complementaries, and the avatar loses — it is the smaller shape.
+        filter: saturate(0.72) brightness(0.66);
+    }
+
+    &-avatar {
+        position: relative;
+        z-index: 1;
+        width: min(@vw300, 52vh);
+        height: min(@vw300, 52vh);
+    }
+
+    // Stand-in for a definition that did not load, so the column is never an
+    // empty panel.
+    &-mark {
+        display: grid;
+        place-items: center;
+        width: min(@vw80, 14vh);
+        height: min(@vw80, 14vh);
+        border-radius: @vw20;
+        background-color: var(--accent);
+        color: var(--on-accent);
+        font-size: max(1.4em, @vw28);
+        font-weight: @bold;
+    }
+}
+
+// Splits the invite form into the email pair and the password pair.
+.authSplit .auth .field.auth-groupStart { margin-top: min(@vw10, 1.25vh); }
+
+@media (max-width: 1080px) {
+    .authSplit {
+        &-avatar {
+            width: min(@vw300-1080, 46vh);
+            height: min(@vw300-1080, 46vh);
+        }
+
+        &-mark {
+            width: min(@vw80-1080, 14vh);
+            height: min(@vw80-1080, 14vh);
+            border-radius: @vw20-1080;
+            font-size: max(1.4em, @vw28-1080);
+        }
+    }
+
+    .authSplit .auth .field.auth-groupStart { margin-top: min(@vw10-1080, 1.25vh); }
+}
+
+@media (max-width: 768px) {
+    // The photograph goes rather than stacking: this document does not scroll
+    // and the invite form needs every pixel of height it has.
+    .authSplit-visual { display: none; }
+}
+
+@media (max-width: 600px) {
+    .authSplit .auth .field.auth-groupStart { margin-top: min(@vw10-580, 1.25vh); }
+}

@@ -1,0 +1,28 @@
+// ───────────────────────────────────────────
+/* Avatar */
+// ───────────────────────────────────────────
+//
+// The procedural avatar component. Only /login renders one — its size comes
+// from `.authSplit-avatar` in pages/_login.less.
+//
+// Sets no width or height of its own: the component root is also where the
+// caller's class lands, so sizing from inside puts two single-class rules on
+// one node and lets source order decide.
+//
+// The bible blob from https://avatars.bible-strong.app/
+
+.avatar {
+    display: grid;
+    place-items: center;
+
+    &-host {
+        display: grid;
+        place-items: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    // Left in place while the fallback renders, the host gives the grid a
+    // second row and pushes the mark off centre.
+    &[data-status='error'] &-host { display: none; }
+}

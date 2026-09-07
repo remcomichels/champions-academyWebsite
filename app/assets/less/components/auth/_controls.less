@@ -1,0 +1,72 @@
+// ───────────────────────────────────────────
+/* Control sizing */
+// ───────────────────────────────────────────
+//
+// The geometry inputs and buttons share, so the two measure the same. Padding
+// alone will not do it — they carry different type sizes, so a proportional
+// line-height leaves the button taller before any padding is counted. A flat
+// line-height fixes the text box for both. 42px at the reference size.
+
+.authSplit .auth {
+    &-form .field-input,
+    &-submit,
+    &-alt {
+        padding: min(@vw10, 1.25vh) @vw16;
+        line-height: 20px;
+        border-radius: @dashRadiusPill;
+    }
+
+    // After the rule above, whose `padding` shorthand would otherwise wipe this
+    // out and put the reveal button on the end of a long password.
+    &-form .field-input--revealable {
+        padding-right: @vw44;
+    }
+
+    // Focus as a change to the border that is already there, not a ring around
+    // it: on a pill this size the shared glow reads as the control swelling.
+    // `--text` is white in the dark themes and its opposite in the light one,
+    // where a literal white border on a white card would be invisible.
+    // Error fields keep their red — the more important signal.
+    &-form .field:not(.field--error) .field-input:focus-visible,
+    &-submit:focus-visible,
+    &-alt:focus-visible {
+        border-color: var(--text);
+        box-shadow: none;
+        outline: none;
+    }
+}
+
+@media (max-width: 1080px) {
+    .authSplit .auth {
+        &-form .field-input,
+        &-submit,
+        &-alt {
+            padding: min(@vw10-1080, 1.25vh) @vw16-1080;
+        }
+
+        &-form .field-input--revealable { padding-right: @vw44-1080; }
+    }
+}
+
+// 16 exactly, and a flat pixel: that is the number iOS Safari measures, and it
+// zooms the viewport whenever a focused input computes under it. The buttons
+// come along or they stop matching the fields.
+@media (max-width: 768px) {
+    .authSplit .auth {
+        &-form .field-input,
+        &-submit,
+        &-alt { font-size: 16px; }
+    }
+}
+
+@media (max-width: 600px) {
+    .authSplit .auth {
+        &-form .field-input,
+        &-submit,
+        &-alt {
+            padding: @vw10-580 @vw16-580;
+        }
+
+        &-form .field-input--revealable { padding-right: @vw44-580; }
+    }
+}

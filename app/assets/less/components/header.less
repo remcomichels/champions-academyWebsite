@@ -1,4 +1,19 @@
-header {
+// `:has(.headerWrapper)`, not a bare `header`.
+//
+// main.less is global, so this rule reached every <header> on the site: the
+// changelog and privacy page titles, all five auth cards, four dashboard
+// surfaces, and the mock dashboard behind /login. None of them asked for 32px
+// of top padding and none of them declared any of their own, so all of them got
+// it. It is why the sign-in card's title never lined up with the space under
+// its last button.
+//
+// The masthead is the only <header> that wraps a `.headerWrapper` — which every
+// rule nested below already assumes — so that is the test. Everything that was
+// inheriting the padding by accident is listed underneath, keeping the value
+// verbatim: scoping this fixes /login without moving anything else. Those are
+// now explicit and can be judged on their own merits, which was never possible
+// while they were inheriting it.
+header:has(.headerWrapper) {
     padding-top: @vw32;
 
     .headerWrapper {
@@ -104,7 +119,7 @@ header {
 }
 
 @media (max-width: 1080px) {
-    header {
+    header:has(.headerWrapper) {
         padding-top: @vw32-1080;
 
         .headerWrapper {
@@ -265,7 +280,7 @@ header {
 }
 
 @media (max-width: 600px) {
-    header {
+    header:has(.headerWrapper) {
         padding-top: @vw32-580;
 
         .headerWrapper {
@@ -287,5 +302,48 @@ header {
                 }
             }
         }
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Inherited from the bare `header` selector above until it was scoped. Kept at
+// the same value so that scoping was a no-op everywhere except the auth cards,
+// which is the one place it was actually doing harm.
+//
+// `.auth-head` is deliberately absent — losing this is the point — and so is
+// `.dashGhost-topbar`, which is a 48px bar that was being given 32px of padding
+// it had no room for.
+//
+// Nothing here is a considered value; it is a preserved accident. Each of these
+// is now free to set its own or drop it.
+// ─────────────────────────────────────────────────────────────────────────────
+.changelogPage-head,
+.policyPage-head,
+.dashHead,
+.settingsHead,
+.settingsBlock-head,
+.modal-head {
+    padding-top: @vw32;
+}
+
+@media (max-width: 1080px) {
+    .changelogPage-head,
+    .policyPage-head,
+    .dashHead,
+    .settingsHead,
+    .settingsBlock-head,
+    .modal-head {
+        padding-top: @vw32-1080;
+    }
+}
+
+@media (max-width: 600px) {
+    .changelogPage-head,
+    .policyPage-head,
+    .dashHead,
+    .settingsHead,
+    .settingsBlock-head,
+    .modal-head {
+        padding-top: @vw32-580;
     }
 }

@@ -20,7 +20,7 @@ export default defineEventHandler(async (event) => {
 	await enforceRateLimit(event, otpIpBucket(ip), RATE_LIMITS.otpIp);
 	await enforceRateLimit(event, OTP_GLOBAL_BUCKET, RATE_LIMITS.otpGlobal);
 
-	const body = await readValidatedBody(event, object({
+	const body = await readChecked(event, object({
 		code: str({ max: 64 }),
 		email: emailCheck(),
 		emailConfirm: emailCheck(),

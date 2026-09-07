@@ -1,0 +1,74 @@
+// ───────────────────────────────────────────
+/* Links */
+// ───────────────────────────────────────────
+//
+// The aside under a field, and the small print under the buttons. Both muted:
+// the accent would put them in the same voice as the buttons.
+
+.authSplit .auth {
+    &-recover {
+        padding: min(@vw6, 0.75vh) 0 min(@vw6, 0.75vh) @vw16;
+        font-size: 12px;
+
+        a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            .transition();
+            transition-property: color;
+
+            @media (hover: hover) {
+                &:hover { color: var(--text); }
+            }
+        }
+    }
+
+    // Flat 12px: the shared rule is `max(0.7em, @vw12)`, which reaches 16px on
+    // a 1920 monitor.
+    &-help {
+        font-size: 12px;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-tertiary);
+
+        // A rule that wipes in from the left and keeps going off the right on
+        // the way out: the resting origin is the right edge and hover flips it
+        // to the left, so only the scale animates.
+        a {
+            position: relative;
+            color: inherit;
+            text-decoration: none;
+
+            &::after {
+                content: '';
+                position: absolute;
+                left: 0;
+                right: 0;
+                bottom: -0.2em;
+                height: max(1px, @vw1);
+                background-color: currentColor;
+                transform: scaleX(0);
+                transform-origin: right center;
+                .transition();
+                transition-property: transform;
+            }
+
+            @media (hover: hover) {
+                &:hover::after { transform: scaleX(1); transform-origin: left center; }
+            }
+
+            &:focus-visible::after { transform: scaleX(1); transform-origin: left center; }
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .authSplit .auth-recover {
+        padding: min(@vw6-1080, 0.75vh) 0 min(@vw6-1080, 0.75vh) @vw16-1080;
+    }
+}
+
+@media (max-width: 600px) {
+    .authSplit .auth-recover {
+        padding: min(@vw6-580, 0.75vh) 0 min(@vw6-580, 0.75vh) @vw16-580;
+    }
+}

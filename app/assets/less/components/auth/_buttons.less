@@ -1,0 +1,80 @@
+// ───────────────────────────────────────────
+/* Buttons */
+// ───────────────────────────────────────────
+//
+// The primary action, the secondary one, and the "or" between them. Their
+// height comes from _controls.less.
+
+.authSplit .auth {
+    &-submit {
+        margin-top: min(@vw4, 0.5vh);
+        width: 100%;
+        font-size: 15px;
+
+        &:disabled { cursor: wait; }
+    }
+
+    // At the submit's size and shape, so the two read as a pair of choices.
+    // `display: block` and its own centring because this is a <button> on some
+    // pages and a <NuxtLink> on others, and `width: 100%` does nothing to an
+    // inline <a>.
+    &-alt {
+        display: block;
+        width: 100%;
+        font-family: @body;
+        font-size: 15px;
+        font-weight: @semiBold;
+        text-align: center;
+        text-decoration: none;
+        color: var(--text);
+        background-color: transparent;
+        border: max(1px, @vw1) solid var(--border-strong);
+        cursor: pointer;
+        .transition();
+        transition-property: background-color, border-color;
+
+        @media (hover: hover) {
+            &:hover {
+                background-color: var(--surface-hover);
+                border-color: var(--text-tertiary);
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+
+    &-or {
+        display: flex;
+        align-items: center;
+        gap: @vw12;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-tertiary);
+
+        &::before,
+        &::after {
+            content: '';
+            flex: 1;
+            height: max(1px, @vw1);
+            background-color: var(--border);
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .authSplit .auth {
+        &-submit { margin-top: min(@vw4-1080, 0.5vh); }
+        &-or { gap: @vw12-1080; }
+    }
+}
+
+@media (max-width: 600px) {
+    .authSplit .auth {
+        &-submit { margin-top: min(@vw4-580, 0.5vh); }
+        &-or { gap: @vw12-580; }
+    }
+}

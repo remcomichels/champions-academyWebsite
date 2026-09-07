@@ -47,10 +47,17 @@ const icons: Record<string, string[]> = {
 	],
 	// The same eye with a slash, not a different glyph: the two states have to
 	// read as one control changing rather than two controls swapping.
+	//
+	// Literally the same, now — the first two entries are `eye` character for
+	// character, with the slash added. They used to be redrawn as arcs broken
+	// around the slash, which was prettier but put the eye's top at y=5 where
+	// `eye` has it at 6: pressing the reveal button moved the eye up a pixel
+	// and back down again, on an icon whose whole job is to sit still while its
+	// state changes. Sharing the path data makes that impossible by
+	// construction rather than by careful redrawing.
 	eyeOff: [
-		"M9.9 5.2A9.6 9.6 0 0 1 12 5c5.9 0 9.5 6 9.5 6a17 17 0 0 1-2.8 3.4",
-		"M6.2 6.7A17 17 0 0 0 2.5 11s3.6 6 9.5 6a9.4 9.4 0 0 0 3.9-.83",
-		"M10.2 9.4a2.6 2.6 0 0 0 3.5 3.8",
+		"M2.5 12s3.6-6 9.5-6 9.5 6 9.5 6-3.6 6-9.5 6-9.5-6-9.5-6Z",
+		"M12 14.6a2.6 2.6 0 1 0 0-5.2 2.6 2.6 0 0 0 0 5.2Z",
 		"M3.5 3.5l17 17",
 	],
 	// Two strokes inset to 6–18, so the X reads at the same weight as the
