@@ -4,15 +4,15 @@
 		     the gap between them is where you see it plainly — which is what makes
 		     them read as two panes laid on a screen rather than two halves of one. -->
 		<div class="authSplit-ghost" aria-hidden="true">
-			<NuxtLoginGhost />
+			<NuxtAuthGhost />
 		</div>
 
 		<section class="authSplit-form">
-			<div class="loginPane">
+			<div class="authPane">
 				<!-- The glass: full height, half width, which is this pane. The
 				     dashboard it frosts is the page-wide layer above, showing
 				     through. -->
-				<div class="loginPane-glass">
+				<div class="authPane-glass">
 					<div class="auth">
 						<div class="auth-card">
 							<header class="auth-head">

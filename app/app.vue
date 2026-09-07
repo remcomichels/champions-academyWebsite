@@ -34,7 +34,12 @@ useHead({
 // hero, so on a route without one it would black the screen out and never
 // resolve. Marked complete up front there so gated reveal animations still run.
 const route = useRoute()
-const isAppRoute = computed(() => /^\/(?:[a-z]{2}\/)?(?:login|dashboard)\b/.test(route.path))
+// `forgot-password` joins the list: it renders the same glass pane and card as
+// /login, and the marketing intro sweeping over it on the way in made a
+// password reset look like a landing page. The two remaining auth screens —
+// reset-password and confirm-email — are still outside this and still get the
+// overlay; they are next.
+const isAppRoute = computed(() => /^\/(?:[a-z]{2}\/)?(?:login|forgot-password|dashboard)\b/.test(route.path))
 
 // Initialize before any child component mounts so reveal animations wait for the intro.
 // Persists as `true` across SPA navigations so subsequent pages animate immediately.

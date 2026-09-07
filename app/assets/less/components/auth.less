@@ -645,8 +645,15 @@ html[data-screen='auth'] body {
         // it used to be — same size and shape as the submit, so the two read as
         // a pair of choices instead of a button and an afterthought.
         &-alt {
+            // `display: block` and its own centring, because this is a
+            // `<button>` on /login and a `<NuxtLink>` on /forgot-password —
+            // `width: 100%` does nothing to an inline `<a>`, and the button's
+            // inherited centring does not come with it.
+            display: block;
             width: 100%;
             font-family: @body;
+            text-align: center;
+            text-decoration: none;
             font-size: 15px;
             font-weight: @semiBold;
             color: var(--text);
@@ -823,7 +830,7 @@ html[data-screen='auth'] body {
     // is scenery nobody can read as scenery.
     .authSplit-ghost { display: none; }
 
-    .loginPane {
+    .authPane {
         border-radius: 0;
         background-color: transparent;
 
@@ -895,7 +902,8 @@ html[data-screen='auth'] body {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The sign-in pane — three stacked layers on the left half.
+// The auth pane — the glass sheet an auth card sits on. /login puts one in the
+// left half beside the avatar; /forgot-password gives it the full width.
 //
 //   -ghost   a mock of the dashboard home, blurred past reading
 //   -glass   the frosted sheet, full height and half width
@@ -910,7 +918,7 @@ html[data-screen='auth'] body {
 // fill, which is why the alpha is high enough to stand on its own.
 // ─────────────────────────────────────────────────────────────────────────────
 
-.loginPane {
+.authPane {
     position: relative;
     width: 100%;
     height: 100%;
@@ -944,12 +952,12 @@ html[data-screen='auth'] body {
 // The light theme paints a white frost, the two dark ones a dark one. Declared
 // here rather than in dashboardTokens.less because it is the only surface on
 // the site that needs it, and that file is loaded by the dashboard too.
-[data-theme='light'] .loginPane-glass { background-color: fade(#FFFFFF, 55%); }
-[data-theme='dark'] .loginPane-glass,
-[data-theme='classic'] .loginPane-glass { background-color: fade(@black, 45%); }
+[data-theme='light'] .authPane-glass { background-color: fade(#FFFFFF, 55%); }
+[data-theme='dark'] .authPane-glass,
+[data-theme='classic'] .authPane-glass { background-color: fade(@black, 45%); }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// The dashboard ghost — see app/components/loginGhost.vue.
+// The dashboard ghost — see app/components/authGhost.vue.
 //
 // Kept here rather than in dashboard.less because /login must not load that
 // file, and it cannot reuse the real dashboard classes for the same reason.

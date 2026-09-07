@@ -1,53 +1,72 @@
 <template>
-	<div class="auth">
-		<div class="auth-card">
-			<header class="auth-head">
-				<span class="auth-mark" aria-hidden="true">CA</span>
-				<p class="auth-preTitle">Champions Academy</p>
-				<h1 class="auth-title">Reset your password</h1>
-				<p class="auth-subTitle">
-					{{ sent
-						? "Check your inbox."
-						: "Enter your email and we'll send you a link to choose a new password." }}
-				</p>
-			</header>
-
-			<!-- Deliberately the same words whether or not that address has an
-			     account. The server answers 204 either way; saying anything more
-			     specific here would hand back what the API refuses to. -->
-			<NuxtAlertBanner v-if="sent" variant="success">
-				If an account exists for that address, we've sent a link. It works once and
-				expires in an hour.
-			</NuxtAlertBanner>
-
-			<NuxtAlertBanner v-else-if="formError" variant="error">
-				{{ formError }}
-			</NuxtAlertBanner>
-
-			<form v-if="!sent" class="auth-form" novalidate @submit.prevent="submit">
-				<NuxtAuthField
-					v-model="email"
-					label="Email"
-					type="email"
-					inputmode="email"
-					autocomplete="email"
-					:error="fieldError"
-					:disabled="pending"
-					required
-				/>
-
-				<button type="submit" class="btn btn--primary auth-submit" :disabled="pending">
-					{{ pending ? "Working…" : "Send the link" }}
-				</button>
-			</form>
-
-			<footer class="auth-foot">
-				<NuxtLink to="/login" class="auth-switch">Back to sign in</NuxtLink>
-				<p v-if="sent" class="auth-help">
-					Nothing arrived? Check spam, then try again in a few minutes.
-				</p>
-			</footer>
+	<div class="authSplit">
+		<!-- The dashboard, blurred by the glass above it. Full width here: there is
+		     no second pane to leave a channel to, so nothing shows through sharp. -->
+		<div class="authSplit-ghost" aria-hidden="true">
+			<NuxtAuthGhost />
 		</div>
+
+		<section class="authSplit-form">
+			<div class="authPane">
+				<div class="authPane-glass">
+					<div class="auth">
+						<div class="auth-card">
+							<header class="auth-head">
+								<h1 class="auth-title">Reset your password</h1>
+								<p class="auth-subTitle">
+									{{ sent
+										? "Check your inbox."
+										: "Enter your email and we'll send you a link to choose a new password." }}
+								</p>
+							</header>
+
+							<!-- Deliberately the same words whether or not that address has an
+							     account. The server answers 204 either way; saying anything more
+							     specific here would hand back what the API refuses to. -->
+							<NuxtAlertBanner v-if="sent" variant="success">
+								If an account exists for that address, we've sent a link. It works once and
+								expires in an hour.
+							</NuxtAlertBanner>
+
+							<NuxtAlertBanner v-else-if="formError" variant="error">
+								{{ formError }}
+							</NuxtAlertBanner>
+
+							<form v-if="!sent" class="auth-form" novalidate @submit.prevent="submit">
+								<NuxtAuthField
+									v-model="email"
+									label="Email address"
+									type="email"
+									inputmode="email"
+									autocomplete="email"
+									placeholder="you@example.com"
+									:error="fieldError"
+									:disabled="pending"
+									required
+								/>
+
+								<button type="submit" class="btn btn--primary auth-submit" :disabled="pending">
+									{{ pending ? "Working…" : "Send the link" }}
+								</button>
+							</form>
+
+							<!-- Only while the form is up. Once the link is sent there is no
+							     first option left for this to be the alternative to, and an
+							     "or" over a lone back-link reads as a missing choice. -->
+							<div v-if="!sent" class="auth-or" role="presentation">
+								<span>or</span>
+							</div>
+
+							<NuxtLink to="/login" class="auth-alt">Back to sign in</NuxtLink>
+
+							<p v-if="sent" class="auth-help">
+								Nothing arrived? Check spam, then try again in a few minutes.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 	</div>
 </template>
 

@@ -1,5 +1,6 @@
 <template>
-	<!-- A standing mock of the affiliate dashboard, for /login to sit on.
+	<!-- A standing mock of the affiliate dashboard, for the auth screens to
+	     sit on.
 	     Decorative and inert: no links, no inputs, nothing focusable, and
 	     `aria-hidden` on the wrapper in the page.
 
