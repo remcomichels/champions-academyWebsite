@@ -92,15 +92,6 @@
 									<NuxtLink to="/forgot-password">Forgot your password?</NuxtLink>
 								</p>
 
-								<!-- Redeeming has no equivalent of "forgot your
-								     password" — an invite code that does not work is
-								     not something the person holding it can resolve
-								     from here, and a link saying so would be an exit
-								     with nowhere to go. A rule keeps the same beat
-								     between the last field and the button without
-								     inventing a destination. -->
-								<div v-else class="auth-rule" aria-hidden="true" />
-
 								<button type="submit" class="btn btn--primary auth-submit" :disabled="pending">
 									{{ pending
 										? "Working…"

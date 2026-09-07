@@ -267,6 +267,12 @@ html[data-screen='auth'] body {
     }
 }
 
+// ───────────────────────────────────────────
+/*
+* Log-in page
+*/
+// ───────────────────────────────────────────
+
 // ─────────────────────────────────────────────────────────────────────────────
 // /login only — the two-column split.
 //
@@ -642,14 +648,6 @@ html[data-screen='auth'] body {
             }
         }
 
-        // Stands in for `-recover` on the invite form, and carries the same
-        // vertical rhythm so the button lands in the same place in both modes.
-        &-rule {
-            height: max(1px, @vw1);
-            margin-block: min(@vw10, 1.25vh);
-            background-color: var(--border);
-        }
-
         // ── The control pair ────────────────────────────────────────────
         // Inputs and buttons are one family here and have to measure the same,
         // which a shared padding alone will not do: they carry different type
@@ -875,7 +873,6 @@ html[data-screen='auth'] body {
         }
 
         .auth-recover { padding-block: min(@vw6-1080, 0.75vh); }
-        .auth-rule { margin-block: min(@vw10-1080, 1.25vh); }
 
         .auth-submit { margin-top: min(@vw4-1080, 0.5vh); }
         .auth-or { gap: @vw12-1080; }
@@ -1005,7 +1002,6 @@ html[data-screen='auth'] body {
         }
 
         .auth-recover { padding-block: min(@vw6-580, 0.75vh); }
-        .auth-rule { margin-block: min(@vw10-580, 1.25vh); }
 
         .auth-submit { margin-top: min(@vw4-580, 0.5vh); }
         .auth-or { gap: @vw12-580; }

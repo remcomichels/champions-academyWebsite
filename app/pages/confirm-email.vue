@@ -36,13 +36,29 @@
 								You'll sign in with <strong>{{ confirmed }}</strong> from now on.
 							</p>
 
-							<NuxtLink v-if="state !== 'working'" to="/dashboard/account" class="auth-alt">
+							<!-- Account settings is the primary way on from both
+							     outcomes: it is where a confirmed address is listed and
+							     where a failed one is asked for again. -->
+							<NuxtLink
+								v-if="state !== 'working'"
+								to="/dashboard/account"
+								class="btn btn--primary auth-submit"
+							>
 								Go to your account
 							</NuxtLink>
 
-							<p v-if="state === 'error'" class="auth-help">
-								<NuxtLink to="/login">Sign in</NuxtLink>
-							</p>
+							<!-- Only when it failed, and at full size. A link mailed to a
+							     new address is very often opened on a device that has
+							     never signed in — for that person "go to your account"
+							     is a redirect to the sign-in form, and this is the
+							     honest name for it. -->
+							<template v-if="state === 'error'">
+								<div class="auth-or" role="presentation">
+									<span>or</span>
+								</div>
+
+								<NuxtLink to="/login" class="auth-alt">Sign in</NuxtLink>
+							</template>
 						</div>
 					</div>
 				</div>
