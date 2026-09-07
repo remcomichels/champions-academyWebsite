@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
 	await enforceRateLimit(event, emailChangeIpBucket(clientIp(event)), RATE_LIMITS.emailChangeIp);
 
-	const body = await readValidatedBody(event, object({
+	const body = await readChecked(event, object({
 		// 32 bytes base64url is 43 characters. Bounded loosely rather than
 		// pinned, so a future change of token length is not a silent 400.
 		token: str({ min: 20, max: 200 }),

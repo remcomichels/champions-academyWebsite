@@ -108,31 +108,28 @@
 								</button>
 							</form>
 
-							<!-- Sign-in gets the reference's treatment: a rule, an
-							     "or", and the alternative as a button of equal
-							     weight, because redeeming an invite really is the
-							     other way in.
+							<!-- The same pair in both directions: a rule, an "or", and
+							     the alternative as a button of equal weight. Redeeming
+							     an invite really is the other way in, and returning to
+							     sign-in really is the way back out.
 							
-							     Redeem does not. There it is a way back to a screen
-							     you just left, not a second route forward — and the
-							     invite form is five fields on a locked viewport,
-							     which leaves no room to spend 65px saying so twice
-							     as loudly as necessary. -->
-							<template v-if="mode === 'login'">
-								<div class="auth-or" role="presentation">
-									<span>or</span>
-								</div>
+							     This was a text link on the invite form for a while,
+							     because five fields on a locked viewport left no room
+							     for a second button. Dropping the standfirst and the
+							     field hints gave it back. -->
+							<div class="auth-or" role="presentation">
+								<span>or</span>
+							</div>
 
-								<button type="button" class="auth-alt" @click="setMode('redeem')">
-									I have an invite code
-								</button>
-							</template>
-
-							<p v-else class="auth-back">
-								<button type="button" @click="setMode('login')">
-									I already have an account
-								</button>
-							</p>
+							<button
+								type="button"
+								class="auth-alt"
+								@click="setMode(mode === 'login' ? 'redeem' : 'login')"
+							>
+								{{ mode === "login"
+									? "I have an invite code"
+									: "I already have an account" }}
+							</button>
 						</div>
 					</div>
 				</div>

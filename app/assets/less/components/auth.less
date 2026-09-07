@@ -447,10 +447,139 @@ html[data-screen='auth'] body {
             margin-top: min(@vw10, 1.25vh);
         }
 
+        // The confirmation mark on /forgot-password, above the title rather
+        // than in a banner under it. A sent link is the whole outcome of that
+        // screen, so it gets the screen rather than a strip across it.
+        //
+        // `--success`, not `--accent`: this reports that something completed,
+        // and the accent is the colour of things you press.
+        &-check {
+            display: grid;
+            place-items: center;
+            width: min(@vw44, 5.5vh);
+            height: min(@vw44, 5.5vh);
+            margin-bottom: min(@vw6, 0.75vh);
+            border-radius: @dashRadiusPill;
+            background-color: var(--success-subtle);
+            color: var(--success);
+            font-size: 20px;
+
+            // The same mark for the outcome that did not work. `--error`
+            // rather than a second shape, so the two read as one slot
+            // reporting either answer.
+            &--bad {
+                background-color: var(--error-subtle);
+                color: var(--error);
+            }
+        }
+
         &-subTitle {
             font-size: 13px;
             line-height: 1.55;
             text-wrap: balance;
+        }
+
+        // The message block, refitted. The shared `.alert` is dashboard
+        // furniture — a `--surface-raised` panel with a coloured rule down its
+        // leading edge, at a radius and a type size drawn for a page of panels.
+        // Inside a 340px card of pill controls it reads as a component borrowed
+        // from somewhere else, and its `max(0.8em, @vw14)` reaches 18.7px on a
+        // 1920 monitor, louder than the heading it sits under.
+        //
+        // Here the status is carried by the tint alone — the same 12% wash the
+        // check mark uses — and the bar goes. The text stays `--text` rather
+        // than taking the status colour, which is the one thing the original
+        // got right: red on a red wash loses contrast in the light theme, and
+        // a validation message is the last place to spend it.
+        .alert {
+            gap: 0;
+            padding: min(@vw10, 1.25vh) @vw16;
+            border-color: transparent;
+            border-radius: @vw16;
+            text-align: left;
+
+            &::before { display: none; }
+
+            &-text {
+                font-size: 12px;
+                line-height: 1.45;
+                color: var(--text);
+            }
+
+            &--error { background-color: var(--error-subtle); }
+            &--success { background-color: var(--success-subtle); }
+            &--warning { background-color: var(--warning-subtle); }
+            &--info { background-color: var(--accent-subtle); }
+        }
+
+        // A line of body copy inside the card that is not a heading, a label or
+        // small print: the confirmed address, or why a link failed. Sits at the
+        // standfirst's size and centring, since it is a continuation of it.
+        &-note {
+            font-size: 13px;
+            line-height: 1.55;
+            text-align: center;
+            text-wrap: balance;
+            color: var(--text-secondary);
+
+            strong {
+                font-weight: @semiBold;
+                color: var(--text);
+            }
+        }
+
+        // Flat, like the rest of the scale here. The shared rule is
+        // `max(0.7em, @vw12)`, which reaches 16px on a 1920 monitor — small
+        // print louder than the 13px it sits under.
+        &-help {
+            font-size: 12px;
+
+            // The link inside gets a rule that wipes in from the left rather
+            // than a `text-decoration` appearing all at once. A pseudo-element
+            // because `text-decoration` cannot be animated, and scaled rather
+            // than grown in width so it runs on the compositor.
+            a {
+                position: relative;
+                // `inherit`, so it stays the same grey as the sentence around
+                // it. Accent would make one line of small print compete with
+                // the two buttons above it.
+                color: inherit;
+                text-decoration: none;
+
+                &::after {
+                    content: '';
+                    position: absolute;
+                    left: 0;
+                    right: 0;
+                    // Under the descenders, not through them.
+                    bottom: -0.2em;
+                    height: max(1px, @vw1);
+                    background-color: currentColor;
+                    transform: scaleX(0);
+                    // The resting origin is the *right* edge, and hover flips
+                    // it to the left. That is what makes the rule enter from
+                    // the left and keep going off the right when the pointer
+                    // leaves, rather than retracing itself backwards: the
+                    // origin swaps instantly while only the scale animates.
+                    transform-origin: right center;
+                    .transition();
+                    transition-property: transform;
+                }
+
+                @media (hover: hover) {
+                    &:hover::after {
+                        transform: scaleX(1);
+                        transform-origin: left center;
+                    }
+                }
+
+                // Keyboard users get the same mark — the focus ring alone does
+                // not say this is a link rather than a button.
+                &:focus-visible::after {
+                    transform: scaleX(1);
+                    transform-origin: left center;
+                }
+            }
         }
 
         // Sentence case, `--text`, and no letter-spacing — the reference's
@@ -613,34 +742,6 @@ html[data-screen='auth'] body {
             }
         }
 
-        // Redeem's way back. A link, not a button: see the note in login.vue.
-        &-back {
-            text-align: center;
-
-            button {
-                padding: 0;
-                font-family: @body;
-                font-size: 13px;
-                font-weight: @medium;
-                color: var(--accent);
-                background: none;
-                border: none;
-                cursor: pointer;
-                .transition();
-                transition-property: opacity;
-
-                @media (hover: hover) {
-                    &:hover { opacity: 0.7; }
-                }
-
-                &:focus-visible {
-                    outline: max(2px, @vw2) solid var(--accent);
-                    outline-offset: @vw4;
-                    border-radius: @vw2;
-                }
-            }
-        }
-
         // The secondary action, as an outlined button rather than the text link
         // it used to be — same size and shape as the submit, so the two read as
         // a pair of choices instead of a button and an afterthought.
@@ -745,6 +846,12 @@ html[data-screen='auth'] body {
         }
 
         .auth-head { gap: min(@vw4-1080, 0.5vh); padding-bottom: min(@vw10-1080, 1.25vh); }
+
+        .auth-check {
+            width: min(@vw44-1080, 5.5vh);
+            height: min(@vw44-1080, 5.5vh);
+            margin-bottom: min(@vw6-1080, 0.75vh);
+        }
         .field.auth-groupStart { margin-top: min(@vw10-1080, 1.25vh); }
         .auth-form { gap: min(@vw10-1080, 1.25vh); }
 
@@ -761,6 +868,11 @@ html[data-screen='auth'] body {
         .auth-form .field-label,
         .auth-form .field-notes,
         .auth-recover { padding-left: @vw16-1080; }
+
+        .alert {
+            padding: min(@vw10-1080, 1.25vh) @vw16-1080;
+            border-radius: @vw16-1080;
+        }
 
         .auth-recover { padding-block: min(@vw6-1080, 0.75vh); }
         .auth-rule { margin-block: min(@vw10-1080, 1.25vh); }
@@ -864,6 +976,12 @@ html[data-screen='auth'] body {
         }
 
         .auth-head { gap: min(@vw4-580, 0.5vh); padding-bottom: min(@vw10-580, 1.25vh); }
+
+        .auth-check {
+            width: min(@vw44-580, 5.5vh);
+            height: min(@vw44-580, 5.5vh);
+            margin-bottom: min(@vw6-580, 0.75vh);
+        }
         .field.auth-groupStart { margin-top: min(@vw10-580, 1.25vh); }
         .auth-form { gap: min(@vw10-580, 1.25vh); }
 
@@ -880,6 +998,11 @@ html[data-screen='auth'] body {
         .auth-form .field-label,
         .auth-form .field-notes,
         .auth-recover { padding-left: @vw16-580; }
+
+        .alert {
+            padding: @vw10-580 @vw16-580;
+            border-radius: @vw16-580;
+        }
 
         .auth-recover { padding-block: min(@vw6-580, 0.75vh); }
         .auth-rule { margin-block: min(@vw10-580, 1.25vh); }

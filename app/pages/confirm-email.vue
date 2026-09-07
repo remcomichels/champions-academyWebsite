@@ -1,30 +1,53 @@
 <template>
-	<div class="auth">
-		<div class="auth-card">
-			<header class="auth-head">
-				<span class="auth-mark" aria-hidden="true">CA</span>
-				<p class="auth-preTitle">Champions Academy</p>
-				<h1 class="auth-title">{{ heading }}</h1>
-				<p class="auth-subTitle">{{ standfirst }}</p>
-			</header>
-
-			<NuxtAlertBanner v-if="state === 'done'" variant="success">
-				You'll sign in with <strong>{{ confirmed }}</strong> from now on.
-			</NuxtAlertBanner>
-
-			<NuxtAlertBanner v-else-if="state === 'error'" variant="error">
-				{{ formError }}
-			</NuxtAlertBanner>
-
-			<footer class="auth-foot">
-				<NuxtLink v-if="state !== 'working'" to="/dashboard/account" class="auth-switch">
-					Go to your account
-				</NuxtLink>
-				<p v-if="state === 'error'" class="auth-help">
-					<NuxtLink to="/login">Sign in</NuxtLink>
-				</p>
-			</footer>
+	<div class="authSplit">
+		<div class="authSplit-ghost" aria-hidden="true">
+			<NuxtAuthGhost />
 		</div>
+
+		<section class="authSplit-form">
+			<div class="authPane">
+				<div class="authPane-glass">
+					<div class="auth">
+						<div class="auth-card">
+							<!-- The whole page is one outcome, and it arrives after a
+							     round trip rather than on load, so the region has to be
+							     live from the start — see the same note in
+							     reset-password.vue. -->
+							<header class="auth-head" aria-live="polite">
+								<!-- Nothing while the request is in flight: a mark that
+								     appears and then changes its mind reads as a result
+								     twice. The heading carries that state on its own. -->
+								<span
+									v-if="state !== 'working'"
+									class="auth-check"
+									:class="{ 'auth-check--bad': state === 'error' }"
+									aria-hidden="true"
+								>
+									<NuxtDashboardIcon :name="state === 'done' ? 'check' : 'close'" />
+								</span>
+
+								<h1 class="auth-title">{{ heading }}</h1>
+								<p class="auth-subTitle">{{ standfirst }}</p>
+							</header>
+
+							<!-- The address itself, which the standfirst cannot carry
+							     because it is the one piece of this that varies. -->
+							<p v-if="state === 'done'" class="auth-note">
+								You'll sign in with <strong>{{ confirmed }}</strong> from now on.
+							</p>
+
+							<NuxtLink v-if="state !== 'working'" to="/dashboard/account" class="auth-alt">
+								Go to your account
+							</NuxtLink>
+
+							<p v-if="state === 'error'" class="auth-help">
+								<NuxtLink to="/login">Sign in</NuxtLink>
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
 	</div>
 </template>
 
@@ -73,7 +96,11 @@ const heading = computed(() => {
 
 const standfirst = computed(() => {
 	if (state.value === "done") return "That's the address on your account now.";
-	if (state.value === "error") return "Nothing has changed. You can ask for a new link from your account settings.";
+	// The specific reason, not a generic one above it. Both used to render —
+	// a standfirst saying "you can ask for a new link" over a message saying
+	// "or ask for a new one", which is the same sentence twice under a heading
+	// that already said it did not work.
+	if (state.value === "error") return formError.value || "Nothing has changed.";
 	return "One moment — we're updating your account.";
 });
 

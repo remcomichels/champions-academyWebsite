@@ -11,24 +11,33 @@
 				<div class="authPane-glass">
 					<div class="auth">
 						<div class="auth-card">
-							<header class="auth-head">
-								<h1 class="auth-title">Reset your password</h1>
+							<!-- `aria-live` sits on the header permanently rather than
+							     appearing with the confirmation. Submitting removes the
+							     form, and with it the button that had focus, so nothing
+							     would otherwise tell a screen reader the request went
+							     through — and a live region added at the same moment as
+							     its content is not reliably announced. -->
+							<header class="auth-head" aria-live="polite">
+								<span v-if="sent" class="auth-check" aria-hidden="true">
+									<NuxtDashboardIcon name="check" />
+								</span>
+
+								<h1 class="auth-title">
+									{{ sent ? "Link sent" : "Reset your password" }}
+								</h1>
+
+								<!-- Deliberately the same words whether or not that address
+								     has an account. The server answers 204 either way;
+								     saying anything more specific here would hand back what
+								     the API refuses to. -->
 								<p class="auth-subTitle">
 									{{ sent
-										? "Check your inbox."
+										? "If an account exists for that address, we've sent a link. It works once and expires in an hour."
 										: "Enter your email and we'll send you a link to choose a new password." }}
 								</p>
 							</header>
 
-							<!-- Deliberately the same words whether or not that address has an
-							     account. The server answers 204 either way; saying anything more
-							     specific here would hand back what the API refuses to. -->
-							<NuxtAlertBanner v-if="sent" variant="success">
-								If an account exists for that address, we've sent a link. It works once and
-								expires in an hour.
-							</NuxtAlertBanner>
-
-							<NuxtAlertBanner v-else-if="formError" variant="error">
+							<NuxtAlertBanner v-if="formError" variant="error">
 								{{ formError }}
 							</NuxtAlertBanner>
 
@@ -86,11 +95,20 @@ useSeoMeta({
 	robots: "noindex, nofollow",
 });
 
+const route = useRoute();
+
 const email = ref("");
 const fieldError = ref<string | null>(null);
 const formError = ref<string | null>(null);
 const pending = ref(false);
 const sent = ref(false);
+
+/**
+ * Dev-only shortcut to the confirmation screen, for the same reason as the one
+ * in reset-password.vue: reaching it for real means sending a live email.
+ * `/forgot-password?preview=sent` opens it. Compiled out of production.
+ */
+if (import.meta.dev && route.query.preview === "sent") sent.value = true;
 
 async function submit() {
 	if (pending.value) return;

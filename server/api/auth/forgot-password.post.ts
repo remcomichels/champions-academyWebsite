@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
 	// login.post.ts: a malformed body must not be a free request.
 	await enforceRateLimit(event, resetIpBucket(clientIp(event)), RATE_LIMITS.resetIp);
 
-	const body = await readValidatedBody(event, object({ email: emailCheck() }));
+	const body = await readChecked(event, object({ email: emailCheck() }));
 
 	await enforceRateLimit(event, resetUserBucket(body.email), RATE_LIMITS.resetUser);
 

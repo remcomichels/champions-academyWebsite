@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
 	// budget across both is the tighter cap.
 	await enforceRateLimit(event, resetIpBucket(clientIp(event)), RATE_LIMITS.resetIp);
 
-	const body = await readValidatedBody(event, object({
+	const body = await readChecked(event, object({
 		// 32 bytes base64url is 43 characters. Bounded loosely rather than
 		// pinned, so a future change of token length is not a silent 400.
 		token: str({ min: 20, max: 200 }),

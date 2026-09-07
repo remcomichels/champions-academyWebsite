@@ -1,4 +1,4 @@
-import { email as emailCheck, object, password as passwordCheck } from "../../utils/validate";
+import { email as emailCheck, object, passwordAttempt as passwordAttemptCheck } from "../../utils/validate";
 
 /**
  * Email + password sign-in.
@@ -19,9 +19,9 @@ export default defineEventHandler(async (event) => {
 	const ipBucket = loginIpBucket(ip);
 	await enforceRateLimit(event, ipBucket, RATE_LIMITS.loginIp);
 
-	const body = await readValidatedBody(event, object({
+	const body = await readChecked(event, object({
 		email: emailCheck(),
-		password: passwordCheck(),
+		password: passwordAttemptCheck(),
 	}));
 
 	// Still in front of the password verification, which is the part that

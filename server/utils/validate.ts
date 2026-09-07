@@ -1,3 +1,5 @@
+import type { H3Event } from "h3";
+
 /**
  * Minimal request validation.
  *
@@ -10,13 +12,52 @@
 
 export type Check<T> = (value: unknown, field: string) => T;
 
+/**
+ * How a field is named to the person who filled it in.
+ *
+ * The key is the wire name, which is the wrong thing to show: `passwordConfirm
+ * must be at least 12 characters` is a sentence written for the API. Anything
+ * missing here falls back to the key, so a new field degrades to the old
+ * behaviour rather than to a blank.
+ */
+const FIELD_LABELS: Record<string, string> = {
+	code: "Invite code",
+	email: "Email",
+	emailConfirm: "Confirm email",
+	password: "Password",
+	passwordConfirm: "Confirm password",
+	currentPassword: "Current password",
+	newPassword: "New password",
+	firstName: "First name",
+	lastName: "Last name",
+	displayName: "Name",
+	slug: "Link",
+};
+
 /** A 400 that names the offending field without echoing its value back. */
 export function bad(field: string, message: string): ReturnType<typeof createError> {
 	return createError({
 		statusCode: 400,
-		statusMessage: `${field} ${message}`,
+		statusMessage: `${FIELD_LABELS[field] ?? field} ${message}`,
 		data: { field, message },
 	});
+}
+
+/**
+ * `readValidatedBody`, with the error left intact.
+ *
+ * h3's version wraps *anything* the validator throws in a generic
+ * `statusMessage: "Validation Error"` and buries the original in `data`
+ * (createValidationError, h3/dist/index.mjs). So every sentence `bad()` builds
+ * and every `field` the forms use to place the message under the right input
+ * was being thrown away, and each of these routes answered a mistyped password
+ * with the words "Validation Error".
+ *
+ * This runs the same check outside that catch, so the error the route meant to
+ * send is the one that arrives.
+ */
+export async function readChecked<T>(event: H3Event, check: (value: unknown) => T): Promise<T> {
+	return check(await readBody(event));
 }
 
 export const str = (
@@ -30,7 +71,7 @@ export const str = (
 	if (opts.max !== undefined && s.length > opts.max) {
 		throw bad(field, `must be at most ${opts.max} characters`);
 	}
-	if (opts.pattern && !opts.pattern.test(s)) throw bad(field, "has an invalid format");
+	if (opts.pattern && !opts.pattern.test(s)) throw bad(field, "is not in the right format");
 	return s;
 };
 
@@ -47,7 +88,7 @@ export const str = (
  */
 export const email = (): Check<string> => (value, field) => {
 	const s = str({ max: EMAIL_MAX_LENGTH })(value, field).toLowerCase();
-	if (!EMAIL_PATTERN.test(s)) throw bad(field, "must be a valid email address");
+	if (!EMAIL_PATTERN.test(s)) throw bad(field, "is not a valid address");
 	return s;
 };
 
@@ -58,6 +99,22 @@ export const email = (): Check<string> => (value, field) => {
  */
 export const password = (): Check<string> =>
 	str({ min: 12, max: 128, trim: false });
+
+/**
+ * A password being *offered*, not chosen.
+ *
+ * Sign-in must not apply the composition rules — it is checking a credential
+ * that already exists, not approving a new one. Running `password()` here made
+ * a mistyped seven-character attempt answer "Password must be at least 12
+ * characters", which states our policy to an unauthenticated caller and reads,
+ * to someone whose password is fine, as though the form has broken.
+ *
+ * A wrong password is a wrong password: this only rejects an empty one, and
+ * the 128 ceiling stays because the hash step is deliberately slow and an
+ * unbounded input is a free way to spend it.
+ */
+export const passwordAttempt = (): Check<string> =>
+	str({ min: 1, max: 128, trim: false });
 
 /**
  * A human name, safe to render anywhere.
