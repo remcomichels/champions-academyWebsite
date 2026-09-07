@@ -1,0 +1,115 @@
+// ───────────────────────────────────────────
+/* Overview — hero */
+// ───────────────────────────────────────────
+
+
+// ── Hero ─────────────────────────────────────────────────────────────────────
+// Deliberately not a card: it sits directly on the accent wash, which is what
+// makes the wash read as the page background rather than a coloured banner.
+.dashHero {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: @vw40;
+    padding: @vw16 0 @vw8;
+
+    // No `gap`: the three children want different spacing from each other —
+    // a wide break under the greeting, and the strapline sitting tight on the
+    // link it describes — so each carries its own margin instead.
+    &-copy {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        min-width: 0;
+    }
+
+    // The one piece of display type on the dashboard, and the only place the
+    // serif appears — worth the size, and worth some air around it. Everything
+    // else on the page is deliberately small, which is what lets this be large
+    // without shouting. It is also the only title the page has now that the
+    // eyebrow above it is gone, which is the other half of the size.
+    //
+    // Medium rather than bold: at this size weight is no longer what makes it
+    // read as the title, and the lighter line sits better under the serif.
+    &-title {
+        font-family: @body;
+        font-size: max(2em, @vw40);
+        font-weight: @medium;
+        line-height: 1.15;
+        // Looser than the -0.02em it carried at 34/bold: tracking that tightens
+        // a heavy line into a block reads as a missing word space once the
+        // weight drops and the size goes up.
+        letter-spacing: -0.01em;
+        padding: @vw2 0 0;
+        // The break between the greeting and the link block below it. Large,
+        // because it is the only division left in this column.
+        margin-bottom: @vw32;
+        color: var(--text);
+    }
+
+    // Sits directly above the field it explains rather than under the greeting,
+    // so the two read as one block — the sentence and the thing it is about.
+    &-sub {
+        max-width: calc(@vw300 + @vw140);
+        margin-bottom: @vw10;
+        font-size: max(0.90em, @vw16);
+        line-height: 1.5;
+        // _general.less puts `white-space: pre-line` on every p, which turns a
+        // wrapped template string into stray line breaks.
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+
+    &-actions {
+        display: flex;
+        align-items: stretch;
+        flex-wrap: wrap;
+        gap: @vw12;
+        width: 100%;
+        max-width: calc(@vw300 + @vw200);
+    }
+}
+
+@media (max-width: 1080px) {
+    .dashHero {
+            gap: @vw24-1080;
+
+            &-title {
+                font-size: max(2em, @vw40-1080);
+                padding: @vw2-1080 0 0;
+                margin-bottom: @vw32-1080;
+            }
+            &-sub { margin-bottom: @vw10-1080; }
+        }
+}
+
+@media (max-width: 768px) {
+    .dashHero {
+            flex-direction: column;
+            align-items: stretch;
+
+            &-actions { max-width: none; }
+        }
+}
+
+@media (max-width: 600px) {
+    .dashHero {
+            gap: @vw16-580;
+            padding: @vw8-580 0 0;
+
+            &-title {
+                font-size: max(2em, @vw34-580);
+                padding: @vw2-580 0 0;
+                margin-bottom: @vw24-580;
+            }
+            // The measure is a vw of the 1440 column, and on a phone it shrinks
+            // faster than the column does — leaving a narrow ragged block above a
+            // full-width field. It takes the column here instead.
+            &-sub {
+                max-width: none;
+                margin-bottom: @vw10-580;
+                font-size: max(0.80em, @vw14-580);
+            }
+            &-actions { flex-direction: column; }
+        }
+}

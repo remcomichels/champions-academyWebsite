@@ -1,0 +1,52 @@
+// ───────────────────────────────────────────
+/* Analytics — breakdown */
+// ───────────────────────────────────────────
+
+
+// ── Traffic breakdowns ───────────────────────────────────────────────────────
+// Replaces .geoList, which did the same job for one dimension. Bars scale
+// against the busiest row rather than the total, so a long tail stays readable.
+.breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: @vw12;
+    list-style: none;
+
+    &-row {
+        display: grid;
+        grid-template-columns: minmax(@vw100, 34%) 1fr auto;
+        align-items: center;
+        gap: @vw12;
+        font-size: max(0.80em, @vw14);
+        color: var(--text);
+    }
+
+    &-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-bar {
+        height: max(6px, @vw8);
+        background-color: var(--surface-raised);
+        border-radius: @dashRadiusPill;
+        overflow: hidden;
+    }
+
+    &-fill {
+        display: block;
+        height: 100%;
+        background-color: var(--chart-bar);
+        transform-origin: left center;
+        .transition(transform, @durationMedium, @easeOut);
+    }
+
+    // Only the top row takes the accent — the rest stay neutral.
+    &-row:first-child &-fill { background-color: var(--accent); }
+
+    &-count {
+        color: var(--text-secondary);
+        font-variant-numeric: tabular-nums;
+    }
+}

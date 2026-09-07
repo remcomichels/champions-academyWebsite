@@ -1,0 +1,44 @@
+// ───────────────────────────────────────────
+/* Links — QR code */
+// ───────────────────────────────────────────
+
+
+// ── QR + forms ───────────────────────────────────────────────────────────────
+.qr {
+    display: flex;
+    align-items: flex-start;
+    gap: @vw24;
+
+    &-image {
+        flex: none;
+        width: @vw160;
+        height: @vw160;
+        padding: @vw10;
+        background-color: #FFFFFF;
+        border-radius: @dashRadius;
+    }
+
+    &-side {
+        display: flex;
+        flex-direction: column;
+        gap: @vw12;
+        align-items: flex-start;
+    }
+
+    &-download {
+        font-size: max(0.80em, @vw14);
+        font-weight: @medium;
+        color: var(--accent);
+    }
+}
+
+@media (max-width: 1080px) {
+    .qr-image { width: @vw160-1080; height: @vw160-1080; }
+}
+
+@media (max-width: 600px) {
+    .qr {
+            flex-direction: column;
+            &-image { width: @vw180-580; height: @vw180-580; }
+        }
+}

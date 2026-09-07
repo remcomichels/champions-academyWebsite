@@ -1,0 +1,121 @@
+// ───────────────────────────────────────────
+/* Mode switch */
+// ───────────────────────────────────────────
+
+
+// ── Admin mode switch ────────────────────────────────────────────────────────
+// A checkbox styled as a switch. The input stays in the DOM and keeps its own
+// focus and checked state — the track and knob below are painted from it, so
+// none of that has to be reimplemented.
+// ── Mode switch ──────────────────────────────────────────────────────────────
+// Personal | Admin, as a segmented control.
+//
+// It was a labelled toggle before, which framed one half of the pair as "off".
+// An admin is both things at once — an affiliate with their own figures and the
+// owner of everyone else's — so neither side is the absence of the other, and
+// naming both is the honest shape.
+//
+// Sized against the bar's circular controls rather than invented: the same
+// @vw30 height and the same pill radius, so it reads as another control in the
+// row rather than a widget parked in it.
+.modeSwitch {
+    position: relative;
+    // Grid, so both halves are the width of the wider word.
+    //
+    // As a flex row they sized to their own text, and "Personal" is longer than
+    // "Admin" — so the indicator, which is half the track, was narrower than the
+    // half it was meant to cover. It cropped the right of "Personal" and
+    // overhung "Admin". Equal columns make half the track and half the control
+    // the same measurement, which is what the indicator's `calc` already
+    // assumed.
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 1fr;
+    flex: none;
+    align-items: center;
+    height: @vw30;
+    padding: max(2px, @vw2);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @dashRadiusPill;
+
+    &-option {
+        position: relative;
+        // Above the indicator sliding underneath.
+        z-index: 1;
+        display: grid;
+        place-items: center;
+        padding: 0 @vw12;
+        height: 100%;
+        border-radius: @dashRadiusPill;
+        cursor: pointer;
+    }
+
+    &-text {
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        line-height: 1;
+        white-space: nowrap;
+        color: var(--text-tertiary);
+        .transition();
+        transition-property: color;
+    }
+
+    &-option.is-active &-text { color: var(--text); }
+
+    @media (hover: hover) {
+        &-option:not(.is-active):hover &-text { color: var(--text-secondary); }
+    }
+
+    // The moving part. One element that slides rather than a background on each
+    // option, so the change reads as the *same* marker moving between two
+    // places — which is what a mode switch is — instead of one light going out
+    // as another comes on.
+    //
+    // Half the track minus the padding either side, so it lands exactly on an
+    // option at both ends.
+    &-indicator {
+        position: absolute;
+        top: max(2px, @vw2);
+        left: max(2px, @vw2);
+        z-index: 0;
+        width: calc(50% - max(2px, @vw2));
+        height: calc(100% - max(4px, @vw4));
+        border-radius: @dashRadiusPill;
+        background-color: var(--surface-raised);
+        .transition(transform, @durationFast, @ease);
+        transition-property: transform, background-color;
+
+        &.is-admin {
+            transform: translateX(100%);
+            // The one tinted state in the bar. Being in admin mode changes what
+            // every figure on the page means, so it is worth a colour — and the
+            // accent is already what "active" looks like everywhere else here.
+            background-color: var(--accent-subtle);
+        }
+    }
+
+    // The radios themselves are invisible but still focusable and still the
+    // thing the keyboard drives; the ring is drawn on the label around them.
+    &-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        margin: 0;
+    }
+
+    &-input:focus-visible + &-text {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw4;
+        border-radius: @dashRadiusPill;
+    }
+}
+
+@media (max-width: 1080px) {
+    .modeSwitch {
+            height: @vw30-1080;
+
+            &-option { padding: 0 @vw10-1080; }
+            &-text { font-size: max(0.62em, @vw11-1080); }
+        }
+}

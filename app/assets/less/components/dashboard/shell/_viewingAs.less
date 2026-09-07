@@ -1,0 +1,73 @@
+// ───────────────────────────────────────────
+/* Viewing-as banner */
+// ───────────────────────────────────────────
+
+
+// ── Viewing-as banner ────────────────────────────────────────────────────────
+// Deliberately loud. This is the one state where every figure on the screen
+// belongs to somebody else, and the failure mode is an admin forgetting and
+// reading another affiliate's numbers as their own.
+.viewingAs {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: @vw12;
+    margin-bottom: @vw16;
+    padding: @vw10 @vw16;
+    border: max(1px, @vw1) solid var(--warning);
+    border-radius: @dashRadius;
+    background-color: var(--warning-subtle);
+
+    &-text {
+        font-size: max(0.68em, @vw12);
+        line-height: 1.4;
+        color: var(--text);
+    }
+
+    &-slug {
+        margin-left: @vw6;
+        font-size: max(0.68em, @vw12);
+        color: var(--text-secondary);
+    }
+
+    &-flag {
+        margin-left: @vw6;
+        font-size: max(0.62em, @vw11);
+        font-weight: @semiBold;
+        color: var(--error);
+    }
+
+    &-exit {
+        flex: none;
+        padding: @vw6 @vw12;
+        background: none;
+        border: max(1px, @vw1) solid var(--warning);
+        border-radius: @dashRadius;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        font-weight: @semiBold;
+        color: var(--text);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--on-accent); background-color: var(--warning); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .viewingAs {
+            margin-bottom: @vw16-1080;
+            padding: @vw10-1080 @vw16-1080;
+
+            &-exit { padding: @vw6-1080 @vw12-1080; }
+        }
+}

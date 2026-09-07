@@ -1,0 +1,301 @@
+// ───────────────────────────────────────────
+/* Forms */
+// ───────────────────────────────────────────
+
+
+.dashForm {
+    display: flex;
+    flex-direction: column;
+    gap: @vw20;
+
+    &-submit {
+        align-self: flex-start;
+    }
+}
+
+// Label beside the control rather than above it, 60/40.
+//
+// The ratio is doing real work and is not a taste call. A settings form is read
+// down the labels — you are looking for the one row you came to change — and a
+// label column that wide lets every label be a phrase rather than a word. The
+// control keeping only 40 is the point rather than a side effect: a name is a
+// dozen characters and an input three times longer than its contents reads as
+// an unfinished layout, not a generous one.
+//
+// `fr` rather than percentages, so the column gap comes out of the track sizes
+// instead of overflowing the row by its width.
+.dashForm--split {
+    // No gap. Each row carries its own padding and a rule above it, so the
+    // rhythm comes from the dividers rather than from space between them —
+    // a gap on top of that would read as two different separations doing the
+    // same job.
+    gap: 0;
+
+    .field,
+    .readonlyField {
+        display: grid;
+        grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+        align-items: center;
+        column-gap: @vw20;
+        row-gap: 0;
+
+        // Ruled edge to edge. The negative margin takes the row out past
+        // `.dashPanel`'s @vw16 padding and the matching inline padding puts the
+        // content back where it was, so the line spans the card while the text
+        // stays on the same left edge as everything above it.
+        margin-inline: -@vw16;
+        padding: @vw14 @vw16;
+        border-bottom: max(1px, @vw1) solid var(--border);
+    }
+
+    // A rule under every row, including the last — it is what closes the set off
+    // from the buttons under it. The first row loses only its top padding,
+    // which would otherwise stack on the card's own.
+    > *:first-child { padding-top: 0; }
+
+    // Unless there are no buttons. That trailing rule exists to divide the
+    // fields from the actions under them, so on a panel that has none it is a
+    // line with nothing on the other side of it, closing off the card's own
+    // bottom padding into a strip of empty space.
+    &.dashForm--noActions > *:last-child {
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+
+    // Sentence case, not the uppercase the shared field uses. Uppercase reads
+    // as a category heading, which is right for a label sitting above its
+    // control and wrong for one sitting beside it in a row of them.
+    .field-label {
+        font-size: @settingsLabel;
+        font-weight: @medium;
+        text-transform: none;
+        letter-spacing: 0;
+        line-height: 1.25;
+        color: var(--text);
+    }
+
+    .field-message { line-height: 1.25; }
+
+    // A label and its hint, centred against the control as one block, in a row
+    // that stays the height of a row with no hint at all.
+    //
+    // The control spans both tracks, so it — not the text — is what sets the
+    // row's height. With no hint the second track collapses and the label
+    // centres against the control on its own. With one, the label sits at the
+    // bottom of the first track and the hint at the top of the second, so the
+    // two meet on the boundary between them, which is the control's middle: the
+    // label rises by exactly half the hint rather than the row growing under it.
+    //
+    // `:has()` because this cannot be asked of the markup. The label and the
+    // hint are siblings either side of the control in the DOM — that order is
+    // right for the stacked layout the login and invite screens use, and is not
+    // this page's to rearrange.
+    // On the row, not on `&` — `&` here is the form, and scoped to that this
+    // read "if any row anywhere has a hint, shift every label in the form",
+    // which is emphatically not the question being asked.
+    // `:has()` is a descendant test, so it still matches with the note wrapped.
+    .field:has(.field-message),
+    .readonlyField:has(.field-message) {
+        .field-label { align-self: end; }
+        .field-notes,
+        .field-message { align-self: start; }
+    }
+
+    // Placed rather than flowed, because the two columns hold different kinds
+    // of thing: the left one is what the row is *about* — its name and the
+    // sentence explaining it — and the right one is the control you act on.
+    //
+    // The hint sits under the label rather than under the input. Under the
+    // input it was the widest thing in a 40% column and pushed every row apart;
+    // under the label it has 60% to run in and reads as part of the label,
+    // which is what it is.
+    .field-label { grid-column: 1; grid-row: 1; }
+    // `.field-notes` is what `NuxtAuthField` renders; the bare `.field-message`
+    // is for `.readonlyField`, whose note is written by hand in the template and
+    // is a direct grid item. Both name the same cell.
+    .field-notes,
+    .field-message { grid-column: 1; grid-row: 2; }
+
+    // Both tracks, which is what makes the control the thing that sets the row
+    // height — see the note on the pairing above.
+    .field-control,
+    .readonlyField-value {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+
+    // Smaller than the shared field, and a flat pixel rather than a vw.
+    //
+    // `max(1em, @vw16)` resolves to about 21px on a 1920 monitor — display type
+    // inside a form control. A control's size is ergonomic rather than
+    // proportional: it is set by what is comfortable to read and to hit, and
+    // neither changes because the monitor got wider.
+    .field-input,
+    .readonlyField-value {
+        padding: @vw7 @vw10;
+        font-size: @settingsBody;
+        border-radius: @vw6;
+    }
+
+    // Under the controls it submits rather than under the labels, which is
+    // where `.dashForm`'s own `flex-start` would leave it — at the far left of
+    // a 60% column with nothing above it. The margin replaces the gap the form
+    // no longer has; without it the button sits flush against the last rule.
+    .dashForm-submit {
+        align-self: flex-end;
+        margin-top: @vw16;
+    }
+
+    // Cancel and Save, under the controls they act on. Cancel first in the
+    // markup and so on the left: the safe one is the one a mis-aim should hit.
+    .dashForm-actions {
+        display: flex;
+        align-self: flex-end;
+        align-items: center;
+        gap: @vw8;
+        margin-top: @vw16;
+    }
+
+    // Under the pointer the edge comes up one step — `--border-strong` is
+    // exactly that, the same white at 18% where the resting edge is 11%, and it
+    // is already what `.btn--subtle` does on hover. Full contrast was too loud
+    // for a state you enter by accident on the way past.
+    //
+    // The select trigger is a `.field-input` too, so it takes the same step.
+    // `:not(:focus)` so this cannot paint over the accent border of the field
+    // you are actually in, whichever rule happens to land last.
+    @media (hover: hover) {
+        .field-input:hover:not(:disabled):not(:focus),
+        .readonlyField-value:hover { border-color: var(--border-strong); }
+    }
+
+    // No ring on focus in here, only the accent border. The glow is a second
+    // thing saying what the border already says, and at this size — a 13px
+    // control in a ruled row — it reads as the field having gone fuzzy.
+    //
+    // Scoped to this form: the login and invite screens keep theirs. They are
+    // the two places somebody arrives cold, often on a phone, and a 1px change
+    // of border colour is a thin thing to hang a focus indicator on.
+    .field-input:focus-visible,
+    .readonlyField-value:focus-visible { box-shadow: none; }
+
+}
+
+.readonlyField {
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+
+    &-value {
+        padding: @vw12 @vw14;
+        background-color: var(--surface-raised);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        font-size: max(0.80em, @vw14);
+        color: var(--text-secondary);
+        overflow-wrap: anywhere;
+    }
+}
+
+@media (max-width: 1080px) {
+    .dashForm--split {
+            .field,
+            .readonlyField {
+                column-gap: @vw20-1080;
+                row-gap: @vw2-1080;
+                // Tracks `.dashPanel`'s padding at this tier, or the rule stops
+                // short of the card edge by the difference.
+                margin-inline: calc(@vw16-1080 * -1);
+                padding: @vw14-1080 @vw16-1080;
+            }
+
+            .field-label { padding-top: calc(@vw7-1080 + max(1px, @vw1)); }
+
+            .dashForm-actions { gap: @vw8-1080; margin-top: @vw16-1080; }
+
+            .selectMenu {
+                top: calc(100% + @vw6-1080);
+                max-width: @vw300-1080 + @vw60-1080;
+                max-height: @vw240-1080;
+                padding: @vw4-1080;
+
+                &-item { padding: @vw7-1080 @vw10-1080; gap: @vw10-1080; }
+                &-tick { width: @vw14-1080; height: @vw14-1080; }
+            }
+
+            .field-input,
+            .readonlyField-value {
+                padding: @vw7-1080 @vw10-1080;
+                border-radius: @vw6-1080;
+            }
+        }
+}
+
+@media (max-width: 768px) {
+    // The 60/40 split needs both halves to be worth having. Down here 60% of
+    // the column is too narrow to hold a label as a phrase and 40% is too
+    // narrow to hold a name, so the row becomes two rows and the label goes
+    // back above its control.
+    .dashForm--split {
+            .field,
+            .readonlyField {
+                grid-template-columns: minmax(0, 1fr);
+                row-gap: @vw6-580;
+            }
+
+            // One column, so the three parts stack in the order they are read:
+            // what the row is called, what it means, then the control. The rows are
+            // stated rather than left to auto-placement because the baseline layout
+            // pins the control to row 1, and that pin has to be undone here or the
+            // input would sit above its own hint.
+            // The offset exists to drop the label onto the input's line. Stacked,
+            // there is no input beside it and the padding is just a gap.
+            .field-label {
+                grid-row: 1;
+                padding-top: 0;
+            }
+
+            .field-message { grid-row: 2; }
+
+            .field-control,
+            .readonlyField-value {
+                grid-column: 1;
+                grid-row: 3;
+            }
+
+            // 16 exactly, and a flat pixel because that is the number iOS Safari
+            // measures: it zooms the viewport whenever a focused input computes
+            // under 16px, and nothing zooms it back out afterwards.
+            .field-input,
+            .readonlyField-value { font-size: 16px; }
+
+            // Nothing to line up with once the controls are full width.
+            .dashForm-submit { align-self: flex-start; }
+        }
+}
+
+@media (max-width: 600px) {
+    .dashForm--split {
+            .field,
+            .readonlyField {
+                margin-inline: calc(@vw16-580 * -1);
+                padding: @vw14-580 @vw16-580;
+            }
+
+            .field-input,
+            .readonlyField-value {
+                padding: @vw10-580 @vw12-580;
+                border-radius: @vw8-580;
+            }
+
+            .dashForm-actions { gap: @vw8-580; margin-top: @vw16-580; }
+
+            .selectMenu {
+                top: calc(100% + @vw6-580);
+                max-width: none;
+                max-height: @vw240-580;
+
+                &-item { padding: @vw10-580 @vw12-580; }
+            }
+        }
+}

@@ -1,0 +1,401 @@
+// ───────────────────────────────────────────
+/* Select menus */
+// ───────────────────────────────────────────
+
+
+// ── Select trigger ───────────────────────────────────────────────────────────
+// What `NuxtDashboardSelectField` draws instead of a `<select>`, lifted out of
+// `.dashForm--split` where it was first written.
+//
+// It was nested there because that was the only place a select existed, and the
+// nesting turned out to be load bearing in the wrong direction: dropped into a
+// dialog, the trigger lost `display: flex` and `text-align: left`, so the value
+// centred itself the way a button's label does and the caret — absolutely
+// positioned and still working — sat over the left of it. The control looked
+// broken in the one place it had not been tried.
+//
+// None of these rules describe the settings column. They describe a select, so
+// they belong to the select.
+// The trigger. A button rather than a `<select>` — the native popup is
+// drawn by the operating system, which will not put it under the field, let
+// it run wider than the field, or make it look like the rest of this form.
+.field-input--select {
+    appearance: none;
+    display: flex;
+    align-items: center;
+    padding-right: @vw32;
+    text-align: left;
+    font-family: @body;
+    cursor: pointer;
+
+    &.is-open { border-color: var(--accent); }
+}
+
+// The value inside it. Its own element so a long address is clipped by the
+// control rather than pushing the caret out of the box.
+.field-input-value {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.field-caret {
+    position: absolute;
+    top: 50%;
+    right: @vw10;
+    width: @vw14;
+    height: @vw14;
+    transform: translateY(-50%);
+    color: var(--text-tertiary);
+    // The caret is decoration over a control that is itself clickable —
+    // without this, clicking the arrow does nothing.
+    pointer-events: none;
+}
+
+// The popup.
+//
+// Under the trigger and pinned to its left edge, free to run wider than it
+// to the right. That asymmetry is the point: the control lives in the 40%
+// column and an email address is longer than that, so a menu held to the
+// trigger's width would truncate every option and leave a picker you cannot
+// pick from. Left edge fixed so the list opens where the eye already is.
+//
+// `max-content` with a floor of the trigger's own width: never narrower
+// than what it hangs from, never wider than it needs, and capped so a long
+// address cannot run it off the side of the page.
+// The menu the trigger opens, moved out of `.dashForm--split` alongside it.
+//
+// Leaving it behind made the select worse rather than better: outside the
+// settings column the button looked right and then dropped an unstyled list of
+// bullet points over the page. It hangs off `.field-control`, which form.less
+// makes `position: relative` for every field everywhere, so it needed nothing
+// from that layout to begin with.
+.selectMenu {
+    position: absolute;
+    top: calc(100% + @vw6);
+    left: 0;
+    z-index: 20;
+    min-width: 100%;
+    width: max-content;
+    max-width: @vw300 + @vw60;
+    max-height: @vw240;
+    overflow-y: auto;
+    padding: @vw4;
+    list-style: none;
+    // Popover tokens, not surface ones. This floats over the page, and
+    // `--border` is an rgba — fine on a panel sitting on a known
+    // background, wrong on a box with content sliding under it, where a
+    // part-transparent edge reads as a translucent menu.
+    background-color: var(--popover);
+    border: max(1px, @vw1) solid var(--popover-border);
+    border-radius: @dashRadius;
+    box-shadow: var(--shadow-pop);
+
+    &-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw10;
+        padding: @vw7 @vw10;
+        border-radius: @dashRadiusInner;
+        font-size: @settingsBody;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        cursor: pointer;
+
+        // Driven by `activeIndex` rather than `:hover`, so the keyboard and
+        // the pointer light the same row and only ever one of them.
+        //
+        // `--popover-border`, which is the one opaque colour in the set that
+        // is a real step away from `--popover` in all three themes.
+        // `--surface-hover` was the obvious choice and the wrong one: at
+        // #27272E against a #2A2A31 menu it is *darker* by three points and
+        // reads as nothing at all.
+        &.is-active {
+            background-color: var(--popover-border);
+            color: var(--text);
+        }
+
+        &.is-chosen { color: var(--text); }
+    }
+
+    &-label {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &-tick {
+        flex: none;
+        width: @vw14;
+        height: @vw14;
+        color: var(--accent);
+    }
+}
+
+// ── Timezone submenu ─────────────────────────────────────────────────────────
+.tzMenu {
+    position: relative;
+
+    &-trigger {
+        // Same row shape as every other item in the menu; the caret is what
+        // marks it as opening something rather than going somewhere.
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    // Label over value. The zone name is long and changes; the word that says
+    // what the row *is* should not have to compete with it for the first
+    // glance, so it goes above at full contrast and the value sits under it,
+    // smaller and quieter.
+    &-stack {
+        display: flex;
+        flex-direction: column;
+        gap: @vw1;
+        flex: 1;
+        min-width: 0;
+        text-align: left;
+    }
+
+    &-heading {
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: inherit;
+    }
+
+    &-current {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: max(0.58em, @vw10);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+    }
+
+    &-caret {
+        flex: none;
+        font-size: max(0.68em, @vw12);
+        color: var(--text-tertiary);
+    }
+
+    // Opens leftward. The menu this sits in is already pinned to the right edge
+    // of the viewport, so a panel hanging right would open off screen; there is
+    // nothing but page to the left.
+    // Top edge level with the trigger's, opening leftward.
+    //
+    // No `max-height` here on purpose: the component measures the room between
+    // that row and the bottom of the window and sets one inline. The row's
+    // position depends on how far down the account menu it falls, which no CSS
+    // length can express — and a fixed height that guessed too generously is
+    // what put this panel off the bottom of the viewport and made the list look
+    // unscrollable in the first place.
+    &-panel {
+        position: absolute;
+        top: 0;
+        bottom: auto;
+        right: calc(100% + @vw6);
+        z-index: 61;
+        display: flex;
+        flex-direction: column;
+        width: @vw280;
+        padding: @vw4;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        box-shadow: var(--shadow-pop);
+    }
+
+    &-search {
+        display: flex;
+        align-items: center;
+        gap: @vw6;
+        flex: none;
+        padding: @vw6 @vw8;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadiusInner;
+        background-color: var(--surface-raised);
+        color: var(--text-tertiary);
+
+        &:focus-within {
+            border-color: var(--accent);
+        }
+
+        .icon { flex: none; font-size: max(0.80em, @vw14); }
+    }
+
+    &-input {
+        flex: 1;
+        min-width: 0;
+        padding: 0;
+        border: none;
+        background: none;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        color: var(--text);
+
+        &:focus { outline: none; }
+        &::placeholder { color: var(--text-tertiary); }
+    }
+
+    &-list {
+        flex: 1;
+        min-height: 0;
+        margin-top: @vw4;
+        overflow-y: auto;
+        // Never sideways. Long zone names wrap now rather than running off the
+        // edge, so there is nothing left to scroll horizontally to.
+        overflow-x: hidden;
+        list-style: none;
+        // Stops a wheel that reaches the end of this list carrying on into the
+        // page behind it. Note this alone was never enough: Lenis intercepts
+        // the wheel globally, so the list also carries `data-lenis-prevent` —
+        // without it the page scrolled and this never saw the event.
+        overscroll-behavior: contain;
+
+        // ── Scrollbar ────────────────────────────────────────────────────
+        // No track, and no thumb until the pointer is over the panel. A
+        // permanent bar down the edge of a floating menu is a piece of chrome
+        // announcing that a list is long, which the list is already doing.
+        //
+        // The gutter is reserved either way — `scrollbar-gutter` and a fixed
+        // WebKit width — so nothing reflows when the thumb appears. Fading in
+        // a bar that shoved every row sideways by 6px would be worse than
+        // leaving it on.
+        scrollbar-width: thin;
+        scrollbar-gutter: stable;
+        scrollbar-color: transparent transparent;
+        .transition();
+        transition-property: scrollbar-color;
+
+        &::-webkit-scrollbar { width: max(6px, @vw6); }
+        &::-webkit-scrollbar-track { background: none; }
+
+        &::-webkit-scrollbar-thumb {
+            border-radius: @dashRadiusPill;
+            background-color: transparent;
+            .transition();
+            transition-property: background-color;
+        }
+    }
+
+    // Hovering anywhere on the panel, not only the list itself: the pointer is
+    // usually over a row, and a thumb that only appeared once you found the
+    // 6px strip it lives in would be a bar you had to already know was there.
+    &-panel:hover &-list {
+        scrollbar-color: var(--border-strong) transparent;
+
+        &::-webkit-scrollbar-thumb { background-color: var(--border-strong); }
+    }
+
+    &-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw8;
+        width: 100%;
+        padding: @vw6 @vw8;
+        border: none;
+        border-radius: @dashRadiusInner;
+        background: none;
+        font-family: @body;
+        font-size: max(0.62em, @vw11);
+        line-height: 1.35;
+        text-align: left;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-variant-numeric: tabular-nums;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+
+        &.is-selected { color: var(--text); }
+    }
+
+    // The tick, and only on the chosen row. Replaces the leading dot the
+    // options used to carry: a column of empty circles down the left cost a
+    // column of width and marked nothing.
+    &-check {
+        flex: none;
+        font-size: max(0.68em, @vw12);
+        color: var(--accent);
+    }
+
+    // Auto detect is the first row of the list rather than a control above it,
+    // so it takes the option's shape with a second line for the zone it found.
+    // One line, wrapping: "(UTC+02:00) Amsterdam, Andorra, Belgrade +30 more".
+    // `min-width: 0` is what lets it wrap rather than pushing the tick off the
+    // row — without it a flex item refuses to shrink below its longest word.
+    &-optionLabel {
+        min-width: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    // The offset reads first and identifies the row; the cities after it are
+    // examples of what the row covers, so they sit back a shade.
+    &-optionOffset {
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    // Auto detect keeps two lines — it is the one row that is a mode rather
+    // than a place, and it has a second thing to say: what it found.
+    &-optionStack {
+        display: flex;
+        flex-direction: column;
+        gap: @vw1;
+        min-width: 0;
+    }
+
+    &-optionLead {
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    // Auto detect is the one row that is a mode rather than a place, so it is
+    // the one that keeps the accent on its lead line.
+    &-option--auto &-optionLead {
+        color: var(--accent);
+    }
+
+    &-optionZone {
+        white-space: normal;
+        overflow-wrap: anywhere;
+        color: var(--text-tertiary);
+    }
+
+    &-empty {
+        padding: @vw10 @vw8;
+        font-size: max(0.62em, @vw11);
+        list-style: none;
+        white-space: normal;
+        color: var(--text-tertiary);
+    }
+}
+
+@media (max-width: 1080px) {
+    .tzMenu-panel { width: @vw280-1080; max-height: @vw280-1080; }
+}
+
+@media (max-width: 600px) {
+    // No room to the left of the account menu on a phone, so the timezone list
+    // stops trying to open sideways and drops under its own row instead.
+    .tzMenu-panel {
+            position: static;
+            width: 100%;
+            max-height: @vw240-580;
+            margin-top: @vw6-580;
+            box-shadow: none;
+        }
+}

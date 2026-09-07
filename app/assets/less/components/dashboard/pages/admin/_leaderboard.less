@@ -1,0 +1,168 @@
+// ───────────────────────────────────────────
+/* Admin — leaderboard */
+// ───────────────────────────────────────────
+
+
+// ── Leaderboard ──────────────────────────────────────────────────────────────
+// A ranked list, not a table: there is one measure to compare and the rest is
+// identity, so columns would be four headings over three kinds of nothing.
+//
+// Every bar is the same hue deliberately. Length is the ranking; colouring by
+// position would tie a hue to rank rather than to an affiliate, so changing the
+// range would repaint everybody — the one thing a categorical palette may not
+// do.
+.leaderboard {
+    // The tracks live on the list, not the row. Sized per row, the `auto`
+    // figures column takes its width from that row's own text — "12,480 visits
+    // · 1,902 clicks" is wider than "1,004 visits · 96 clicks" — so every bar
+    // ended at a different x and the one comparison this panel exists to make
+    // was the thing that did not line up.
+    display: grid;
+    // Rank, name, bar, figures. The bar takes the slack so the two text columns
+    // hold position as the panel widens.
+    grid-template-columns: @vw24 minmax(@vw100, @vw160) 1fr auto;
+    list-style: none;
+
+    &-row {
+        // Subgrid rather than `display: contents`: the row has to stay a box to
+        // carry its own bottom rule.
+        display: grid;
+        grid-template-columns: subgrid;
+        grid-column: 1 / -1;
+        align-items: center;
+        gap: @vw12;
+        padding: @vw10 0;
+        border-bottom: max(1px, @vw1) solid var(--border);
+
+        &:last-child { border-bottom: none; }
+    }
+
+    &-rank {
+        font-size: max(0.68em, @vw12);
+        font-weight: @bold;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+        text-align: right;
+    }
+
+    &-who {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        min-width: 0;
+    }
+
+    &-name {
+        display: flex;
+        align-items: baseline;
+        gap: @vw6;
+        min-width: 0;
+        font-size: max(0.68em, @vw12);
+        color: var(--text);
+    }
+
+    // Only the name truncates. With the ellipsis on the flex parent the flag
+    // beside it was what got clipped, so a revoked affiliate read "REVOKE".
+    &-nameText {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-flag {
+        flex: none;
+        font-size: max(0.62em, @vw11);
+        font-weight: @semiBold;
+        color: var(--error);
+    }
+
+    &-slug {
+        font-size: max(0.62em, @vw11);
+        color: var(--text-tertiary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-track {
+        display: block;
+        height: max(6px, @vw10);
+        background-color: var(--surface-raised);
+        border-radius: @dashRadiusPill;
+        overflow: hidden;
+    }
+
+    &-fill {
+        display: block;
+        height: 100%;
+        // Scaled rather than sized, so the bar animates on the compositor and
+        // the row never reflows as the range changes.
+        width: 100%;
+        transform-origin: left center;
+        background-color: var(--accent);
+        border-radius: @dashRadiusPill;
+        .transition(transform, @durationMedium, @ease);
+    }
+
+    &-figures {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: @vw2;
+        text-align: right;
+    }
+
+    &-lead {
+        font-size: max(0.90em, @vw16);
+        font-weight: @bold;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    &-sub {
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+    }
+
+    // The house share of a row's total. Tinted rather than left in the tertiary
+    // grey the clicks line uses: two identical sub-lines under one figure read
+    // as a single wrapped sentence, and these say different kinds of thing —
+    // one is what happened next, the other is where the traffic came from.
+    // Only ever rendered on the rows that have one.
+    &-house {
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--accent);
+    }
+}
+
+@media (max-width: 1080px) {
+    .leaderboard {
+            grid-template-columns: @vw24-1080 minmax(@vw100-1080, @vw160-1080) 1fr auto;
+        }
+
+    .leaderboard-row { gap: @vw12-1080; }
+}
+
+@media (max-width: 600px) {
+    // One column, so there is nothing left to align across — and the shared
+    // rows actively hurt here, because the row gap between two field bands is
+    // the same tight gap used *inside* a field. A hint therefore sat as close
+    // to the next field's label as to its own input, and the fields ran
+    // together. Back to a plain stack with room between them.
+    // Four columns will not fit a phone. The bar drops to its own line under
+    // the name and figures, which keeps the comparison without squeezing the
+    // two text columns into nothing.
+    .leaderboard {
+            grid-template-columns: @vw24-580 1fr auto;
+        }
+
+    .leaderboard-row {
+            gap: @vw8-580 @vw12-580;
+
+            .leaderboard-track { grid-column: 2 / -1; }
+        }
+}

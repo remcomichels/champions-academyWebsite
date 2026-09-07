@@ -1,0 +1,192 @@
+// ───────────────────────────────────────────
+/* Analytics — heatmap */
+// ───────────────────────────────────────────
+
+
+// ── Activity heatmap ─────────────────────────────────────────────────────────
+.heatmap {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: @vw12;
+
+    // Only the legend swatches still need a fixed size; the grid's own cells
+    // are sized by the column track now.
+    --cell: @vw13;
+
+    &-grid {
+        display: grid;
+        // The 24 hour columns share whatever is left after the day labels, so
+        // the grid fills its card instead of stopping short and leaving dead
+        // space to its right. `minmax(0, 1fr)` rather than `1fr`, or a wide
+        // card lets the tooltip's own width push the track out.
+        grid-template-columns: auto repeat(24, minmax(0, 1fr));
+        // A set pixel gap rather than a vw constant, which is the one place in
+        // this file that earns the exception.
+        //
+        // The hour tracks are `1fr`, so they land on fractional pixel widths
+        // and each square's painted edge snaps independently. The gap itself is
+        // exact either way, but that snapping shows up *as* the gap: at @vw2 it
+        // is a ±0.5px wobble on a 2px gutter, which is the quarter of it you
+        // can see. Holding the gutter at a set 3px keeps the same wobble at an
+        // eighth, below the point it reads as uneven — and one value covers
+        // every tier, so a square never sits closer to its neighbour on one
+        // screen than another.
+        gap: 3px;
+        align-items: center;
+        width: 100%;
+        // Containing block for the tooltip, which is placed on the grid but
+        // positioned out of flow against its cell's area.
+        position: relative;
+    }
+
+    &-corner { display: block; }
+
+    &-hourLabel {
+        font-size: max(0.62em, @vw11);
+        color: var(--chart-axis-text);
+        font-variant-numeric: tabular-nums;
+    }
+
+    // Deliberately contributes no height.
+    //
+    // The rows are `auto`, so whichever item in a row is tallest sets its
+    // height — and this label was it. At @vw11 against the reset's 1.5
+    // line-height it is a ~16px box, while an hour track in this column is
+    // nearer 12px wide, so every row was sized by its label and `align-items:
+    // center` split the surplus above and below the square. The columns kept
+    // the 2px gap and the rows quietly gained about four more, which is the
+    // asymmetry.
+    //
+    // Zero height takes it out of that calculation entirely: rows are sized by
+    // the cells alone, so the vertical gap is the grid's `gap` and nothing
+    // else. The text still draws — the flex centring balances it on the
+    // zero-height line, so it overhangs equally in both directions, and the
+    // `auto` column is sized by its width, which is untouched.
+    &-dayLabel {
+        display: flex;
+        align-items: center;
+        height: 0;
+        padding-right: @vw8;
+        font-size: max(0.62em, @vw11);
+        // Also trimmed, so the overhang stays inside the row pitch rather than
+        // reaching into its neighbours.
+        line-height: 1;
+        color: var(--chart-axis-text);
+        white-space: nowrap;
+    }
+
+    &-cell {
+        display: block;
+        width: 100%;
+        // Square whatever width the column ends up, so a wider card gives a
+        // taller grid in proportion rather than a row of stretched slots.
+        aspect-ratio: 1;
+        border-radius: 0;
+        background-color: var(--accent);
+
+        &.is-empty {
+            background-color: var(--surface-raised);
+            opacity: 1;
+        }
+    }
+
+    // The hover readout. Placed in the hovered cell's own grid slot, then
+    // lifted above it and centred — so it is never clipped by its neighbours
+    // and never covers the square it describes.
+    &-tip {
+        // Absolute, but still given `grid-column`/`grid-row` inline: an
+        // out-of-flow child of a grid container takes its placed area as its
+        // containing block, so it lines up with the hovered cell while costing
+        // the layout nothing.
+        //
+        // It has to be out of flow. As an ordinary grid item it resized the
+        // row it appeared in, which moved the cell out from under the pointer,
+        // which hid the tooltip, which restored the row — the two states
+        // flickered against each other and the cell never settled.
+        position: absolute;
+        // `bottom: 100%` against the cell's own area puts the label's underside
+        // on the cell's top edge; the translate lifts it clear by @vw4.
+        bottom: 100%;
+        left: 50%;
+        z-index: 2;
+        // Centred on the cell, plus the correction that keeps it inside the
+        // grid — measured in the component. See `clampChartTip`.
+        transform: translate(calc(-50% + var(--tip-shift, 0px)), -@vw4);
+        padding: @vw4 @vw8;
+        border-radius: @dashRadius;
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
+        box-shadow: var(--shadow-pop);
+        font-size: max(0.62em, @vw11);
+        white-space: nowrap;
+        color: var(--text);
+        pointer-events: none;
+    }
+
+    &-foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: @vw12;
+        font-size: max(0.68em, @vw12);
+        color: var(--text-secondary);
+    }
+
+    &-peak strong { color: var(--text); font-weight: @semiBold; }
+
+    &-legend {
+        display: flex;
+        align-items: center;
+        gap: max(2px, @vw3);
+        color: var(--text-tertiary);
+    }
+
+    &-legendCell {
+        display: block;
+        width: var(--cell);
+        height: var(--cell);
+        margin: 0 max(1px, @vw1);
+        border-radius: 0;
+        background-color: var(--accent);
+
+        &.is-empty { background-color: var(--surface-raised); }
+    }
+}
+
+@media (max-width: 1080px) {
+    .heatmap { --cell: @vw13-1080; }
+}
+
+@media (max-width: 600px) {
+    // 24 columns will not fit legibly on a phone. Rather than shrinking the
+    // cells to specks, the grid keeps a usable cell size and scrolls sideways
+    // inside its own card — the page itself never scrolls horizontally.
+    .heatmap {
+            overflow-x: auto;
+            scrollbar-width: none;
+
+            &::-webkit-scrollbar { display: none; }
+
+            --cell: @vw16-580;
+
+            // Back to fixed-size cells that scroll. Filling the width is what fixes
+            // dead space on a desktop card; on a phone the same rule would divide
+            // 24 columns into a strip about nine pixels wide, which is a texture
+            // rather than a chart. A readable grid you push sideways beats a
+            // complete one you cannot read.
+            &-grid {
+                grid-template-columns: auto repeat(24, var(--cell));
+                width: max-content;
+            }
+
+            &-cell {
+                width: var(--cell);
+                height: var(--cell);
+                aspect-ratio: auto;
+            }
+
+            &-foot { position: sticky; left: 0; }
+        }
+}

@@ -1,0 +1,52 @@
+// ───────────────────────────────────────────
+/* Overview — link status */
+// ───────────────────────────────────────────
+
+
+.linkStatus {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+
+    // Full width now that the summary holds the side column, so the three
+    // links sit side by side instead of stretching a short list across the page.
+    &--row {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: @vw24;
+    }
+
+    &--row &-row {
+        flex: 1 1 @vw180;
+        padding: 0;
+
+        & + & { border-top: none; }
+    }
+
+    &-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw12;
+        padding: @vw12 0;
+        font-size: max(0.80em, @vw14);
+        color: var(--text);
+
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
+    }
+
+    &-state {
+        flex: none;
+        padding: @vw2 @vw8;
+        border-radius: @dashRadiusPill;
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+
+        &.is-set { background-color: var(--surface-raised); color: var(--success); }
+        &.is-unset { background-color: var(--surface-raised); color: var(--text-tertiary); }
+    }
+}
+
+@media (max-width: 600px) {
+    .linkStatus--row { gap: @vw12-580; }
+}

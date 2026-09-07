@@ -1,0 +1,186 @@
+// ───────────────────────────────────────────
+/* Layout */
+// ───────────────────────────────────────────
+
+
+// ── Shell ────────────────────────────────────────────────────────────────────
+.dashLayout {
+    // Both of these used to come from `#pageContainer`, which the marketing
+    // layout still carries. That rule also sets `flex-direction: column` and
+    // `width: 100vw` — the first stacked the sidebar on top of the page rather
+    // than beside it, and being an ID it outranked every class here. The id is
+    // gone from this layout, so the properties worth keeping are restated.
+    // The top bar, which is fixed now rather than scrolling with the page.
+    --top-bar: @vw56;
+    // The rail's two widths, declared once on the common ancestor. The nav
+    // reads them for its own width, the column reads the resting one for its
+    // offset, and the peek reads the open one — so a per-breakpoint change
+    // lands in one place instead of three that have to be kept in sync.
+    //
+    // The resting width *is* the bar's height, rather than a number that
+    // happens to equal it: the rail and the bar meet as a square in the corner,
+    // and written this way they cannot drift apart at a breakpoint.
+    --rail-open: @vw240;
+    --rail-shut: var(--top-bar);
+    // What everything out of flow has to clear. Named once because the rail,
+    // the column and the bar itself all have to agree, and three copies of the
+    // same number is three chances to change two of them.
+    --chrome: var(--top-bar);
+
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    // Not 100vw: that includes the scrollbar gutter and overflows by its width.
+    width: 100%;
+    min-height: 100vh;
+    // `border-box` from _reset.less, so the padding comes out of the 100vh
+    // rather than adding to it — no bar means no scrollbar either way.
+    padding-top: var(--chrome);
+    background-color: var(--background);
+
+    // The account rail does not peek — it is open and stays open. Overriding the
+    // resting width is the whole mechanism: the rail reads `--rail-shut` for its
+    // width and the column reads it for its offset, so one line here moves both
+    // and they cannot disagree. The peek rules still apply and simply have
+    // nothing left to do, since the width they animate to is already in place.
+    &.is-accountNav { --rail-shut: var(--rail-open); }
+
+    // ── Chosen rail behaviour ────────────────────────────────────────────
+    // Both of these move one variable and nothing else. `--rail-shut` is the
+    // rail's own width *and* the column's left offset, so the two cannot end up
+    // disagreeing about how much room the rail is taking — which is the whole
+    // reason the account rail has always been able to stay open in one line.
+    //
+    // Never both. The layout withholds these two while the account rail is up,
+    // so there is no order to get right here — the account rail stays open at
+    // full width and this setting is about the other one.
+    &.is-navExpanded { --rail-shut: var(--rail-open); }
+    &.is-navCollapsed { --rail-shut: var(--top-bar); }
+
+    &-body {
+        position: relative;
+        flex: 1;
+        // Clears the rail. The rail is out of flow, so this is the only thing
+        // holding the column off it — and it is a constant: the peek floats
+        // over the content rather than moving it, so there is no second offset
+        // and nothing to transition between.
+        margin-left: var(--rail-shut);
+        // Without this a wide table stretches the flex item instead of
+        // scrolling inside its own container, and the whole page scrolls
+        // sideways.
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: calc(100vh - var(--chrome));
+    }
+
+    &-main {
+        position: relative;
+        z-index: 1;
+        flex: 1;
+        padding: @vw32 @vw40 @vw96;
+
+        // Content cap — 1200 of content inside 40 of padding either side.
+        //
+        // There was no cap at all before, which is a large part of why two
+        // cards sitting next to each other felt cramped: on a wide monitor a
+        // `1.6fr 1fr` grid just kept stretching, so the cards grew but the gap
+        // between them stayed put and the ratio of content to air collapsed.
+        // Both reference dashboards cap their column for exactly this reason.
+        //
+        // On `-main` rather than an inner wrapper so the top bar is capped to
+        // the same measure as the cards under it — otherwise the avatar drifts
+        // off to a right edge the content never reaches.
+        width: 100%;
+        max-width: calc(@vw300 + @vw300 + @vw300 + @vw300 + @vw80);
+        margin-inline: auto;
+    }
+
+    // The accent wash that used to live here is gone, along with every resting
+    // shadow. Both were a decorative layer that neither reference dashboard
+    // has: Vercel and Supabase are flat, and their surfaces are separated by a
+    // single hairline border and nothing else. A gradient behind the fold and a
+    // shadow under every card are what made this page read as busy — the fix
+    // was to delete the layer, not to tune it.
+    //
+    // `--shadow-pop` survives, but only on things genuinely floating above the
+    // page: the hover-peek rail, tooltips, the inbox dropdown, toasts, modals.
+
+    &-scrim {
+        position: fixed;
+        inset: 0;
+        z-index: 40;
+        background-color: rgba(0, 0, 0, 0.5);
+        backdrop-filter: blur(@vw2);
+        -webkit-backdrop-filter: blur(@vw2);
+    }
+}
+
+@media (min-width: 769px) {
+    // Collapsed by choice, so pointing at it does nothing.
+    //
+    // Ahead of `.is-static` below and after the two peek rules above, which is
+    // the only order that works: it has to beat the peek, and lose to the
+    // static rail so the account tabs stay readable.
+    //
+    // The `:focus-within` peek goes with it, which costs keyboard users the
+    // labels — the reason that rule was not gated on pointer type in the first
+    // place. The tooltips are the replacement, and they are on `:focus-visible`
+    // as well as `:hover` precisely so tabbing through a collapsed rail still
+    // names every row.
+    .dashLayout.is-navCollapsed .dashNav:not(.is-static) {
+            &:hover,
+            &:focus-within {
+                width: var(--rail-shut);
+                box-shadow: none;
+
+                .dashNav-label { opacity: 0; }
+            }
+
+            // Nothing clips while collapsed, which is what lets the tooltips above
+            // be ordinary tooltips rather than something exotic. Two boxes were
+            // cutting them off and both had to go:
+            //
+            // The row hides its own overflow so a label cannot spill out of a
+            // narrow rail. At rest that label is already `opacity: 0`, so there is
+            // nothing to see whether it spills or not, and the clip only costs the
+            // balloon beside it.
+            //
+            // The list is a scroll container — `overflow-y: auto` for a nav longer
+            // than the viewport — and a scroll container clips *both* axes whatever
+            // you ask of it: `overflow-x: visible` computes to `auto` beside it and
+            // `overflow-x: clip` computes to `hidden`. The scroll is a safety valve,
+            // and the note on `-list` puts it at "past roughly a dozen" entries;
+            // collapsed, this rail is five rows at icon height with nothing to
+            // scroll, and it is given up only in the mode where that holds.
+            .dashNav-list,
+            .dashNav-item { overflow: visible; }
+        }
+}
+
+@media (max-width: 1080px) {
+    // Below the baseline the viewport is already narrower than the cap, so the
+    // cap only ever costs width here — released.
+    .dashLayout-main { padding: @vw24-1080 @vw32-1080 @vw80-1080; max-width: none; }
+
+    // The bar's height is a custom property because the rail and the column
+    // both read it, and a vw unit pinned to 1440 would shrink it out from under
+    // its own contents.
+    .dashLayout { --top-bar: @vw56-1080; }
+
+    // No `--rail-shut` here: it derives from `--top-bar`, which this tier
+    // already overrides, so the rail follows the bar down on its own.
+    .dashLayout { --rail-open: @vw240-1080; }
+}
+
+@media (max-width: 768px) {
+    // The rail is an overlay drawer here, so the column takes the full width.
+    .dashLayout-body { margin-left: 0; }
+}
+
+@media (max-width: 600px) {
+    .dashLayout-main { padding: @vw20-580 @vw20-580 @vw64-580; }
+
+    .dashLayout { --top-bar: @vw52-580; }
+}

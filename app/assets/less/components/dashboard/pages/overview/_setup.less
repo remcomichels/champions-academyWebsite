@@ -1,0 +1,82 @@
+// ───────────────────────────────────────────
+/* Overview — getting set up */
+// ───────────────────────────────────────────
+
+
+.checklist {
+    display: flex;
+    flex-direction: column;
+    gap: @vw10;
+    list-style: none;
+
+    &-item {
+        display: flex;
+        align-items: center;
+        gap: @vw12;
+        font-size: max(0.80em, @vw14);
+        color: var(--text-secondary);
+
+        &.is-done { color: var(--text); }
+    }
+
+    // The steps that lead somewhere are links — the point of the card is to be
+    // the shortest route to finishing setup, and a status list that made you go
+    // find the page yourself was the long way round.
+    //
+    // Deliberately not accent-coloured. Four accent links stacked in a card
+    // would out-shout the primary button in the hero beside it; they take the
+    // row's own colour and announce themselves on hover instead.
+    &-link {
+        display: flex;
+        align-items: center;
+        gap: @vw6;
+        color: inherit;
+        text-decoration: underline;
+        text-decoration-color: transparent;
+        text-underline-offset: 0.2em;
+        .transition();
+        transition-property: color, text-decoration-color;
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--text);
+                text-decoration-color: currentColor;
+
+                // Nudges toward where it is pointing. The only motion in the
+                // card, and it is on the thing that moves you somewhere.
+                .checklist-arrow { transform: translateX(@vw2); }
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+            border-radius: @dashRadius;
+        }
+    }
+
+    &-mark {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw22;
+        height: @vw22;
+        border-radius: @dashRadiusPill;
+        border: max(1px, @vw1) solid var(--border-strong);
+        font-size: max(0.62em, @vw11);
+        color: var(--on-accent);
+    }
+
+    &-item.is-done &-mark {
+        background-color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    &-arrow {
+        flex: none;
+        font-size: max(0.62em, @vw11);
+        color: var(--text-tertiary);
+        .transition();
+        transition-property: transform;
+    }
+}

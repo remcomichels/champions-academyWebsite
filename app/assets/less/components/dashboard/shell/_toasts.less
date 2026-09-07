@@ -1,0 +1,85 @@
+// ───────────────────────────────────────────
+/* Toasts */
+// ───────────────────────────────────────────
+
+
+.toasts {
+    position: fixed;
+    right: @vw24;
+    bottom: @vw24;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+    pointer-events: none;
+}
+
+// The inbox's own toasts pass straight through to the page — they are read,
+// not acted on. One with a close button cannot, so the container it sits in
+// takes its clicks back.
+.toasts--interactive { pointer-events: auto; }
+
+.toast {
+    display: flex;
+    align-items: flex-start;
+    gap: @vw12;
+    padding: @vw12 @vw16;
+    .dashSurface();
+    box-shadow: var(--shadow-pop);
+    font-size: @settingsBody;
+    color: var(--text);
+    white-space: normal;
+    max-width: calc(@vw300 + @vw40);
+
+    &-text {
+        flex: 1;
+        min-width: 0;
+        line-height: 1.45;
+    }
+
+    // A tinted left edge rather than a tinted panel: the toast sits over the
+    // page, and a filled one at this size reads as an error dialog whatever it
+    // actually says.
+    &--success { border-left: max(3px, @vw3) solid var(--success); }
+    &--error { border-left: max(3px, @vw3) solid var(--error); }
+    &--warning { border-left: max(3px, @vw3) solid var(--warning); }
+    &--info { border-left: max(3px, @vw3) solid var(--accent); }
+
+    &-close {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw20;
+        height: @vw20;
+        margin-top: @vw1;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: @dashRadiusInner;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw1;
+        }
+    }
+
+    &-glyph { width: @vw12; height: @vw12; }
+}
+
+@media (max-width: 600px) {
+    .toasts {
+            right: @vw12-580;
+            left: @vw12-580;
+            bottom: @vw12-580;
+        }
+
+    .toast { max-width: none; }
+}

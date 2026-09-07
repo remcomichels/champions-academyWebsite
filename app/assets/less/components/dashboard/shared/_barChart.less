@@ -1,0 +1,199 @@
+// ───────────────────────────────────────────
+/* Bar chart */
+// ───────────────────────────────────────────
+
+
+// ── Bar chart ────────────────────────────────────────────────────────────────
+.barChart {
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+
+    &-caption {
+        font-size: max(0.68em, @vw12);
+        color: var(--text-tertiary);
+    }
+
+    &-frame {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        grid-template-rows: @vw180 auto;
+        column-gap: @vw12;
+        row-gap: @vw8;
+    }
+
+    // Tick labels sit on the same rows as the gridlines, and both are
+    // justified with space-between, so they line up without magic offsets.
+    &-yAxis {
+        grid-column: 1;
+        grid-row: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: flex-end;
+        list-style: none;
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--chart-axis-text);
+        // Centres each label on its line rather than hanging it below.
+        margin: -0.5em 0;
+    }
+
+    &-plot {
+        grid-column: 2;
+        grid-row: 1;
+        position: relative;
+    }
+
+    &-grid {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    &-gridLine {
+        display: block;
+        height: max(1px, @vw1);
+        background-color: var(--chart-grid);
+    }
+
+    &-cols {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: stretch;
+        gap: @chartBarGap;
+        list-style: none;
+    }
+
+    &-col {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+    }
+
+    &-track {
+        display: flex;
+        align-items: flex-end;
+        height: 100%;
+    }
+
+    &-fill {
+        // Positioned so the readout inside it can hang off its top edge.
+        position: relative;
+        display: block;
+        width: 100%;
+        background-color: var(--chart-bar);
+        border-radius: @chartBarCap @chartBarCap 0 0;
+        .transition(background-color, @durationFast, @ease);
+    }
+
+    // A column with no traffic has no bar, and a bar is what answers the
+    // pointer now — so a zero would be the one column on the chart that could
+    // not be asked what it was. It keeps a bar's worth of hit target sitting on
+    // the axis, painted with nothing, so the readout still comes up where the
+    // bar would have been.
+    &-col.is-empty &-fill {
+        min-height: max(4px, @vw4);
+        background-color: transparent;
+    }
+
+    // Exactly one bar carries the accent — the current period. A chart where
+    // every bar is the accent has no accent.
+    &-col.is-highlight &-fill {
+        background-color: var(--chart-bar-highlight);
+    }
+
+    // Hover readout, so the exact figure is available without an axis label
+    // per bar.
+    &-value {
+        position: absolute;
+        // 100% of the *bar*, so it sits just clear of whichever height the bar
+        // happens to be.
+        bottom: 100%;
+        left: 50%;
+        // Above every bar on the chart, not just its own.
+        //
+        // Each column is `position: relative`, so without this the readout
+        // painted in document order: the bars to its left went behind it and
+        // the bars to its right went over it, clipping the box down its right
+        // side. It read as a tooltip that was somehow half transparent, which
+        // is what it was — the wrong half of a stacking order, not an alpha.
+        // The column sets no z-index of its own, so it opens no stacking
+        // context and this lifts the readout clear of the whole row.
+        z-index: 3;
+        // Centred on the bar, plus the correction that keeps it inside the
+        // plot — measured in the component. See `clampChartTip`.
+        transform: translate(calc(-50% + var(--tip-shift, 0px)), -@vw6);
+        padding: @vw2 @vw6;
+        border-radius: @dashRadius;
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
+        box-shadow: var(--shadow-pop);
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        white-space: nowrap;
+        // Never intercepts the pointer: the bar underneath has to keep it, or
+        // crossing onto the readout would close the readout.
+        pointer-events: none;
+
+    }
+
+    // The bar answers the pointer, not the column.
+    //
+    // The column is the full height of the plot, so hovering the empty air a
+    // long way above a short bar was enough to bring its figure up — and on a
+    // chart of ninety columns that meant a readout was almost always showing,
+    // for whichever column the pointer happened to be over rather than for
+    // anything being looked at.
+    @media (hover: hover) {
+        &-fill:hover { background-color: var(--chart-bar-hover); }
+        &-col.is-highlight &-fill:hover { background-color: var(--accent-hover); }
+        // The empty column's hit target paints nothing, hover included.
+        &-col.is-empty &-fill:hover { background-color: transparent; }
+    }
+
+    &-xAxis {
+        grid-column: 2;
+        grid-row: 2;
+        display: flex;
+        // The columns' gutter, and it has to be the same token — see the note
+        // on @chartBarGap for what happens when the two drift apart.
+        gap: @chartBarGap;
+        list-style: none;
+    }
+
+    &-xLabel {
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--chart-axis-text);
+        // Deliberately not `overflow: hidden`. A column's slot is about twelve
+        // pixels wide at a month, and "13" is thirteen — clipping took the
+        // right-hand edge off every two-digit day, which is worse than no
+        // label because "1" and a sliver reads as a different number. The
+        // component blanks all but every eighth label, so what a label
+        // overflows into is an empty slot, and centring keeps it over its own
+        // bar. Nothing here affects layout: the slots stay equal.
+        white-space: nowrap;
+    }
+}
+
+@media (max-width: 1080px) {
+    .barChart-frame { grid-template-rows: @vw180-1080 auto; }
+}
+
+@media (max-width: 600px) {
+    .barChart-frame {
+            grid-template-rows: @vw150-580 auto;
+            column-gap: @vw8-580;
+        }
+}

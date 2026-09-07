@@ -1,0 +1,182 @@
+// ───────────────────────────────────────────
+/* Stat cards */
+// ───────────────────────────────────────────
+
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+.statGrid {
+    display: grid;
+    // Capped, not `1fr`. Stretched to a third of a 1200 column each, three
+    // stats ended up with 200-odd pixels of dead space inside every track and
+    // read as three unrelated things rather than one row of readings — the
+    // opposite of what taking their borders away was meant to achieve. A track
+    // that stops at @vw300 keeps them near enough to scan together.
+    // The cap has to let four tracks and their gaps inside the 1200 content
+    // column, or the fourth stat drops to a row of its own and reads as an
+    // afterthought: 4x260 + 3x40 = 1160. Three stats still sit comfortably
+    // without stretching into the dead space `1fr` used to give them.
+    grid-template-columns: repeat(auto-fit, minmax(@vw180, @vw260));
+    justify-content: start;
+    gap: @vw32 @vw40;
+}
+
+.statCard {
+    // Borderless, and that is the whole point of this pass.
+    //
+    // Supabase's project overview carries six of these — status, compute,
+    // github, recent branch, last migration, last backup — and not one of them
+    // is a card. No border, no surface, no shadow: an icon tile, a small label
+    // and a value, sitting straight on the page background. The only bordered
+    // things on that screen are the map panel and the charts along the bottom.
+    //
+    // Four bordered boxes in a row was the "card repetition" problem. A stat is
+    // three short pieces of text; wrapping each one in its own outline says
+    // "these are four separate objects" when the point is that they are four
+    // readings of the same thing. The grid gap groups them now instead, which
+    // is why `.statGrid` had to grow a much larger gap at the same time — with
+    // nothing drawing an edge, only space separates one reading from the next.
+    display: flex;
+    // Centred, not top-aligned. Every card carries three lines now — label,
+    // figure, and a comparison under it — and a tile pinned to the top of that
+    // stack sat against the label rather than against the reading as a whole.
+    align-items: center;
+    gap: @vw16;
+    min-width: 0;
+
+    &-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw44;
+        height: @vw44;
+        border-radius: @dashRadius;
+        background-color: var(--surface-raised);
+        color: var(--text-tertiary);
+
+        // @vw18, the figure every glyph on the dashboard is drawn at — the
+        // rail, the two controls in the bar and the account face. These four
+        // were sized by the tile's font-size instead and came out smaller than
+        // all of them.
+        .icon { width: @vw18; height: @vw18; }
+
+        // The tile is always in the layout even when a caller passes no icon,
+        // just unpainted. Sales has one card without one, and letting that card
+        // close the gap would leave its label out of line with the three
+        // beside it — the alignment is the only thing holding the row together
+        // now that no border does.
+        &.is-empty { background-color: transparent; }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: @vw6;
+        min-width: 0;
+    }
+
+    // Uppercase and tracked, which is Supabase's treatment for exactly this
+    // role — a caption naming the figure under it. An earlier pass stripped
+    // this on the claim that neither reference used it; that was true of Vercel
+    // and plainly wrong about Supabase, whose every stat label is set this way.
+    &-label {
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+    }
+
+    // Neutral by default. Most figures on a screen are not the point of it.
+    &-value {
+        // Shrink-wrapped rather than stretched across the card. No visual
+        // difference for left-aligned text, but it makes the box the width of
+        // the figure itself — which is what the loading placeholder fills.
+        align-self: flex-start;
+        font-size: max(1.05em, @vw20);
+        font-weight: @bold;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    &-trend {
+        align-self: flex-start;
+        display: flex;
+        align-items: center;
+        gap: @vw6;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        white-space: normal;
+        color: var(--text-secondary);
+
+        .icon { font-size: max(0.80em, @vw14); }
+
+        // Direction is carried by the arrow and the colour together, never by
+        // colour alone — the label always says what changed.
+        &.is-up { color: var(--success); }
+        &.is-down { color: var(--error); }
+        &.is-flat { color: var(--text-tertiary); }
+    }
+
+    &-hint {
+        font-size: max(0.68em, @vw12);
+        white-space: normal;
+        color: var(--text-tertiary);
+    }
+
+    &.is-accent &-value { color: var(--accent); }
+    &.is-accent &-icon { background-color: var(--accent-subtle); color: var(--accent); }
+
+    // ── Loading ──────────────────────────────────────────────────────────────
+    // Switching range used to swap the whole grid for a line of "Loading…",
+    // which collapsed three cards into one line of text and pulled every panel
+    // below it up the page. The card keeps rendering instead: its label, icon
+    // and hint are all known before the request lands, so only the two parts
+    // that actually change get covered.
+    //
+    // The stale figure stays in the DOM rather than being replaced by a fixed
+    // box. That is the whole trick — the line keeps the exact width and height
+    // it already had, a wrapped trend label included, so the placeholder cannot
+    // be a different size from what replaces it.
+    &.is-loading &-value,
+    &.is-loading &-trend {
+        position: relative;
+        // Takes the trend arrow with it: the icon strokes in currentColor.
+        color: transparent;
+
+        &::after {
+            content: "";
+            .absolute();
+            border-radius: @dashRadius;
+            background-color: var(--surface-raised);
+            // A pulse, not a sweeping gradient: one pseudo-element, nothing to
+            // clip, and _general.less's reduced-motion rule collapses it to a
+            // single 0.01ms run — which lands on the final keyframe, and here
+            // that is the plain block at full opacity. The right resting look
+            // falls out of it rather than needing a second rule.
+            animation: dashSkeleton 1.4s @ease infinite;
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .statGrid {
+            gap: @vw32-1080 @vw24-1080;
+            grid-template-columns: repeat(auto-fit, minmax(@vw200-1080, 1fr));
+        }
+
+    .statCard-value { font-size: max(1.05em, @vw20-1080); }
+}
+
+@media (max-width: 600px) {
+    .statGrid { grid-template-columns: 1fr 1fr; gap: @vw24-580; }
+
+    .statCard {
+            gap: @vw12-580;
+
+            &-value { font-size: max(1.05em, @vw20-580); }
+            &-icon { display: none; }
+        }
+}

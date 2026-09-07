@@ -1,0 +1,150 @@
+// ───────────────────────────────────────────
+/* Tooltips */
+// ───────────────────────────────────────────
+
+
+// ── Tooltip ──────────────────────────────────────────────────────────────────
+// A balloon under whatever carries `data-tip`, in place of the browser's own.
+//
+// Native `title` was doing this job and doing it badly: it waits about a second,
+// renders in the OS's colours rather than the page's, and cannot be positioned.
+// This appears at once, sits where the design wants it, and is themed.
+//
+// Two pseudo-elements on the control itself rather than a component: the text
+// is one attribute, there is no state to hold, and nothing has to mount. The
+// accessible name still comes from `aria-label` — this is decoration over the
+// top of it, never the only place the name exists.
+.tip {
+    position: relative;
+    // ── Why the host carries a z-index and not just the balloon ──────────
+    // The tooltip lives in `::after`, and a pseudo-element's z-index is only
+    // ever resolved inside its host's stacking context. The account avatar
+    // fades to `opacity: 0.85` on hover — and any opacity below 1 creates a
+    // stacking context — so at exactly the moment the balloon appears, the host
+    // became one and trapped it. `z-index: 99` on the balloon then ordered it
+    // against its own siblings and nothing else, while the host, at `auto`,
+    // painted below the panel at 60 and took the balloon down with it.
+    //
+    // Confirmed rather than reasoned: with the trigger at opacity 1 the balloon
+    // renders over the panel, and at 0.85 it disappears behind it, same
+    // z-index both times.
+    //
+    // So the number that matters is this one. 61 clears the panels at 60,
+    // which is all the balloon ever needed — and it holds however the host is
+    // styled, including any future hover that transforms or filters it.
+    z-index: 61;
+
+    // The balloon.
+    &::after {
+        content: attr(data-tip);
+        position: absolute;
+        top: calc(100% + @vw6);
+        left: 50%;
+        transform: translateX(-50%);
+        // In front of the panels, which sit at 60. The balloon belongs to the
+        // button that opens one, so it has to stay on top of it.
+        z-index: 99;
+        padding: @vw4 @vw8;
+        border-radius: @dashRadiusInner;
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
+        box-shadow: var(--shadow-pop);
+        font-family: @body;
+        font-size: max(0.55em, @vw10);
+        font-weight: @medium;
+        line-height: 1.3;
+        letter-spacing: 0;
+        text-transform: none;
+        white-space: nowrap;
+        color: var(--text);
+    }
+
+    // The tail. A rotated square with two of its borders showing, so it takes
+    // the balloon's outline on the two edges that are actually exposed.
+    &::before {
+        content: '';
+        position: absolute;
+        top: calc(100% + @vw2);
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        z-index: 100;
+        width: @vw8;
+        height: @vw8;
+        background-color: var(--popover);
+        border-left: max(1px, @vw1) solid var(--popover-border);
+        border-top: max(1px, @vw1) solid var(--popover-border);
+    }
+
+    // `visibility`, not `opacity`.
+    //
+    // Fading it in meant every frame of the transition drew a part-transparent
+    // balloon with the panel showing through it, which reads as a translucent
+    // tooltip rather than one arriving. There is nothing to animate here anyway
+    // — a label either applies to what the pointer is on or it does not.
+    &::after,
+    &::before {
+        visibility: hidden;
+        // Never intercepts the pointer — a tooltip that can be hovered will
+        // flicker as the pointer crosses onto it.
+        pointer-events: none;
+    }
+
+    // Keyboard users get it too: the balloon is the only visible label these
+    // controls have, so tabbing to one has to show it.
+    @media (hover: hover) {
+        &:hover::after,
+        &:hover::before { visibility: visible; }
+    }
+
+    &:focus-visible::after,
+    &:focus-visible::before { visibility: visible; }
+
+    // ── The collapsed rail's balloon ─────────────────────────────────────
+    // Beside the row rather than under it, because "under" is the next nav row.
+    // Nothing else changes: same box, same size, same tail, same colours — the
+    // balloon moves to the right of the host and the tail turns to point back
+    // at it.
+    //
+    // `top: 50%` with `translateY(-50%)` on both, so each centres on the host
+    // and therefore on the other.
+    //
+    // The two offsets are the downward tooltip's, turned on their side: @vw2 for
+    // the tail and @vw6 for the balloon. The 4px between them is half the
+    // square, and that is the whole trick — the balloon covers half the tail, so
+    // what shows is a chevron rather than a diamond. Sitting them flush instead,
+    // which is what "closer" first meant, leaves the entire square visible and
+    // it stops looking like the tooltips everywhere else.
+    //
+    // Left and bottom borders where the downward tail uses left and top:
+    // rotating 45deg puts the bottom-left corner at nine o'clock, and those are
+    // the two edges that meet there.
+    &--rail {
+        &::after {
+            top: 50%;
+            left: calc(100% + @vw6);
+            transform: translateY(-50%);
+        }
+
+        &::before {
+            top: 50%;
+            left: calc(100% + @vw2);
+            transform: translateY(-50%) rotate(45deg);
+            border-top: none;
+            border-bottom: max(1px, @vw1) solid var(--popover-border);
+        }
+    }
+
+    // The last control sits against the right edge of the viewport, where a
+    // centred balloon would hang off it. This one grows leftward instead; the
+    // tail stays over the control.
+    &--end::after {
+        left: auto;
+        right: 0;
+        transform: none;
+    }
+}
+
+[data-theme="light"] {
+    .dashBar-logo--onDark { display: none; }
+    .dashBar-logo--onLight { display: block; }
+}

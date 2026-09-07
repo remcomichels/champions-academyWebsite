@@ -1,0 +1,76 @@
+// ───────────────────────────────────────────
+/* Support — search and FAQ */
+// ───────────────────────────────────────────
+
+
+// ── Support ──────────────────────────────────────────────────────────────────
+.supportCta {
+    align-self: flex-start;
+}
+
+.supportSearch {
+    width: auto;
+    min-width: @vw200;
+    padding: @vw8 @vw12;
+    font-size: max(0.80em, @vw14);
+}
+
+.faq {
+    list-style: none;
+
+    &-item + &-item {
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    &-question {
+        width: 100%;
+        text-align: left;
+        background: none;
+        border: none;
+        padding: @vw14 0;
+        font-family: @body;
+        font-size: max(0.80em, @vw14);
+        font-weight: @medium;
+        color: var(--text);
+        cursor: pointer;
+        .transition();
+        transition-property: color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--accent); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+    }
+
+    // grid-template-rows 1fr/0fr rather than max-height: animates to the real
+    // content height with no magic number, matching faq_item.vue on the
+    // marketing site.
+    &-answer {
+        display: grid;
+        grid-template-rows: 0fr;
+        .transition(grid-template-rows, @durationMedium, @ease);
+
+        > p {
+            overflow: hidden;
+            font-size: max(0.80em, @vw14);
+            line-height: 1.5;
+            white-space: normal;
+            color: var(--text-secondary);
+        }
+
+        &.is-open {
+            grid-template-rows: 1fr;
+
+            > p { padding-bottom: @vw14; }
+        }
+    }
+}
+
+@media (max-width: 600px) {
+    .supportSearch,
+        .adminSearch { width: 100%; min-width: 0; }
+}

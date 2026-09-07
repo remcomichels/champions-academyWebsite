@@ -1,0 +1,67 @@
+// ───────────────────────────────────────────
+/* Copy field */
+// ───────────────────────────────────────────
+
+
+// ── Copy field ───────────────────────────────────────────────────────────────
+.copyField {
+    display: flex;
+    align-items: stretch;
+    flex: 1;
+    min-width: 0;
+    gap: @vw8;
+    padding: @vw6;
+    .dashSurface();
+
+    &-value {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        padding: @vw6 @vw12;
+        font-size: max(0.80em, @vw14);
+        color: var(--text);
+        // Long URLs wrap rather than forcing the panel wide on a phone.
+        overflow-wrap: anywhere;
+    }
+
+    &-button {
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        gap: @vw6;
+        padding: @vw10 @vw16;
+        background-color: var(--accent);
+        color: var(--on-accent);
+        border: none;
+        border-radius: @dashRadius;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        font-weight: @semiBold;
+        cursor: pointer;
+        .transition();
+        transition-property: background-color, opacity;
+
+        .icon { font-size: max(0.80em, @vw14); }
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { background-color: var(--accent-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+
+        &:disabled { opacity: 0.4; cursor: not-allowed; }
+    }
+}
+
+@media (max-width: 600px) {
+    .copyField {
+            flex-direction: column;
+            gap: @vw6-580;
+
+            &-button { width: 100%; justify-content: center; padding: @vw12-580; }
+        }
+}
