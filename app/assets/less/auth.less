@@ -1,19 +1,41 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Stylesheet entry point — the auth screens (/login, the mailed-link pages, and
-// the password form under /dashboard/account).
+// Stylesheet for the auth screens — /login, /forgot-password, /reset-password,
+// /confirm-email and /dashboard/account/password.
 //
 // Imported by layouts/auth.vue, and registered nowhere in nuxt.config.ts. That
-// is the whole point: `main.less` is the global stylesheet and loads on every
-// request, and until this split it carried the dashboard too — 112 KB of the
-// 216 KB every marketing visitor downloaded was a dashboard they will most
-// likely never open.
+// is the point: main.less loads on every request, and dashboard.less is 6,200
+// lines a marketing visitor would never render. Neither is loaded here.
 //
-// Deliberately does NOT include components/dashboard.less. A sign-in screen is
-// a field, an alert and a button; it has no rail, no panels and no charts.
+// All five screens share one stage, so the partials below are shared and the
+// page files hold only what belongs to a single screen — which for four of the
+// five is nothing.
 //
-// Adding a rule for an auth screen? It goes in components/auth.less, or in the
-// shell partial if the dashboard needs it too.
-// ─────────────────────────────────────────────────────────────────────────────
+// Vertical values are capped as `min(@vwN, (N/8)vh)`. The 8 is the 1440x800 the
+// design is drawn at: inert at that size, and what keeps the card on screen on
+// a wide, short window. Horizontal values are left alone.
 
+// The dashboard chrome these screens borrow: tokens, fields, alerts, buttons.
 @import './_authShell.less';
-@import './components/auth.less';
+
+// Shared, outermost first. Order matters where two files touch one property:
+// each of the notes below marks a place it does.
+@import './components/auth/_stage.less';
+@import './components/auth/_pane.less';
+@import './components/auth/_card.less';
+@import './components/auth/_marks.less';
+@import './components/auth/_fields.less';
+@import './components/auth/_buttons.less';
+// Last of the three: its shared sizing has to land on top of both, and its
+// focus rule on top of the borders they set.
+@import './components/auth/_controls.less';
+@import './components/auth/_links.less';
+// After _authShell's alert.less, which it overrides.
+@import './components/auth/_alert.less';
+@import './components/auth/_avatar.less';
+@import './components/auth/_ghost.less';
+
+// Per page.
+@import './components/auth/pages/_login.less';
+@import './components/auth/pages/_forgotPassword.less';
+@import './components/auth/pages/_resetPassword.less';
+@import './components/auth/pages/_confirmEmail.less';
+@import './components/auth/pages/_changePassword.less';

@@ -1,0 +1,59 @@
+// ───────────────────────────────────────────
+/* Outcome mark */
+// ───────────────────────────────────────────
+//
+// The check or cross above the title, and the line of copy that follows it. A
+// finished reset or a dead link is the whole of that screen, so it gets the
+// screen rather than a banner across it.
+
+.authSplit .auth {
+    // `--success`/`--error`, not the accent: the accent is the colour of things
+    // you press, and this reports something that already happened.
+    &-check {
+        display: grid;
+        place-items: center;
+        width: min(@vw44, 5.5vh);
+        height: min(@vw44, 5.5vh);
+        margin-bottom: min(@vw6, 0.75vh);
+        border-radius: @dashRadiusPill;
+        background-color: var(--success-subtle);
+        color: var(--success);
+        font-size: 20px;
+
+        &--bad {
+            background-color: var(--error-subtle);
+            color: var(--error);
+        }
+    }
+
+    // The confirmed address, or why a link failed — a continuation of the
+    // standfirst rather than a new voice.
+    &-note {
+        font-size: 13px;
+        line-height: 1.55;
+        text-align: center;
+        text-wrap: balance;
+        color: var(--text-secondary);
+
+        strong {
+            font-weight: @semiBold;
+            color: var(--text);
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .authSplit .auth-check {
+        width: min(@vw44-1080, 5.5vh);
+        height: min(@vw44-1080, 5.5vh);
+        margin-bottom: min(@vw6-1080, 0.75vh);
+    }
+}
+
+@media (max-width: 600px) {
+    .authSplit .auth-check {
+        width: min(@vw44-580, 5.5vh);
+        height: min(@vw44-580, 5.5vh);
+        margin-bottom: min(@vw6-580, 0.75vh);
+    }
+}

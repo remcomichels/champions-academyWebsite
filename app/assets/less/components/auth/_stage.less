@@ -1,0 +1,94 @@
+// ───────────────────────────────────────────
+/* Stage */
+// ───────────────────────────────────────────
+//
+// The frame every auth screen sits in: a locked viewport, the panes, and the
+// slot the dashboard mock is painted into.
+
+// The document never scrolls; the card scrolls inside itself if it must.
+html[data-screen='auth'],
+html[data-screen='auth'] body {
+    overflow: hidden;
+}
+
+.authLayout {
+    position: relative;
+    // dvh: on iOS 100vh includes the strip behind the URL bar.
+    height: 100dvh;
+    overflow: hidden;
+    background-color: var(--background);
+
+    &-main {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        align-items: stretch;
+        justify-content: center;
+        height: 100%;
+    }
+}
+
+.authSplit {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    padding: @vw16;
+    // The channel between the panes: the one place the dashboard is seen with
+    // neither glass nor a photograph over it.
+    gap: @vw16;
+
+    // Inset to the padding, so the dashboard stops where the panes stop.
+    &-ghost {
+        position: absolute;
+        inset: @vw16;
+        z-index: 0;
+        overflow: hidden;
+        border-radius: @vw20;
+        pointer-events: none;
+    }
+
+    // `1 1 0`, not a 50% basis: two fixed halves plus a gap is 100% plus a gap.
+    &-visual,
+    &-form {
+        position: relative;
+        z-index: 1;
+        flex: 1 1 0;
+        min-width: 0;
+        height: 100%;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 1080px) {
+    .authSplit {
+        padding: @vw16-1080;
+        gap: @vw16-1080;
+
+        &-ghost { inset: @vw16-1080; border-radius: @vw20-1080; }
+    }
+}
+
+// Below this the stage collapses: two halves of a 700px window are two columns
+// too narrow for either job, so the card goes back to standing on the page.
+@media (max-width: 768px) {
+    .authLayout-main {
+        align-items: center;
+        padding: min(@vw40-1080, 5vh) @vw32-1080;
+    }
+
+    .authSplit {
+        padding: 0;
+        gap: 0;
+
+        &-ghost { display: none; }
+        &-form { flex: 1 1 100%; max-width: 100%; }
+    }
+}
+
+@media (max-width: 600px) {
+    .authLayout-main { padding: min(@vw40-580, 5vh) @vw20-580; }
+}
