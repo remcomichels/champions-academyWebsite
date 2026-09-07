@@ -1,16 +1,71 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// Stylesheet entry point — the affiliate dashboard.
+// Stylesheet for the dashboard. Imported by layouts/dashboard.vue, and
+// registered nowhere in nuxt.config.ts — main.less loads on every request and a
+// marketing visitor never renders any of this.
 //
-// Imported by layouts/dashboard.vue, and registered nowhere in nuxt.config.ts.
-// `main.less` is the global stylesheet that loads on every request; this one
-// loads only for someone actually inside the dashboard. Before the split, a
-// marketing page served all of it: 112 KB of the 216 KB on the wire was this.
+// Split by the surface a rule belongs to: `shell/` is the frame you are always
+// inside, `shared/` the pieces several pages reuse, `pages/` what belongs to
+// exactly one screen. Anything used twice is in shared/ rather than copied.
 //
-// The sibling entry point is `auth.less`, which shares the shell partial below
-// but stops short of components/dashboard.less.
-//
-// Adding a dashboard component's LESS file? Register it here, not in main.less.
-// ─────────────────────────────────────────────────────────────────────────────
+// Import order is the order these rules had in the single file this replaces.
+// Plenty of them tie on specificity, so it is load-bearing: a media override
+// moved ahead of the base rule it overrides simply stops working.
 
+// The chrome the auth screens share with this one.
 @import './_authShell.less';
-@import './components/dashboard/dashboard.less';
+
+// Foundations.
+@import './components/dashboard/_scale.less';
+@import './components/dashboard/_mixins.less';
+@import './components/dashboard/_utils.less';
+
+// The persistent frame.
+@import './components/dashboard/shell/_layout.less';
+@import './components/dashboard/shell/_tip.less';
+@import './components/dashboard/shell/_nav.less';
+@import './components/dashboard/shell/_bar.less';
+@import './components/dashboard/shell/_toasts.less';
+@import './components/dashboard/shell/_viewingAs.less';
+@import './components/dashboard/shell/_modeSwitch.less';
+@import './components/dashboard/shell/_modal.less';
+@import './components/dashboard/shell/_profileMenu.less';
+
+// Reused by several pages.
+@import './components/dashboard/shared/_page.less';
+@import './components/dashboard/shared/_panel.less';
+@import './components/dashboard/shared/_grid.less';
+@import './components/dashboard/shared/_select.less';
+@import './components/dashboard/shared/_copyField.less';
+@import './components/dashboard/shared/_statCard.less';
+@import './components/dashboard/shared/_donut.less';
+@import './components/dashboard/shared/_barChart.less';
+@import './components/dashboard/shared/_form.less';
+@import './components/dashboard/shared/_rangeTabs.less';
+@import './components/dashboard/shared/_toggle.less';
+
+// One screen each — and for the settings tabs, one block each.
+@import './components/dashboard/pages/account/_shell.less';
+@import './components/dashboard/pages/account/_profileInformation.less';
+@import './components/dashboard/pages/account/_yourLink.less';
+@import './components/dashboard/pages/overview/_hero.less';
+@import './components/dashboard/pages/overview/_miniCard.less';
+@import './components/dashboard/pages/overview/_sparkbars.less';
+@import './components/dashboard/pages/overview/_setup.less';
+@import './components/dashboard/pages/overview/_linkStatus.less';
+@import './components/dashboard/pages/account/_logs.less';
+@import './components/dashboard/pages/links/_qr.less';
+@import './components/dashboard/pages/account/_signinMethods.less';
+@import './components/dashboard/pages/account/_appearance.less';
+@import './components/dashboard/pages/account/_connections.less';
+@import './components/dashboard/pages/support/_inbox.less';
+@import './components/dashboard/pages/analytics/_funnel.less';
+@import './components/dashboard/pages/admin/_lists.less';
+@import './components/dashboard/pages/analytics/_breakdown.less';
+@import './components/dashboard/pages/analytics/_heatmap.less';
+@import './components/dashboard/pages/account/_security.less';
+@import './components/dashboard/pages/account/_dangerZone.less';
+@import './components/dashboard/pages/support/_support.less';
+@import './components/dashboard/pages/admin/_forms.less';
+@import './components/dashboard/pages/admin/_leaderboard.less';
+@import './components/dashboard/pages/admin/_audit.less';
+@import './components/dashboard/pages/support/_feedback.less';
+@import './components/dashboard/pages/admin/_changelog.less';

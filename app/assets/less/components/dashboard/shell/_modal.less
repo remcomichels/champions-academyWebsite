@@ -1,0 +1,308 @@
+// ───────────────────────────────────────────
+/* Modals */
+// ───────────────────────────────────────────
+
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+// Styling for a native <dialog>. The browser owns the open/closed display, the
+// centring and the top layer; everything here is the look.
+// The page behind a modal does not move.
+//
+// `showModal()` makes the rest of the document inert — it cannot be clicked,
+// tabbed into or read by a screen reader — but inert is not still. Measured on
+// the real dialog: with it open, the wheel moved the page 473px and PageDown
+// moved it 573px, so the thing you opened stayed put while everything around it
+// slid away behind it.
+//
+// `:has()` rather than a class toggled when each dialog opens. The state is
+// already in the DOM — `<dialog>` carries `open` — and every modal in this
+// project uses `.modal`, so one rule covers the three of them and any fourth
+// without that dialog having to remember to announce itself. Scoped to `.modal`
+// rather than to `dialog[open]` so a non-modal dialog, which is allowed to sit
+// over a page that still works, does not freeze it.
+//
+// Both elements, matching the treatment in auth.less: `body` carries
+// `min-height: 100vh` from the reset, and locking only `html` leaves it as the
+// scrolling box on some engines.
+html:has(.modal[open]),
+html:has(.modal[open]) body {
+    overflow: hidden;
+}
+
+.modal {
+    // The element itself is only a positioning box — the visible card is
+    // -panel. That separation is what makes the backdrop click work: a click
+    // landing on this element cannot have come from the content.
+    padding: 0;
+    border: none;
+    background: none;
+    overflow: visible;
+
+    // Restores what the UA stylesheet centres a modal dialog with. `_reset.less`
+    // zeroes margin on `*`, which includes <dialog>, so without this the dialog
+    // sits in the top-left corner of the viewport.
+    margin: auto;
+
+    // A flat 80% of the viewport, centred, at every size. Deliberately not
+    // sized to its contents: the edit form is short and would otherwise be a
+    // small box in the middle of a large screen, and a dialog whose dimensions
+    // move with whatever is inside it is a dialog that jumps.
+    //
+    // dvh, not vh: on iOS the URL bar makes 100vh taller than the visible area,
+    // and a dialog sized to it hides its own buttons behind the chrome.
+    width: 80vw;
+    height: 80dvh;
+
+    // Inherited from <html data-theme>, which still applies in the top layer —
+    // the element moves in the paint order, not in the tree.
+    color: var(--text);
+
+    &::backdrop {
+        // A literal rather than a token: ::backdrop does not inherit from the
+        // dialog, so var(--…) declared on the theme root is not reliably in
+        // scope here across browsers.
+        background-color: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(@vw2);
+        -webkit-backdrop-filter: blur(@vw2);
+    }
+
+    &-panel {
+        display: flex;
+        flex-direction: column;
+        gap: @vw20;
+        padding: @vw28;
+        .dashSurface();
+        box-shadow: var(--shadow-pop);
+        // Fills the dialog rather than sizing to content, so the card is the
+        // 80% box and not a smaller one floating inside it. Long content
+        // scrolls in here; the dialog itself never grows.
+        height: 100%;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    // Three columns, stated rather than inferred. `auto-fit` counts repetitions
+    // against the track's *max* when that is definite, so the capped track the
+    // panel uses collapsed to a single column at this width. Three is also what
+    // the Add panel lands on for the same three fields, and it leaves no orphan
+    // cell the way pairing them does.
+    .adminForm-fields {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    &-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: @vw16;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: max(0.90em, @vw16);
+        font-weight: @bold;
+        color: var(--text);
+    }
+
+    // The middle and the bottom of a framed dialog. Only `--compact` uses them
+    // today — the affiliate editor is one long scrolling form with no bands —
+    // but they belong to `.modal` rather than to the modifier, because what
+    // they name is "the content" and "the actions", not "the narrow version".
+    &-body { min-width: 0; }
+
+    &-foot {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: @vw10;
+    }
+
+    &-close {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw32;
+        height: @vw32;
+        margin: calc(@vw4 * -1) calc(@vw4 * -1) 0 0;
+        padding: 0;
+        background: none;
+        border: none;
+        border-radius: @dashRadius;
+        color: var(--text-tertiary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        .icon { width: @vw18; height: @vw18; }
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+}
+
+// ── Compact dialog ───────────────────────────────────────────────────────────
+// A dialog sized to one question.
+//
+// `.modal` is a flat 80vw x 80dvh and says why: the affiliate editor is a form
+// of several fields plus notes, and a dialog whose dimensions move with its
+// contents is a dialog that jumps. That reasoning does not reach this one. A
+// label, an input and two buttons at 80% of a desktop viewport is a small
+// paragraph adrift in a very large box, and there is nothing here that can grow
+// — so it is sized to the content and capped against the viewport instead.
+//
+// The bands are the other half of the difference. A dialog this short has no
+// scroll to tell you where the content ends, so the rules under the title and
+// over the buttons are what give it a top and a bottom.
+.modal--compact {
+    width: min(@vw300 + @vw180, calc(100vw - @vw32));
+
+    // `fit-content`, and `auto` is wrong — this is the whole reason the dialog
+    // rendered against the top of the screen instead of the middle of it.
+    //
+    // The UA gives a modal <dialog> `position: fixed; inset: 0` and `.modal`
+    // adds `margin: auto`, which is what centres it. With `height: auto` that
+    // is over-constrained: top and bottom are both 0, so the box stretches to
+    // fill the gap — 836px on a 900px viewport — the auto margins resolve to
+    // nothing, and the short card inside sits at the top of a full-height
+    // element. `fit-content` makes the height definite, and the leftover space
+    // goes back to the margins, which is where the centring comes from.
+    //
+    // `.modal` never hit this because its panel is `height: 100%` of a box that
+    // was always meant to be 80% of the viewport.
+    height: fit-content;
+    // Only ever reached by a field error wrapping onto a third line on a very
+    // short window; the panel scrolls inside the frame rather than the dialog
+    // growing past the screen.
+    max-height: calc(100dvh - @vw64);
+
+    .modal-panel {
+        gap: 0;
+        padding: 0;
+        height: auto;
+        // No `overflow: hidden`. It was here to stop the actions band's square
+        // corners poking through the panel's curve, and that band lost its own
+        // background a while ago — it is a rule and nothing else now, so there
+        // are no corners to clip and the hidden was only ever going to clip
+        // something that mattered instead.
+        overflow: visible;
+    }
+
+    .modal-head {
+        align-items: center;
+        padding: @vw14 @vw18;
+        border-bottom: max(1px, @vw1) solid var(--border);
+    }
+
+    // A column, because it holds two things when the request is refused: the
+    // failure, then the field it was about.
+    //
+    // It scrolls as a last resort, on a viewport too short for the dialog. That
+    // makes it a scroll container, and a scroll container clips both axes — so
+    // a select opened inside one drops its menu behind the dialog's own edge.
+    // The trigger looked right and the list was simply not there.
+    .modal-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw14;
+        padding: @vw18;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    // So the clipping is lifted for exactly as long as a menu is open, and put
+    // back the moment it closes. `:has()` rather than a class toggled in script,
+    // because the state is already in the DOM — the trigger carries `.is-open`
+    // — and a second copy of it in a parent is a second thing to keep in step.
+    &:has(.field-input--select.is-open) .modal-body {
+        overflow: visible;
+    }
+
+    // The rule is the band. It had a raised ground as well, which made the
+    // actions read as a separate panel bolted to the bottom of the dialog
+    // rather than as the end of it — one separator is enough to say where the
+    // content stops.
+    .modal-foot {
+        padding: @vw12 @vw18;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    // Sentence case, and at the label size the settings column uses.
+    //
+    // The shared `.field-label` is uppercase with letter-spacing, which reads
+    // as a category heading over a group of fields — right on a form of six,
+    // wrong on a dialog whose label is a full sentence asking one question.
+    .field-label {
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: @settingsLabel;
+        font-weight: @medium;
+        line-height: 1.25;
+        color: var(--text);
+    }
+
+    // The same control the rows on Preferences use, for the same reason given
+    // there: the shared field's `max(1em, @vw16)` resolves to about 21px on a
+    // 1920 monitor, which is display type inside a form control. A control's
+    // size is ergonomic rather than proportional — what is comfortable to read
+    // and to hit does not change because the monitor got wider — and a dialog
+    // opened from that column should not be visibly bigger than the column it
+    // opened over.
+    .field-input {
+        padding: @vw7 @vw10;
+        font-size: @settingsBody;
+        border-radius: @vw6;
+    }
+
+    .field-message { line-height: 1.25; }
+
+    // What the dialog is about to do, under the questions it asks. Tinted like
+    // the danger panel it was opened from, so the two read as one action.
+    .modal-warning {
+        padding: @vw10 @vw12;
+        border-radius: @dashRadiusInner;
+        background-color: var(--error-subtle);
+        font-size: @settingsBody;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+
+    // The line under the field is the dialog's explanation of itself, not an
+    // aside about the input — so it takes the body colour rather than the
+    // quieter tint a hint normally gets.
+    //
+    // `:not()` and not a bare `.field-message`: the error variant is a single
+    // class in form.less, so a two-class selector here would outrank it and
+    // quietly repaint every validation message grey.
+    .field-message:not(.field-message--error) { color: var(--text-secondary); }
+}
+
+@media (max-width: 1080px) {
+    .modal-panel { gap: @vw20-1080; padding: @vw28-1080; }
+
+    .modal-title { font-size: max(0.90em, @vw16-1080); }
+
+    .modal-close {
+            width: @vw32-1080;
+            height: @vw32-1080;
+
+            .icon { width: @vw18-1080; height: @vw18-1080; }
+        }
+}
+
+@media (max-width: 600px) {
+    // Width is already pinned to 92vw at this size; only the inner spacing
+    // needs to come down. The pairing goes too — two fields side by side in
+    // 92vw of a phone is two fields nobody can type in.
+    .modal-panel { gap: @vw20-580; padding: @vw24-580; }
+
+    .modal-title { font-size: max(0.90em, @vw16-580); }
+
+    .modal-close { width: @vw32-580; height: @vw32-580; }
+}

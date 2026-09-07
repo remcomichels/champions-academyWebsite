@@ -1,0 +1,88 @@
+// ───────────────────────────────────────────
+/* Utilities */
+// ───────────────────────────────────────────
+
+
+// Screen-reader-only text. No global utility exists in this project, and both
+// the checklist and the chart need one so state is announced rather than being
+// carried by a tick glyph or a bar height alone.
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.icon {
+    width: 1em;
+    height: 1em;
+    flex: none;
+}
+
+@keyframes dashSkeleton {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}
+
+// A control whose whole label is its glyph. Its accessible name comes from
+// `aria-label`; `.tip` draws the visible one on hover and on focus.
+//
+// Nothing drawn around it. It used to be boxed like `.btn--subtle` so it would
+// read as the equal of the button beside it, but two filled boxes in a row is
+// two things asking to be pressed, and only one of them is the row's actual
+// action. Bare, the glyph reads as the secondary control it is.
+//
+// The glyph is sized as a length rather than off the type scale, and the size
+// was settled by looking at it. Matched to the adjacent button's text it was
+// unreadable — a 1.5-weight outline needs more room than a letterform before it
+// is identifiable at all — and taken up to the mail glyph's own size it stopped
+// reading as the secondary control and started competing with the button. @vw16
+// is the middle: legible on its own, still clearly the quieter of the two.
+//
+// vw, like every other length here and unlike the type around it. A reading size
+// is fixed because reading distance is; a glyph is a proportion of the row.
+.iconButton {
+    flex: none;
+    display: grid;
+    place-items: center;
+    // Padding, not a width and height: it keeps a pointer target around a bare
+    // glyph without drawing a box the size of the target.
+    padding: @vw6;
+    background: none;
+    border: none;
+    line-height: 1;
+    // Secondary, not tertiary. Inside the old bordered tile the box carried the
+    // glyph and a quieter tint was fine; bare, the stroke is the only thing on
+    // screen, and at tertiary it dropped out of the row on the dark theme.
+    color: var(--text-secondary);
+    cursor: pointer;
+    .transition();
+    transition-property: color;
+
+    .icon { width: @vw16; height: @vw16; }
+
+    @media (hover: hover) {
+        &:hover:not(:disabled) { color: var(--text); }
+    }
+
+    &:focus-visible {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+        border-radius: @dashRadiusInner;
+    }
+
+    &:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    // Red on hover, not at rest. A row of permanently red bins reads as a list
+    // of errors; the colour belongs to the moment you are about to press one.
+    &--danger {
+        @media (hover: hover) {
+            &:hover:not(:disabled) { color: var(--error); }
+        }
+    }
+}

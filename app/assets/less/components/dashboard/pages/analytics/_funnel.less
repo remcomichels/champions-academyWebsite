@@ -1,0 +1,73 @@
+// ───────────────────────────────────────────
+/* Analytics — funnel */
+// ───────────────────────────────────────────
+
+
+// ── Funnel + table ───────────────────────────────────────────────────────────
+// ── Visits-to-sales funnel ───────────────────────────────────────────────────
+// Bars on one shared scale, not a row of equal-sized boxes. The panel exists to
+// show where people fall out between opening a link and buying, and matching
+// cards say the opposite — a hundred visits and one sale looked identical.
+.funnel {
+    display: flex;
+    flex-direction: column;
+    gap: @vw16;
+    list-style: none;
+
+    &-step {
+        display: flex;
+        flex-direction: column;
+        gap: @vw8;
+    }
+
+    &-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: @vw12;
+    }
+
+    &-label {
+        font-size: max(0.68em, @vw12);
+        color: var(--text-secondary);
+    }
+
+    &-value {
+        font-size: max(1.05em, @vw20);
+        font-weight: @bold;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+    }
+
+    &-bar {
+        display: block;
+        height: max(8px, @vw12);
+        background-color: var(--surface-raised);
+        border-radius: @dashRadius;
+        overflow: hidden;
+    }
+
+    &-fill {
+        display: block;
+        height: 100%;
+        background-color: var(--chart-bar);
+        transform-origin: left center;
+        .transition(transform, @durationMedium, @easeOut);
+
+        // The step that matters takes the accent; the one it is measured
+        // against stays neutral, the same way the breakdown rows work.
+        &.is-lead { background-color: var(--accent); }
+    }
+
+    &-rate {
+        font-size: max(0.80em, @vw14);
+        color: var(--text-secondary);
+
+        strong { color: var(--text); font-weight: @bold; }
+    }
+}
+
+@media (max-width: 600px) {
+    .funnel { flex-direction: column; }
+}

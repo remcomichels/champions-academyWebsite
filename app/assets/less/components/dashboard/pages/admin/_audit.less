@@ -1,0 +1,115 @@
+// ───────────────────────────────────────────
+/* Admin — audit log */
+// ───────────────────────────────────────────
+
+
+// ── Activity log ─────────────────────────────────────────────────────────────
+.auditFilter {
+    &-search {
+        width: 100%;
+        margin-bottom: @vw12;
+    }
+
+    // Capped and scrolled: the list grows with the affiliate roster, and a
+    // filter that pushes the thing it filters off the screen is not a filter.
+    &-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: @vw8;
+        max-height: @vw160;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+
+    &-option {
+        display: inline-flex;
+        align-items: baseline;
+        gap: @vw6;
+        padding: @vw6 @vw12;
+        background: none;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadiusPill;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        color: var(--text);
+        cursor: pointer;
+        .transition();
+        transition-property: color, border-color, background-color;
+
+        @media (hover: hover) {
+            &:hover { border-color: var(--border-strong); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+
+        &.is-selected {
+            color: var(--on-accent);
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+    }
+
+    &-slug {
+        font-size: max(0.62em, @vw11);
+        opacity: 0.7;
+    }
+
+    &-revoked {
+        font-size: max(0.62em, @vw11);
+        color: var(--error);
+    }
+
+    // The chip's own colour has already won by then; a red word on the accent
+    // fill is unreadable.
+    &-option.is-selected &-revoked { color: inherit; opacity: 0.8; }
+}
+
+.auditLog {
+    display: flex;
+    flex-direction: column;
+
+    &-row {
+        display: flex;
+        align-items: flex-start;
+        gap: @vw12;
+        padding: @vw10 0;
+        border-bottom: max(1px, @vw1) solid var(--border);
+
+        &:last-child { border-bottom: none; }
+    }
+
+    // Carries the outcome, so scanning the column finds the failures without
+    // reading a word. Never the only signal — the sentence says it too.
+    &-dot {
+        flex: none;
+        width: @vw8;
+        height: @vw8;
+        margin-top: @vw6;
+        border-radius: @dashRadiusPill;
+        background-color: var(--text-tertiary);
+
+        &.is-good { background-color: var(--accent); }
+        &.is-bad  { background-color: var(--error); }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        min-width: 0;
+    }
+
+    &-text {
+        font-size: max(0.80em, @vw14);
+        line-height: 1.4;
+        color: var(--text);
+    }
+
+    &-meta {
+        font-size: max(0.68em, @vw12);
+        color: var(--text-tertiary);
+    }
+}

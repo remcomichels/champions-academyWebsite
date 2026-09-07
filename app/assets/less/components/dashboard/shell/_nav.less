@@ -1,0 +1,322 @@
+// ───────────────────────────────────────────
+/* Navigation rail */
+// ───────────────────────────────────────────
+
+
+// ── Sidebar ──────────────────────────────────────────────────────────────────
+// One width at rest, and that width is the top bar's height — so the two meet
+// as a square in the corner and the chrome reads as one frame around the page.
+//
+// Fixed rather than in the flow: it peeks open under the pointer, and a rail in
+// the flow would reflow the whole page sideways every time it did. Out of flow
+// it slides over the content and the column beside it never moves.
+//
+// There is no pinned-open state and no cookie remembering one. A rail that can
+// be latched open has to shove the page column across to make room for itself,
+// which is a lot of machinery for a width nobody sets twice.
+.dashNav {
+    position: fixed;
+    left: 0;
+    // Starts below the chrome rather than under it. The rail is fixed, so the
+    // layout's padding cannot move it — it has to read the height itself.
+    top: var(--chrome);
+    z-index: 50;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    width: var(--rail-shut);
+    height: calc(100vh - var(--chrome));
+    // The horizontal figures are not a taste call, and the asymmetry is the
+    // whole point of them.
+    //
+    // The row is @vw34 across — an @vw18 glyph inside the @vw8 padding it
+    // shares with `.profileMenu-item` — and @vw11 of rail either side centres
+    // it at @vw28, the middle of a @vw56 rail. But `border-box` counts the
+    // hairline on the right *inside* that 56, so a symmetric @vw11 would leave
+    // the row a pixel short of its glyph, which then renders a pixel narrower
+    // at rest than it does open and visibly resizes as the rail moves. The
+    // right side gives that pixel back to the border it lost it to.
+    padding: @vw8 @vw10 @vw8 @vw11;
+    background-color: var(--surface);
+    border-right: max(1px, @vw1) solid var(--border);
+    .transition(width, @durationFast, @ease);
+    transition-property: width, box-shadow;
+
+    &-list {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        flex: 1;
+        // A long nav on a short viewport scrolls itself rather than pushing the
+        // last entries off the bottom of the screen. Worth keeping in mind as
+        // more tabs land: past roughly a dozen this starts to matter.
+        overflow-y: auto;
+        scrollbar-width: none;
+
+        &::-webkit-scrollbar { display: none; }
+    }
+
+    // Splits the nav into groups. Full content width rather than inset to the
+    // labels — inset, it would sit under the icons, which are the one thing
+    // holding position through the peek.
+    &-rule {
+        flex: none;
+        height: 0;
+        // The list's own @vw2 gap sits either side of these, so the visual
+        // spacing is a touch more than the margin alone.
+        margin: @vw6 0;
+        border: none;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    // Matched to `.profileMenu-item`, deliberately. The account menu's rows are
+    // the other list of places to go in this dashboard, and having the two at
+    // different sizes is what made the rail read as separate furniture rather
+    // than part of the same set. Same padding, same type, same 4 corner.
+    &-item {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        padding: @vw6 @vw8;
+        border-radius: @dashRadiusInner;
+        // Trims the label as the rail narrows. The label keeps its natural
+        // width throughout — animating that width is what broke the close.
+        // `outline-offset` below is negative, so the focus ring is drawn inside
+        // the row and this cannot clip it.
+        overflow: hidden;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+
+        // The active row is the accent's main job on this screen: a tinted fill
+        // rather than a solid one, so a whole sidebar of nav items never
+        // competes with the primary action in the page body.
+        &.is-active {
+            color: var(--accent);
+            background-color: var(--accent-subtle);
+        }
+    }
+
+    // No colour of its own — it takes the row's, so resting, hover and active
+    // need one rule between them instead of three that can fall out of step.
+    //
+    // @vw18, which is every glyph on the dashboard now — the rail, the two
+    // controls in the bar, and the account face. They had drifted to 14/18/24,
+    // and the face was not even applying: its rule had been written inside
+    // `.tzMenu` and was compiling to a class nothing wears, so it fell back to
+    // `.icon`'s 1em and rendered by *font size* while its neighbours rendered
+    // by vw. That is why the three never measured alike on a wide screen.
+    &-glyph {
+        flex: none;
+        width: @vw18;
+        height: @vw18;
+    }
+
+    &-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        // Transparent at rest rather than removed: the name stays in the
+        // accessibility tree, so a screen reader reads a full set of labels off
+        // a rail that looks like nothing but icons.
+        opacity: 0;
+        // Slides out from under the icon rather than blinking on the spot. Not
+        // `width`: the open width is `auto`, which is not an interpolatable
+        // value, so animating it snapped to 0 on the first frame. Opacity and
+        // transform both interpolate, so the two directions mirror each other.
+        transform: translateX(-@vw8);
+        .transition(transform, @durationFast, @ease);
+        transition-property: opacity, transform;
+    }
+
+    // The account rail's way out. Shares the row geometry of `-item` but not its
+    // states: it is not one of the sections, so it never goes active, and
+    // colouring it like one would put a second "you are here" on the screen.
+    &-back {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        padding: @vw6 @vw8;
+        border-radius: @dashRadiusInner;
+        overflow: hidden;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); background-color: var(--surface-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+        }
+    }
+
+    // Names a group of entries. Small, uppercase and tertiary — it has to read
+    // as a label for the rows under it rather than as a row you can click,
+    // which at this size is the only thing separating the two.
+    //
+    // Inset by the row's own horizontal padding so its first letter lines up
+    // with the labels it introduces.
+    &-heading {
+        flex: none;
+        padding: @vw8 @vw8 @vw4;
+        font-size: max(0.60em, @vw10);
+        font-weight: @semiBold;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--text-tertiary);
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    // Mobile only — see the note in the component. The desktop rail has no
+    // control of its own: there is no pinned state left for one to toggle.
+    &-close {
+        display: none;
+        place-items: center;
+        flex: none;
+        align-self: flex-end;
+        padding: 0;
+        background: none;
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadiusPill;
+        color: var(--text-secondary);
+        cursor: pointer;
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+}
+
+@media (min-width: 769px) {
+    // The peeked geometry, shared by the two ways into it.
+    .dashNavPeek() {
+            width: var(--rail-open);
+            // Peeking covers the page, so it says so. Tier-correct for free, since
+            // the width comes from the shared variable.
+            box-shadow: var(--shadow-pop);
+
+            .dashNav-label {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+    // Keyboard, and deliberately not gated on pointer type: a column of rows
+    // whose labels are all transparent is unusable to tab through, whatever is
+    // doing the tabbing.
+    .dashNav:focus-within { .dashNavPeek(); }
+
+    // `hover: hover` so a touch device cannot latch the rail open with a sticky
+    // `:hover` left behind by a tap.
+    @media (hover: hover) {
+            .dashNav:hover {
+                .dashNavPeek();
+
+                // A short beat before it opens, so crossing the rail on the way
+                // somewhere else does not fling it open. It was 0.12s, which read
+                // as the rail being slow to answer rather than as deliberate.
+                // In on the way in only — the base rule carries no delay, so it
+                // still closes the instant the pointer leaves.
+                transition-delay: 0.04s;
+
+                .dashNav-label { transition-delay: 0.04s; }
+            }
+        }
+
+    // Static — the account rail, open at full width and staying there.
+    //
+    // Last in this block on purpose: it carries the same specificity as
+    // `.dashNav:hover`, so source order is what decides, and this has to be the
+    // one that wins. Otherwise pointing at a rail that is already open would
+    // drop a shadow on it as though it had just moved.
+    //
+    // Inside the media query for a second reason, and it is not cosmetic. Below
+    // 769 the rail is an off-canvas drawer that *wants* the pop shadow, and
+    // `.dashNav.is-static` outranks the plain `.dashNav` rule that gives it one
+    // — so left at the top level this would quietly flatten the drawer against
+    // the page on every account screen on a phone.
+    .dashNav.is-static {
+            box-shadow: none;
+
+            .dashNav-label {
+                opacity: 1;
+                transform: none;
+            }
+        }
+}
+
+@media (max-width: 1080px) {
+    .dashNav {
+            // The baseline's arithmetic, one tier down — border compensation and
+            // all. The constants scale together and the hairline stays 1px, so the
+            // icon stays centred without a second calculation.
+            padding: @vw8-1080 @vw10-1080 @vw8-1080 @vw11-1080;
+            &-item { padding: @vw6-1080 @vw8-1080; gap: @vw8-1080; }
+            &-glyph { width: @vw18-1080; height: @vw18-1080; }
+            &-rule { margin: @vw6-1080 0; }
+        }
+}
+
+@media (max-width: 768px) {
+    .dashNav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            height: 100dvh;
+            // The vw ladder tops out at 300 (≈52vw at this tier), which is too
+            // narrow for a drawer, so it is composed and then capped — the same
+            // pattern as `calc(@vw300 + @vw58)` in _general.less.
+            width: min(calc(@vw300-580 + @vw150-580), 320px);
+            padding: @vw12-580;
+            transform: translateX(-100%);
+            box-shadow: var(--shadow-pop);
+            .transition(transform, @durationFast, @ease);
+
+            &.is-open { transform: translateX(0); }
+
+            // The drawer *is* the open rail — there is no peek here and nothing to
+            // reveal, so the labels sit where they belong from the first frame.
+            &-label { opacity: 1; transform: none; }
+
+            // The one place the rail keeps a control of its own: a drawer with no
+            // way out but the scrim is a trap on a phone.
+            &-close {
+                display: grid;
+                width: @vw36-580;
+                height: @vw36-580;
+                margin-bottom: @vw8-580;
+            }
+
+            &-item { gap: @vw10-580; padding: @vw8-580 @vw10-580; }
+        }
+}
+
+@media (max-width: 600px) {
+    // Padding comes from the drawer rule above; only the type grows here.
+    .dashNav {
+            &-item { font-size: max(0.80em, @vw14-580); }
+            &-glyph { width: @vw18-580; height: @vw18-580; }
+            &-rule { margin: @vw8-580 0; }
+        }
+}

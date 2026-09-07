@@ -1,0 +1,94 @@
+// ───────────────────────────────────────────
+/* Overview — sparkbars */
+// ───────────────────────────────────────────
+
+
+// ── Sparkline bars ───────────────────────────────────────────────────────────
+// The distribution behind a highlight card, at card scale.
+.sparkbars {
+    display: flex;
+    // Stretch, not flex-end. The slots have to fill this box for the bars'
+    // percentage heights to have anything to resolve against — bottom-aligning
+    // here instead would size each slot to its own content, which is the bar,
+    // which is a percentage of the slot: circular, and every bar collapses.
+    // The bottom alignment lives on the slot, one level down.
+    align-items: stretch;
+    // Bars separate because of the space between them, never a stroke drawn
+    // around them. Same token as the bar chart's, so the two read alike.
+    gap: @chartBarGap;
+    height: @vw30;
+    // The axis the bars stand on. Hairline, solid, one step off the surface, so
+    // it reads as the baseline rather than as another mark — and an hour with
+    // no traffic still shows its slot on the line instead of leaving a hole.
+    border-bottom: max(1px, @vw1) solid var(--chart-grid);
+
+    // The hit target, and the reason it is a wrapper rather than the bar
+    // itself: a quiet hour is a two-pixel mark, and pointing at two pixels is
+    // not something anyone should have to do. The slot is the full height of
+    // the plot, so only horizontal aim matters — the same trade the bar chart
+    // makes with its columns.
+    &-slot {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: flex-end;
+    }
+
+    &-bar {
+        width: 100%;
+        background-color: var(--chart-bar);
+        // Rounded at the data end, square at the baseline — a bar grows out of
+        // its axis, so the axis end should not look detached from it.
+        border-radius: @chartBarCap @chartBarCap 0 0;
+        .transition(height, @durationMedium, @easeOut);
+        transition-property: height, background-color;
+
+        // The one slot the card's headline names. Everything else stays in the
+        // de-emphasis hue — that contrast is the entire point of the plot.
+        &.is-peak { background-color: var(--accent); }
+    }
+
+    // The hovered mark answers. Same pair the bar chart uses, so a bar under
+    // the pointer behaves the same way wherever it is on the dashboard.
+    @media (hover: hover) {
+        &-slot:hover &-bar { background-color: var(--chart-bar-hover); }
+        &-slot:hover &-bar.is-peak { background-color: var(--accent-hover); }
+    }
+
+    // The readout. Same box as the heatmap's, for the same reason it exists
+    // there: a native `title` waits about a second, which on something you read
+    // by sweeping across it means the label is never up when you want it.
+    &-tip {
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        z-index: 3;
+        // Centred on the slot, plus the correction that keeps it inside the
+        // plot — measured in the component, because the limit depends on how
+        // wide the text turns out. See `clampChartTip`.
+        transform: translate(calc(-50% + var(--tip-shift, 0px)), -@vw6);
+        padding: @vw4 @vw8;
+        border-radius: @dashRadius;
+        background-color: var(--popover);
+        border: max(1px, @vw1) solid var(--popover-border);
+        box-shadow: var(--shadow-pop);
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        color: var(--text);
+        // The slot underneath keeps the pointer, or crossing the row would
+        // flicker: the tip would take the hover, the slot would lose it, the
+        // tip would unmount, and the slot would take it back.
+        pointer-events: none;
+
+    }
+}
+
+@media (max-width: 1080px) {
+    .sparkbars { height: @vw30-1080; }
+}
+
+@media (max-width: 600px) {
+    .sparkbars { height: @vw30-580; }
+}

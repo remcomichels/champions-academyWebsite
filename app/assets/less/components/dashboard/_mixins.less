@@ -1,0 +1,71 @@
+// ───────────────────────────────────────────
+/* Mixins */
+// ───────────────────────────────────────────
+
+
+// ── Type ─────────────────────────────────────────────────────────────────────
+// Six rungs, and every `font-size` in this file lands on one of them:
+//
+//   max(0.62em, @vw11)  axis ticks, dense meta
+//   max(0.68em, @vw12)  labels, hints, captions, table headers
+//   max(0.80em, @vw14)  body, nav, buttons, table cells  ← the default
+//   max(0.90em, @vw16)  card, section and modal titles
+//   max(1.05em, @vw20)  stat figures
+//   max(1.45em, @vw28)  the page title, and nothing else
+//
+// There were sixteen sizes before, and it was not a ladder: the same @vw12
+// paired with both 0.7em and 0.65em, and @vw11 with both 0.6em and 0.65em,
+// because each component picked its own rather than reading one off a scale.
+//
+// The em floor is what stops text shrinking with the viewport once the vw
+// value drops below readable, so it moves with the rung, not with the caller.
+//
+// Sizes came down across the board — the page title from 44, stat figures from
+// 36. Scale on a dashboard comes from whitespace, not from point size, and the
+// 40/16 section-to-card spacing ratio is what carries the hierarchy now. The
+// title keeps the top rung to itself so it stays the one dominant thing on the
+// screen; the figures sit a rung below it.
+//
+// Micro-labels are sentence case in a muted colour. The uppercase-plus-0.06em
+// treatment that used to mark them is a marketing-dashboard tic that reads
+// busier at 11px, and neither reference dashboard uses it — their badges are
+// sentence case too.
+// The one card.
+//
+// Six primitives used to declare this same three-line group independently —
+// dashPanel, statCard, miniCard, dashSetup, copyField and the hero's QR tile —
+// and no two of them agreed on padding or radius (24/20/20-24/14/6 and 12 or
+// 10). That disagreement is what made the page read as a pile of boxes rather
+// than a set of peers: when every surface differs slightly the eye keeps
+// parsing the boxes instead of the content inside them.
+//
+// Declared with parentheses so it is a mixin, not an emitted class.
+.dashSurface() {
+    background-color: var(--surface);
+    border: max(1px, @vw1) solid var(--border);
+    border-radius: @dashRadius;
+}
+
+// ── Panel tail ───────────────────────────────────────────────────────────────
+// A rotated square with two borders showing, so it takes the panel's outline on
+// the two edges actually exposed and its fill on the rest. Sits half outside
+// the panel, which is what makes it read as a point rather than a notch.
+//
+// A mixin rather than a class: both panels want identical geometry and differ
+// only in where along the top edge they anchor it, which is a property of the
+// button each hangs from.
+.dashTail(@surface: var(--surface)) {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    width: @vw10;
+    height: @vw10;
+    // Half its own height below its top edge, so the visible half is the part
+    // above the panel.
+    margin-bottom: -@vw5;
+    transform: rotate(45deg);
+    background-color: @surface;
+    border-left: max(1px, @vw1) solid var(--border);
+    border-top: max(1px, @vw1) solid var(--border);
+    border-top-left-radius: max(2px, @vw2);
+}

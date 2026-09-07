@@ -1,0 +1,241 @@
+// ───────────────────────────────────────────
+/* Page scaffolding */
+// ───────────────────────────────────────────
+
+
+// ── Page scaffolding ─────────────────────────────────────────────────────────
+.dash {
+    display: flex;
+    flex-direction: column;
+    gap: @vw64;
+}
+
+.dashSection {
+    display: flex;
+    flex-direction: column;
+    gap: @vw32;
+}
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+// One centred column at a fixed measure.
+//
+// This was two columns while Settings and Account were one long page each, and
+// the split was doing real work there — stacked, a name field was an
+// eleven-hundred-pixel input. Three tabs solved the same problem better: there
+// is no longer enough on any one of them to need columns, and a column count
+// was the wrong tool anyway. These panels are steps through one account, so two
+// columns gave the page two places to start reading and put half the sequence
+// where nobody looks first.
+.dashSettings {
+    display: flex;
+    flex-direction: column;
+    gap: @vw20;
+
+    width: 100%;
+    // A flat pixel, and the one place on this page that wants one.
+    //
+    // Every other length here is a vw constant because it is a proportion —
+    // padding, gaps and type should all grow with the screen. A measure is not
+    // a proportion. It is the number of characters the eye can track before it
+    // loses the start of the next line, and that number does not change when
+    // somebody plugs in a bigger monitor. Written from the constants it was 768
+    // only at a 1440 viewport — 1024 at 1920, which is the wide column this cap
+    // exists to prevent.
+    //
+    // No media queries below: `max-width` is a ceiling, so once the viewport is
+    // narrower than 768 the column simply takes the width it is given.
+    max-width: 768px;
+    margin-inline: auto;
+
+    // The horizontal gutter is `.dashLayout-main`'s padding, not a second one
+    // declared here — it is already 40 at this width, and nesting another would
+    // inset the column twice for no reason a reader could see.
+
+    // The fields take the panel's width. There was a cap here while a panel was
+    // half the page; now the panel *is* the measure, and capping inside it
+    // would leave a band of dead space down the right of every form.
+    //
+    // Scoped to this page either way. `.dashForm`, `.readonlyField` and
+    // `.field-label` are shared — the Links page uses the first two, and
+    // `.field-label` comes from NuxtAuthField, which is what the login and
+    // invite screens are built from.
+    .dashForm { max-width: none; }
+
+    // `.dashPanel-note` pins itself to the bottom of its card, so that two
+    // panels sharing a row on the dashboard line their notes up. These notes
+    // sit *between* things — under a heading, above the form they explain — so
+    // they belong where the markup puts them.
+    .dashPanel-note { margin-top: 0; }
+
+    // One size for everything inside a card, scoped to this column on purpose.
+    // `.dashPanel-note`, `.activity` and `.sessionList` are all shared with
+    // Overview and Sales, where they are sized against the figures beside them
+    // and have no reason to change.
+    .dashPanel-note,
+    .dashPanel-empty,
+    .field-message,
+    .activity-row,
+    .sessionList-row,
+    .sessionList-meta,
+    .linkButton,
+    .dashPanel-cta { font-size: @settingsBody; }
+
+    // The button comes with them. `.btn` is `max(0.80em, @vw14)`, which is
+    // nearly 19px on a wide monitor — a Save sitting beside a 13px field and
+    // reading half again as large as the thing it saves. Its padding comes down
+    // with the type, or a short word ends up in a very tall box.
+    .btn {
+        padding: @vw7 @vw14;
+        font-size: @settingsBody;
+    }
+}
+
+.dash-loading {
+    padding: @vw32 0;
+    color: var(--text-secondary);
+}
+
+// ── Bare section header ──────────────────────────────────────────────────────
+// A section title and its control sitting straight on the page background, for
+// a run of stat cards that has no panel to hang a `.dashPanel-head` off.
+.dashHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: @vw16;
+
+    // The page title on Sales, Analytics and the admin pages. Sans — the serif
+    // is reserved for the affiliate's own name on Overview and nothing else.
+    // Kept a rung larger than its original 16 though: at that size in bold body
+    // it was indistinguishable from a panel heading, which left those pages
+    // with nothing reading as their title at all.
+    &-title {
+        font-family: @body;
+        font-size: max(1.05em, @vw20);
+        font-weight: @bold;
+        letter-spacing: 0.01em;
+        color: var(--text);
+    }
+}
+
+// The same small print as `.dashPanel-note` without its `margin-top: auto` —
+// that exists to pin a note to the foot of a card, and out here there is no
+// card to pin it to.
+.dashNote {
+    font-size: max(0.68em, @vw12);
+    line-height: 1.5;
+    white-space: normal;
+    color: var(--text-tertiary);
+
+    // The one link inside this small print. Underlined rather than left to
+    // colour alone: at this size and this tint, a violet word on a grey line is
+    // not reliably distinguishable as something you can click.
+    &-link {
+        color: var(--accent);
+        text-decoration: underline;
+        text-underline-offset: 0.2em;
+
+        @media (hover: hover) {
+            &:hover { color: var(--accent-hover); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+            border-radius: @dashRadius;
+        }
+    }
+}
+
+// Figures that are still on screen from the previous range while the new ones
+// are fetched. Dimmed rather than swapped for a placeholder: a breakdown's
+// height *is* its row count, so anything that stands in for the list resizes
+// the panel — and not resizing the panel is the entire point of this state.
+.dash-refreshing {
+    opacity: 0.4;
+    .transition();
+    transition-property: opacity;
+}
+
+// ── Onboarding ───────────────────────────────────────────────────────────────
+// ── Getting set up ───────────────────────────────────────────────────────────
+// A strip near the top of the page, not a card in the grid. Bordered rather
+// than filled like `.dashPanel`, so it reads as a temporary band of business —
+// it is removed for good once the last step is done, and a panel that vanishes
+// leaves a more obvious hole than a strip does.
+// The setup card, in the hero's right-hand slot.
+//
+// It has been three things now. It started as a full-width bordered strip
+// carrying a heading, a progress bar, a row of four steps and a link — far too
+// much furniture, and the heaviest object on a page whose stat rows had just
+// lost their borders. Stripping it to a bare list fixed the weight but left it
+// spanning the full column for four short lines, with the space beside the hero
+// sitting empty since the QR tile came out.
+//
+// So: a card again, but a narrow one, filling that gap. The progress bar stays
+// gone — the count beside the heading and the ticks down the list say the same
+// thing twice already — and the steps that lead somewhere are links now, so the
+// card is a set of shortcuts rather than a read-only status list.
+.dashSetup {
+    // Does not stretch to the hero copy's height: pinned to the top so its
+    // heading lines up with the eyebrow across from it.
+    flex: none;
+    width: calc(@vw300 + @vw40);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: @vw12;
+    padding: @vw16;
+    .dashSurface();
+
+    // The count sits straight after the heading rather than being pushed to a
+    // far edge — there is no card edge left to push it to.
+    &-head {
+        display: flex;
+        align-items: baseline;
+        gap: @vw10;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: max(0.90em, @vw16);
+        font-weight: @bold;
+        letter-spacing: 0.01em;
+        color: var(--text);
+    }
+
+}
+
+@media (max-width: 1080px) {
+    .dash { gap: @vw48-1080; }
+
+    .dashSection { gap: @vw24-1080; }
+
+    .dashSetup { width: calc(@vw300-1080 + @vw40-1080); gap: @vw12-1080; padding: @vw16-1080; }
+
+    .dashSettings { gap: @vw16-1080; }
+}
+
+@media (max-width: 768px) {
+    // Stacked under the hero copy rather than beside it, so it takes the
+    // column instead of holding the narrow width it has at the baseline.
+    .dashSetup { width: 100%; }
+}
+
+@media (max-width: 600px) {
+    .dash { gap: @vw40-580; }
+
+    .dashSection { gap: @vw24-580; }
+
+    .dashSettings { gap: @vw16-580; }
+
+    // Four range tabs plus a title do not fit across a phone, and the tabs are
+    // the part that must not shrink.
+    .dashHead {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: @vw10-580;
+        }
+
+    .dashSetup { width: 100%; gap: @vw12-580; padding: @vw16-580; }
+}

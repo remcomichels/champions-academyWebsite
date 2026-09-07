@@ -1,0 +1,115 @@
+// ───────────────────────────────────────────
+/* Panel */
+// ───────────────────────────────────────────
+
+
+// ── Panels ───────────────────────────────────────────────────────────────────
+.dashPanel {
+    display: flex;
+    flex-direction: column;
+    gap: @vw16;
+    padding: @vw16;
+    .dashSurface();
+
+    &-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw16;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: max(0.90em, @vw16);
+        font-weight: @bold;
+        letter-spacing: 0.01em;
+        color: var(--text);
+    }
+
+    &-count {
+        flex: none;
+        padding: @vw2 @vw8;
+        border-radius: @dashRadiusPill;
+        background-color: var(--surface-raised);
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--text-secondary);
+    }
+
+    // A footnote explaining the panel above it, not body copy — it should be
+    // readable when looked for and quiet when not.
+    &-note {
+        font-size: max(0.68em, @vw12);
+        line-height: 1.5;
+        white-space: normal;
+        color: var(--text-tertiary);
+        // Pins the note to the bottom of the card, so two panels sharing a row
+        // line their notes up instead of leaving one floating mid-card.
+        margin-top: auto;
+
+        strong { color: var(--text-secondary); font-weight: @semiBold; }
+    }
+
+    &-empty {
+        font-size: max(0.80em, @vw14);
+        line-height: 1.5;
+        white-space: normal;
+        color: var(--text-secondary);
+    }
+
+    &-empty {
+        padding: @vw8 0;
+    }
+
+    &--empty {
+        align-items: flex-start;
+    }
+
+    &-cta {
+        align-self: flex-start;
+        margin-top: auto;
+        padding-top: @vw4;
+        font-size: max(0.80em, @vw14);
+        font-weight: @medium;
+        color: var(--accent);
+        background: none;
+        border: none;
+        font-family: @body;
+        cursor: pointer;
+        .transition();
+        transition-property: opacity;
+
+        @media (hover: hover) {
+            &:hover:not(:disabled) { opacity: 0.75; }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+            border-radius: @dashRadius;
+        }
+
+        &:disabled { opacity: 0.5; cursor: wait; }
+
+        // In a panel head rather than pinned to the panel's foot.
+        &--inline {
+            margin-top: 0;
+            padding-top: 0;
+        }
+    }
+}
+
+@media (max-width: 1080px) {
+    .dashPanel { padding: @vw16-1080; gap: @vw16-1080; }
+}
+
+@media (max-width: 600px) {
+    .dashPanel { padding: @vw16-580; gap: @vw16-580; }
+
+    .dashPanel-head {
+            // The title and its control stack rather than squeezing a segmented
+            // control next to a heading at 320.
+            flex-wrap: wrap;
+            gap: @vw10-580;
+        }
+}

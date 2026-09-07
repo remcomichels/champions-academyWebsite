@@ -1,0 +1,50 @@
+// ───────────────────────────────────────────
+/* Toggle */
+// ───────────────────────────────────────────
+
+
+// ── Settings ─────────────────────────────────────────────────────────────────
+.toggle {
+    display: flex;
+    align-items: center;
+    gap: @vw12;
+    font-size: max(0.80em, @vw14);
+    color: var(--text);
+    cursor: pointer;
+
+    input[type="checkbox"] {
+        // _reset.less strips appearance from every input, so the box has to be
+        // drawn back by hand or there is nothing to see.
+        appearance: none;
+        flex: none;
+        width: @vw20;
+        height: @vw20;
+        border: max(1px, @vw1) solid var(--border-strong);
+        border-radius: @dashRadius;
+        background-color: var(--surface-raised);
+        cursor: pointer;
+        .transition();
+        transition-property: background-color, border-color;
+
+        &:checked {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        &:checked::after {
+            content: "";
+            display: block;
+            width: 100%;
+            height: 100%;
+            // Tick drawn as a mask so it takes the contrast colour rather than
+            // needing a second element.
+            background-color: var(--on-accent);
+            clip-path: polygon(14% 44%, 0 60%, 40% 100%, 100% 22%, 84% 6%, 38% 68%);
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+    }
+}

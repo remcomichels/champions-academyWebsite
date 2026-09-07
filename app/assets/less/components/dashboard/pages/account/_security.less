@@ -1,0 +1,38 @@
+// ───────────────────────────────────────────
+/* Account — where you're signed in */
+// ───────────────────────────────────────────
+
+
+.sessionList {
+    display: flex;
+    flex-direction: column;
+    list-style: none;
+
+    &-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: @vw16;
+        padding: @vw12 0;
+        font-size: max(0.80em, @vw14);
+        color: var(--text);
+
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
+    }
+
+    &-current {
+        margin-left: @vw8;
+        padding: @vw2 @vw8;
+        border-radius: @dashRadiusPill;
+        background-color: var(--surface-raised);
+        color: var(--text-secondary);
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+    }
+
+    &-meta {
+        color: var(--text-tertiary);
+        font-size: max(0.68em, @vw12);
+        white-space: nowrap;
+    }
+}

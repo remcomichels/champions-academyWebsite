@@ -1,0 +1,237 @@
+// ───────────────────────────────────────────
+/* Account — appearance */
+// ───────────────────────────────────────────
+
+
+// ── Appearance ───────────────────────────────────────────────────────────────
+// The theme row inside a `.dashForm--split` panel, widened.
+//
+// Everything else in that container is a label and one control, which the 3/2
+// split is drawn for. This row's control is four preview cards in a 2x2, and at
+// 2fr of a 768 column they came out about 130px each — too small to read as a
+// picture of a dashboard, which is the only job they have. The rest of the row
+// — the rule, the padding, the label and hint in column one — is inherited
+// unchanged, so it still lines up with the select underneath it.
+.dashForm--split .appearanceTheme {
+    // 30/70, against the 60/40 the other rows use. Those pair a label with a
+    // single control and the label is the wider half because it is the part you
+    // read down the form looking for. Here the control is four pictures and they
+    // are the point of the row, so the weighting inverts. The number was walked
+    // in: 20/80 squeezed the heading and its line into a column narrow enough
+    // that the text became the awkward thing on the row, and 40/60 left the
+    // previews smaller than they need to be to read as pictures of a dashboard.
+    grid-template-columns: minmax(0, 3fr) minmax(0, 7fr);
+
+    // Two rows, and the second one takes the slack.
+    //
+    // Every other row in this container pairs a short label with a short
+    // control and centres them against each other. This control is four preview
+    // cards tall, so left to `auto` rows the spanning card grid hands its extra
+    // height to *both* tracks and the hint drifts away from the label it
+    // belongs to. Pinning row one to the label and giving row two `1fr` puts
+    // all the slack under the pair, so the two stay together at the top where a
+    // heading and its explanation belong.
+    grid-template-rows: auto 1fr;
+    align-items: start;
+
+    .field-label,
+    .field-message,
+    .field-control { align-self: start; }
+}
+
+.themeGrid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: @vw12;
+    width: 100%;
+
+    // Won on specificity rather than on source order.
+    //
+    // `.field-control` in form.less is `display: flex` — it wraps a single
+    // input so the password reveal can sit over it. This element carries both
+    // classes, and two single-class selectors are settled by whichever the
+    // bundler emitted last. In the production bundle that is this file, so the
+    // grid applied and the four previews sat 2x2. Under `nuxt dev` Vite injects
+    // each module's styles on its own and that order does not hold: flex won,
+    // and the cards laid themselves out as one row of four, each shrunk to the
+    // width of its own label.
+    //
+    // Pairing the two classes is 0-2-0 against 0-1-0 and wins in both, so the
+    // layout no longer depends on which stylesheet happens to come first.
+    &.field-control {
+        display: grid;
+    }
+}
+
+// One option: a picture of the theme, then a radio naming it.
+.themeCard {
+    display: flex;
+    flex-direction: column;
+    gap: @vw8;
+    padding: @vw8;
+    border-radius: @dashRadius;
+    border: max(1px, @vw1) solid var(--border);
+    background-color: var(--surface);
+    cursor: pointer;
+    .transition();
+    transition-property: border-color, background-color;
+
+    @media (hover: hover) {
+        &:hover { border-color: var(--border-strong); }
+    }
+
+    // The chosen one is outlined rather than filled. A fill would put a tinted
+    // ground behind a preview whose whole purpose is to show a ground.
+    &.is-chosen {
+        border-color: var(--accent);
+    }
+
+    // Focus lands on the radio inside, which is the thing that actually moves,
+    // so the ring is drawn on the card around it.
+    &:focus-within {
+        outline: max(2px, @vw2) solid var(--accent);
+        outline-offset: @vw2;
+    }
+
+    // ── The preview ──────────────────────────────────────────────────────
+    // A miniature of the chrome, not a screenshot: a rail, a top bar and two
+    // cards. `data-theme` on this element is what makes it worth having —
+    // the tokens in dashboardTokens.less are declared on a bare `[data-theme]`
+    // attribute selector rather than on `html`, so every custom property
+    // re-resolves inside this box. A dark preview renders dark on a light page
+    // with no second palette to maintain, and any change to the real tokens
+    // shows up here without anyone remembering to update it.
+    &-frame {
+        position: relative;
+        display: flex;
+        overflow: hidden;
+        aspect-ratio: 16 / 10;
+        border-radius: @dashRadiusInner;
+        border: max(1px, @vw1) solid var(--border);
+        background-color: var(--background);
+    }
+
+    // System: both themes at once, split on the diagonal. Two complete frames
+    // stacked, the upper one clipped to a triangle — rather than one frame with
+    // half its parts recoloured, so neither half can drift from the theme it is
+    // claiming to show.
+    &-frame--split {
+        .themeCard-face {
+            position: absolute;
+            inset: 0;
+        }
+
+        .themeCard-face--second {
+            clip-path: polygon(100% 0, 100% 100%, 0 100%);
+        }
+    }
+
+    &-face {
+        display: flex;
+        width: 100%;
+        height: 100%;
+        background-color: var(--background);
+    }
+
+    &-rail {
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        gap: 6%;
+        width: 11%;
+        padding: 6% 0 0 3.5%;
+        background-color: var(--surface);
+        border-right: max(1px, @vw1) solid var(--border);
+
+        i {
+            width: 40%;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            background-color: var(--text-tertiary);
+        }
+    }
+
+    &-main {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 5%;
+        padding: 5%;
+    }
+
+    &-bar {
+        display: flex;
+        gap: 4%;
+        height: 8%;
+
+        i {
+            flex: 1;
+            border-radius: @dashRadiusPill;
+            background-color: var(--chart-bar);
+
+            // One accented pill, the way one thing on a real screen is the
+            // accent. Flexed wider so it reads as the active tab.
+            &:first-child {
+                flex: 1.4;
+                background-color: var(--accent);
+            }
+        }
+    }
+
+    &-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 12%;
+        padding: 0 8%;
+        border-radius: @dashRadiusInner;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+
+        i {
+            height: 8%;
+            min-height: 1px;
+            border-radius: @dashRadiusPill;
+            background-color: var(--chart-bar);
+
+            &:last-child { width: 45%; background-color: var(--accent); }
+        }
+    }
+
+    // ── The label ────────────────────────────────────────────────────────
+    &-foot {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        padding: 0 @vw2 @vw2;
+    }
+
+    &-radio {
+        flex: none;
+        width: @vw14;
+        height: @vw14;
+        margin: 0;
+        // Put back deliberately. `_reset.less` strips `appearance` from every
+        // input, which is right for the text fields it was written for and
+        // fatal here: a radio with no appearance is not an unstyled radio, it
+        // is an empty box — the control rendered as nothing at all.
+        //
+        // Kept native rather than redrawn because `accent-color` themes it in
+        // one line, and a hand-built radio has to reimplement checked, focus
+        // and disabled to arrive back where this starts. It is a circle; there
+        // is no cross-platform popup to disagree about, which is what made the
+        // native <select> worth replacing and does not apply to this.
+        -webkit-appearance: radio;
+        appearance: auto;
+        accent-color: var(--accent);
+        cursor: pointer;
+    }
+
+    &-name {
+        font-size: @settingsBody;
+        font-weight: @medium;
+        color: var(--text);
+    }
+}

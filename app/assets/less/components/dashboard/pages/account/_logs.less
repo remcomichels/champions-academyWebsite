@@ -1,0 +1,23 @@
+// ───────────────────────────────────────────
+/* Account — audit log */
+// ───────────────────────────────────────────
+
+
+// ── Activity ─────────────────────────────────────────────────────────────────
+.activity {
+    list-style: none;
+
+    &-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: @vw16;
+        padding: @vw12 0;
+        font-size: max(0.80em, @vw14);
+
+        & + & { border-top: max(1px, @vw1) solid var(--border); }
+    }
+
+    &-day { color: var(--text-secondary); }
+    &-count { color: var(--text); font-weight: @medium; }
+}

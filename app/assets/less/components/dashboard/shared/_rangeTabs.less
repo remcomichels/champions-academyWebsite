@@ -1,0 +1,44 @@
+// ───────────────────────────────────────────
+/* Range tabs */
+// ───────────────────────────────────────────
+
+
+// ── Range tabs ───────────────────────────────────────────────────────────────
+.rangeTabs {
+    display: flex;
+    flex: none;
+    gap: @vw2;
+    padding: @vw3;
+    background-color: var(--surface-raised);
+    border-radius: @dashRadiusPill;
+
+    &-tab {
+        background: none;
+        border: none;
+        border-radius: @dashRadiusPill;
+        padding: @vw6 @vw12;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        color: var(--text-secondary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        @media (hover: hover) {
+            &:hover { color: var(--text); }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: @vw2;
+        }
+
+        // A filled pill rather than an accent-coloured label: the segmented
+        // control reads as one control with a selected segment.
+        &.is-active {
+            color: var(--text);
+            background-color: var(--surface);
+        }
+    }
+}

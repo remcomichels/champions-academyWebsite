@@ -1,0 +1,37 @@
+// ───────────────────────────────────────────
+/* Panel grid */
+// ───────────────────────────────────────────
+
+
+// Chart beside a narrower companion panel. Collapses to one column early —
+// a chart squeezed into half a tablet is unreadable.
+.dashGrid {
+    display: grid;
+    grid-template-columns: 1.6fr 1fr;
+    gap: @vw32;
+    // Stretch, not start: two panels sharing a row match heights. Their notes
+    // are pinned to the bottom by `margin-top: auto`, so the taller panel sets
+    // the height and the shorter one fills rather than floating short.
+    align-items: stretch;
+
+    &-main { min-width: 0; }
+    &-side { min-width: 0; }
+}
+
+// ── Summary mini-cards ───────────────────────────────────────────────────────
+// Four answers in the space one panel used to hold — and not inside a panel of
+// their own, so they are peers of the chart beside them rather than cards
+// nested in a card.
+.dashSide {
+    display: flex;
+    flex-direction: column;
+    gap: @vw32;
+}
+
+@media (max-width: 1080px) {
+    .dashGrid { gap: @vw24-1080; }
+}
+
+@media (max-width: 768px) {
+    .dashGrid { grid-template-columns: 1fr; }
+}

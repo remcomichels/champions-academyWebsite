@@ -1,0 +1,82 @@
+// ───────────────────────────────────────────
+/* Account — danger zone */
+// ───────────────────────────────────────────
+
+
+// ── Danger zone ──────────────────────────────────────────────────────────────
+// The one panel on the page that is allowed to look different from the others.
+//
+// The ground is the signal: the error tint and edge instead of the shared
+// surface. A tint rather than a solid fill, for the reason `--error-subtle`
+// exists at 12% — the text sitting on it has to stay the most legible thing in
+// the box.
+//
+// The button sits under the text rather than out to the right, which is where
+// the rows elsewhere on this page put theirs. Those rows offer a control beside
+// the thing it changes and you can take them in at a glance. This one is a
+// paragraph you are meant to finish before you decide, and a button parked
+// alongside it is reachable before the sentence explaining it has been read.
+// Underneath, it comes after.
+.dangerZone {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    // Top, not centre: the glyph belongs beside the title, and centring it
+    // against a block that is now two rows tall floats it down by the height of
+    // the button.
+    align-items: start;
+    gap: @vw14;
+    padding: @vw16;
+    border-radius: @dashRadius;
+    background-color: var(--error-subtle);
+    border: max(1px, @vw1) solid var(--error);
+
+    &-icon {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw24;
+        height: @vw24;
+        color: var(--error);
+
+        .icon { width: @vw22; height: @vw22; }
+    }
+
+    &-body {
+        display: flex;
+        flex-direction: column;
+        gap: @vw2;
+        min-width: 0;
+    }
+
+    &-title {
+        font-family: @body;
+        font-size: @settingsLabel;
+        font-weight: @semiBold;
+        line-height: 1.35;
+        color: var(--text);
+    }
+
+    // Body colour, not the error red. The panel is already red; a paragraph in
+    // it as well leaves nothing for the red to mean, and this is the part that
+    // has to be read carefully rather than noticed.
+    &-text {
+        font-size: @settingsBody;
+        line-height: 1.45;
+        white-space: normal;
+        color: var(--text-secondary);
+
+        strong { color: var(--text); font-weight: @semiBold; }
+    }
+
+    &-icon { grid-column: 1; grid-row: 1; }
+    &-body { grid-column: 2; grid-row: 1; }
+
+    // Column two, so it lines up with the text it belongs to rather than with
+    // the glyph. `start` keeps it the width of its own label — a danger button
+    // stretched across the panel is a bigger target than this one wants to be.
+    &-actions {
+        grid-column: 2;
+        grid-row: 2;
+        justify-self: start;
+    }
+}

@@ -1,0 +1,143 @@
+// ───────────────────────────────────────────
+/* Overview — mini cards */
+// ───────────────────────────────────────────
+
+
+.miniGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: @vw16;
+    // Fills the column, so the 2x2 ends level with the chart panel beside it.
+    // Right again now they are cards: the boxes themselves grow, which is what
+    // `justify-content: space-between` inside each one is spreading. While they
+    // were borderless this only stretched the gaps and scattered them.
+    flex: 1;
+}
+
+.miniCard {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    // Cards again — unlike `.statCard`, which stays borderless. The stat row
+    // sits alone on the page background where a border would be the only edge
+    // in sight; these four sit directly beside the chart panel, so an outline
+    // reads as matching it rather than as clutter.
+    justify-content: space-between;
+    gap: @vw6;
+    padding: @vw16;
+    .dashSurface();
+    min-width: 0;
+
+    &-label {
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-tertiary);
+    }
+
+    &-value {
+        font-size: max(0.90em, @vw16);
+        font-weight: @semiBold;
+        line-height: 1.2;
+        color: var(--text);
+        // A hostname is the one value here that can be too long for the card.
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+
+        &.is-empty { color: var(--text-tertiary); }
+    }
+
+    &-note {
+        font-size: max(0.62em, @vw11);
+        font-variant-numeric: tabular-nums;
+        color: var(--text-tertiary);
+    }
+
+    // Between the value and its note, so the card reads headline → shape →
+    // detail. `margin-top: auto` is deliberately not used: the four cards
+    // stretch to meet the chart beside them, and pinning the plot to the bottom
+    // would leave each one a different distance below its value.
+    &-plot {
+        padding: @vw6 0 @vw2;
+    }
+
+    // The share of all visits behind a Top source / Top country figure. One
+    // proportion rather than a distribution — the question those two cards
+    // answer is "how much of my traffic is this", which is a single number.
+    // Same track and fill as the breakdown rows on Analytics, so a proportion
+    // looks like a proportion wherever it turns up.
+    &-meter {
+        // Block, or the height below is ignored: this is a <span> in a plain
+        // div, unlike the breakdown track it borrows its look from, which is a
+        // grid item and gets blockified for free.
+        display: block;
+        height: max(4px, @vw6);
+        background-color: var(--surface-raised);
+        border-radius: @dashRadiusPill;
+        overflow: hidden;
+    }
+
+    &-meterFill {
+        display: block;
+        height: 100%;
+        background-color: var(--accent);
+        transform-origin: left center;
+        .transition(transform, @durationMedium, @easeOut);
+    }
+
+    // Regional-indicator pairs have no glyph in Segoe UI Emoji, so Windows
+    // draws the two letters instead — "NL" rather than a Dutch flag. That is a
+    // fine outcome and the reason the country name still sits beside it: the
+    // flag is a second read of something already written, never the only one.
+}
+
+// ── Country mark ─────────────────────────────────────────────────────────────
+// The flag beside a country figure — Circle Flags artwork, the same set the
+// testimonials use, which arrives already round so nothing here clips it.
+//
+// It replaced the platform emoji, which were flat rectangles at whatever aspect
+// ratio the font felt like: four in a row read as four different sizes, and
+// Windows draws no glyph for the regional-indicator pairs at all, so half the
+// audience saw a country code where the others saw a picture.
+//
+// The ring is inset rather than a border, so it is drawn *within* the @vw20 and
+// cannot push the digits beside it out of line. It earns its place on the flags
+// carrying white at their edge — Japan is a red disc on white, which without
+// this dissolves into a light surface.
+.flagChip {
+    display: inline-block;
+    flex: none;
+    width: @vw20;
+    height: @vw20;
+    margin-right: @vw6;
+    border-radius: @dashRadiusPill;
+    box-shadow: inset 0 0 0 max(1px, @vw1) var(--border);
+    // Sits the disc on the text baseline it interrupts.
+    vertical-align: -0.22em;
+}
+
+@media (max-width: 1080px) {
+    .miniGrid { gap: @vw12-1080; }
+
+    .miniCard { padding: @vw16-1080; }
+
+    .miniCard-plot { padding: @vw6-1080 0 @vw2-1080; }
+
+    .miniCard-meter { height: max(4px, @vw6-1080); }
+
+    .flagChip { width: @vw20-1080; height: @vw20-1080; margin-right: @vw6-1080; }
+}
+
+@media (max-width: 600px) {
+    .miniGrid { gap: @vw12-580; }
+
+    .miniCard { padding: @vw16-580; }
+
+    .miniCard-plot { padding: @vw6-580 0 @vw2-580; }
+
+    .miniCard-meter { height: max(4px, @vw6-580); }
+
+    .flagChip { width: @vw20-580; height: @vw20-580; margin-right: @vw6-580; }
+}

@@ -1,0 +1,208 @@
+// ───────────────────────────────────────────
+/* Profile menu */
+// ───────────────────────────────────────────
+
+
+// ── Account menu ─────────────────────────────────────────────────────────────
+// Hung off the avatar at the right end of the top bar. Everything in it is
+// about the person rather than the work — which is exactly why none of it is in
+// the rail any more.
+.profileMenu {
+    position: relative;
+    flex: none;
+
+    &-trigger {
+        // Inherits `.dashBar-avatar` for its look; only the cursor differs, the
+        // element having gone from a link to a button.
+        cursor: pointer;
+    }
+
+    // The glyph inside the avatar disc. Sized against the disc rather than
+    // inherited from the bar's font size — it is a shape here, not a piece of
+    // text beside one — and @vw18, the same as every other glyph.
+    //
+    // This block used to sit inside `.tzMenu`, where it compiled to
+    // `.tzMenu-face` and styled nothing at all. The face fell through to
+    // `.icon`'s `1em` instead, so it was the one glyph on the dashboard sized
+    // by font size: it tracked the body clamp and stuck at 21px on a wide
+    // viewport while its neighbours went on scaling.
+    &-face {
+        width: @vw18;
+        height: @vw18;
+    }
+
+    // Hung off the avatar, exactly as the activity and feedback panels hang off
+    // theirs — same `top: calc(100% + @vw5)`, same `right: 0`.
+    //
+    // It was `position: fixed`, offset from the bar's own height, which is why
+    // it sat lower than the other two: they measure from the bottom of a 30px
+    // button centred in a 56px bar, and this measured from the bottom of the
+    // bar itself — 13px further down. Anchoring it to the trigger costs
+    // nothing, because the wrapper *is* the avatar: `right: 0` still puts the
+    // panel's right edge on the avatar's, which is where it was already meant
+    // to be.
+    &-panel {
+        position: absolute;
+        top: calc(100% + @vw5);
+        right: 0;
+        z-index: 60;
+        width: @vw248;
+        max-width: calc(100vw - @vw24);
+        padding: @vw4;
+        background-color: var(--surface);
+        border: max(1px, @vw1) solid var(--border);
+        border-radius: @dashRadius;
+        // A menu genuinely floats over the page, so this is one of the few
+        // places a shadow is still earned.
+        box-shadow: var(--shadow-pop);
+
+        // Anchored to the avatar's centre. The panel's right edge is flush with
+        // the avatar's, and the avatar is @vw30 across, so half of it in from
+        // that edge is exactly the middle of the button — less half the tail's
+        // own width to centre the tail on that point.
+        &::before {
+            .dashTail();
+            right: @vw10;
+        }
+    }
+
+    &-identity {
+        display: flex;
+        flex-direction: column;
+        gap: @vw1;
+        padding: @vw6 @vw8 @vw8;
+        min-width: 0;
+    }
+
+    &-name {
+        font-size: max(0.80em, @vw14);
+        font-weight: @bold;
+        color: var(--text);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &-email {
+        font-size: max(0.62em, @vw11);
+        color: var(--text-tertiary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    // Full width of the panel, so it reads as a division of the menu rather
+    // than a line drawn between two of its items.
+    &-rule {
+        height: 0;
+        margin: @vw4 (-@vw4);
+        border: 0;
+        border-top: max(1px, @vw1) solid var(--border);
+    }
+
+    &-item {
+        display: flex;
+        align-items: center;
+        gap: @vw8;
+        width: 100%;
+        padding: @vw6 @vw8;
+        border: none;
+        border-radius: @dashRadiusInner;
+        background: none;
+        font-family: @body;
+        font-size: max(0.68em, @vw12);
+        font-weight: @medium;
+        text-align: left;
+        color: var(--text-secondary);
+        cursor: pointer;
+        .transition();
+        transition-property: color, background-color;
+
+        // Transitioned on the same clock as the row's own colour. Without
+        // this the icon has no transition at all: it snapped to red the instant
+        // the pointer landed while the text beside it faded over 0.3s, so the
+        // two halves of one row changed at visibly different times.
+        .icon {
+            flex: none;
+            font-size: max(0.80em, @vw14);
+            color: var(--text-tertiary);
+            .transition();
+            transition-property: color;
+        }
+
+        @media (hover: hover) {
+            &:hover {
+                color: var(--text);
+                background-color: var(--surface-hover);
+
+                .icon { color: var(--text-secondary); }
+            }
+        }
+
+        &:focus-visible {
+            outline: max(2px, @vw2) solid var(--accent);
+            outline-offset: -@vw2;
+            border-radius: @dashRadiusInner;
+        }
+
+        // Log out. Red on hover only — a permanently red row at the foot of a
+        // menu reads as a warning about the menu rather than a description of
+        // one item in it.
+        &--danger {
+            @media (hover: hover) {
+                &:hover {
+                    color: var(--error);
+                    background-color: var(--surface-hover);
+
+                    .icon { color: var(--error); }
+                }
+            }
+        }
+    }
+
+    // "Theme" — a heading for the group under it, not a row you can press.
+    // Sentence case: the uppercase-plus-tracking treatment marks a caption over
+    // a *figure*, and borrowing it here made a two-item menu heading shout.
+    &-groupLabel {
+        padding: @vw6 @vw8 @vw2;
+        font-size: max(0.62em, @vw11);
+        font-weight: @medium;
+        color: var(--text-tertiary);
+    }
+
+    &-choices {
+        display: flex;
+        flex-direction: column;
+    }
+
+    // Only the chosen theme is marked, and marked with a solid dot rather than
+    // a ring: the outline was drawing a radio button around a mark that is
+    // already unambiguous on its own.
+    //
+    // The 14px slot stays whatever is inside it — it matches the icon width on
+    // the rows above, which is what keeps every label in the menu starting on
+    // the same line. The dot itself is smaller and centred in it.
+    &-dot {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: @vw14;
+        height: @vw14;
+
+        &::after {
+            content: '';
+            width: @vw8;
+            height: @vw8;
+            border-radius: @dashRadiusPill;
+            background-color: transparent;
+            .transition();
+            transition-property: background-color;
+        }
+
+        &.is-on::after { background-color: var(--accent); }
+    }
+}
+
+@media (max-width: 1080px) {
+    .profileMenu-panel { width: @vw260-1080; }
+}

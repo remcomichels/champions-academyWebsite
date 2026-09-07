@@ -1,0 +1,73 @@
+// ───────────────────────────────────────────
+/* _scale */
+// ───────────────────────────────────────────
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Affiliate dashboard.
+//
+// Colour comes entirely from the custom properties in dashboardTokens.less, so
+// every rule here works in both themes without a single per-theme override.
+// Everything else — the @vwN scale, the spacing rhythm, the radius ladder,
+// `.transition()` plus an explicit transition-property, hover behind
+// `@media (hover: hover)`, and a restated :focus-visible because _reset.less
+// kills the global outline — is the marketing site's system, unchanged.
+//
+// Nothing in this file is loaded by a marketing component and nothing here
+// touches a Less variable, so the green system is untouched.
+// ─────────────────────────────────────────────────────────────────────────────
+// ── Chart bars ───────────────────────────────────────────────────────────────
+// The gutter between bars, and the cap on top of them. Tokens rather than two
+// literals repeated in four places: the bar chart, its x-axis labels and the
+// card sparklines all have to agree, and the axis in particular *must* — a
+// label row whose gutter differs from the columns' drifts a little further off
+// its own bar with every step across the chart.
+//
+// The gutter stays this small deliberately. At ninety days a wider one is
+// broader than the bars it separates, and a chart of hairlines in generous
+// white space reads as texture rather than as a series.
+//
+// The cap is two pixels, not the four a surface gets. A bar is often five or
+// six pixels wide; a 4px radius on that rounds the whole top into a dome and
+// the bar stops reading as a measured height.
+//
+// The gutter is a flat 2px and deliberately *not* on the vw scale. A vw value
+// lands on a fraction at most viewport widths — @vw2 is 2.67px at 1920 — and a
+// fractional gutter between fractionally-positioned columns is what made the
+// spacing look uneven from one pair of bars to the next. A whole pixel is the
+// same whole pixel in every chart at every width, which is the entire ask.
+@chartBarGap: 2px;
+
+@chartBarCap: max(2px, @vw2);
+
+// ── Settings type scale ──────────────────────────────────────────────────────
+// Four sizes, in pixels, and the pixels are the point.
+//
+// Everything else on this page is a vw constant because it is a proportion.
+// Type is not. `max(0.90em, @vw16)` is a *floor* — it stops text shrinking on a
+// narrow screen, which is worth having, but nothing above it caps the growth:
+// that card heading is 16px at a 1440 viewport, 21px at 1920 and 28px at 2560.
+// Every level did the same thing by a different amount, so the four stopped
+// reading as four levels and the whole page ran a third too large on any
+// monitor wider than the one it was designed on.
+//
+// A reading size is set by how far the eye is from the screen, and that does
+// not change when the screen gets wider. Same argument as the 768 measure and
+// the form controls — this is the third time it has come up, so it is written
+// down as a scale rather than settled again per rule.
+//
+// Stated together because they *are* a set: 22 / 18 / 15 / 13 are ratios, and
+// changing one on its own is what flattens the hierarchy.
+@settingsTitle: 22px;
+
+// the page heading
+@settingsStandfirst: 15px;
+
+// the line under it
+@settingsCardTitle: 18px;
+
+// each card's heading
+@settingsLabel: 15px;
+
+// what a form row is called — the standfirst's step
+@settingsBody: 13px;
