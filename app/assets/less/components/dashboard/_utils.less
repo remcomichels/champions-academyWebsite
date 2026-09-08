@@ -24,9 +24,12 @@
     flex: none;
 }
 
+// Travels the paint, not the box. `background-position` moves a gradient that
+// is twice the width of the element under it, so a skeleton shimmers without
+// anything moving, resizing or reflowing. Two container widths is exactly one
+// tile of that gradient, which is what makes the loop seamless.
 @keyframes dashSkeleton {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.45; }
+    to { background-position: -200% 0; }
 }
 
 // A control whose whole label is its glyph. Its accessible name comes from

@@ -33,6 +33,12 @@
     --surface: #1E1E23;
     --surface-raised: #2A2A31;
     --surface-hover: #27272E;
+    // The sheen a loading skeleton sweeps across itself. A step off
+    // `--surface-raised` in the direction that keeps the block visible: lighter
+    // on a dark ground, and on the light theme *darker*, because a lighter one
+    // there lands on `--background` and the skeleton vanishes at the peak of
+    // its own sweep.
+    --skeleton-sheen: #383840;
 
     --border: rgba(255, 255, 255, 0.11);
     --border-strong: rgba(255, 255, 255, 0.18);
@@ -75,6 +81,8 @@
     --surface: #131316;
     --surface-raised: #1C1C20;
     --surface-hover: #1A1A1E;
+    // See the note under the dark theme.
+    --skeleton-sheen: #292930;
 
     --border: rgba(255, 255, 255, 0.08);
     --border-strong: rgba(255, 255, 255, 0.14);
@@ -104,6 +112,8 @@
     --surface: #FFFFFF;
     --surface-raised: #F1F1F3;
     --surface-hover: #EFEFF1;
+    // Darker, not lighter — see the note under the dark theme.
+    --skeleton-sheen: #E2E2E6;
 
     --border: rgba(10, 10, 12, 0.08);
     --border-strong: rgba(10, 10, 12, 0.16);

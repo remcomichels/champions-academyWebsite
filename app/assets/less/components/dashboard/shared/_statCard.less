@@ -150,14 +150,33 @@
             content: "";
             .absolute();
             border-radius: @dashRadius;
-            background-color: var(--surface-raised);
-            // A pulse, not a sweeping gradient: one pseudo-element, nothing to
-            // clip, and _general.less's reduced-motion rule collapses it to a
-            // single 0.01ms run — which lands on the final keyframe, and here
-            // that is the plain block at full opacity. The right resting look
-            // falls out of it rather than needing a second rule.
-            animation: dashSkeleton 1.4s @ease infinite;
+            // A sweep rather than the opacity pulse this started as. Still one
+            // pseudo-element with nothing to clip — the gradient is drawn twice
+            // as wide as the block and slid underneath it, so the box holds
+            // still and only the paint moves. See `dashSkeleton` in _utils.less.
+            background: linear-gradient(
+                90deg,
+                var(--surface-raised) 25%,
+                var(--skeleton-sheen) 50%,
+                var(--surface-raised) 75%
+            );
+            background-size: 200% 100%;
+            // Linear, not @ease. Every other animation here has a start and an
+            // end to ease between; this one only loops, and easing it slows the
+            // sheen at both edges of a cycle so the loop reads as a stutter.
+            animation: dashSkeleton 1.2s linear infinite;
         }
+    }
+}
+
+// _general.less freezes every animation at 0.01ms and one iteration, which
+// leaves this one on its final keyframe — the same paint as the first, with the
+// sheen parked at the block's edge. The pulse that used to be here ended on a
+// plain block and needed nothing said; a sweep has to be flattened by hand.
+@media (prefers-reduced-motion: reduce) {
+    .statCard.is-loading .statCard-value::after,
+    .statCard.is-loading .statCard-trend::after {
+        background: var(--surface-raised);
     }
 }
 
