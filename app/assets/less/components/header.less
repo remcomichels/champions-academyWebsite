@@ -148,9 +148,18 @@ header:has(.headerWrapper) {
 
 /* Hamburger + slide-in menu panel. At 1080 so it lands on the same boundary
    as the hero dropping its 3D logo — below that the desktop nav, CTA and logo
-   no longer fit the bar comfortably. */
+   no longer fit the bar comfortably.
+
+   `header:has(.headerWrapper)`, matching every other block in this file, and it
+   has to be. `:has()` carries the specificity of its argument — a class — so a
+   bare `header` here scored a full class lower than the desktop rules it exists
+   to overturn, and lost to all three of them despite coming later in the file:
+   the hamburger stayed `display: none`, `.menuWrap` stayed `display: contents`
+   so the panel never formed (leaving its 100vw sun-glow pseudo-elements to
+   position against the fixed header band instead), and the logo kept its
+   @vw105-1080 width, which is 36px on a 375px screen. */
 @media (max-width: 1080px) {
-    header {
+    header:has(.headerWrapper) {
         .headerWrapper {
             .navCol {
                 &.left {
