@@ -88,7 +88,6 @@ export interface ConfigBlok {
   header_menu?: MenuLinkBlok[];
   cta_menu?: MenuLinkBlok[];
   default_lite?: Exclude<StoryblokMultilink, {linktype?: "email"} | {linktype?: "asset"}>;
-  default_calendly?: Exclude<StoryblokMultilink, {linktype?: "email"} | {linktype?: "asset"}>;
   footer_menu?: FooterMenuBlok[];
   component: "config";
   _uid: string;
@@ -179,9 +178,10 @@ export interface PageBlok {
 }
 
 export interface PaymentCardBlok {
+  pre_title?: string;
   title?: string;
+  old_price?: string;
   price?: string;
-  price_adjative?: string;
   benefit?: TextBlok[];
   Bonus_benefit?: string;
   subText_button_rich?: StoryblokRichTextDoc;

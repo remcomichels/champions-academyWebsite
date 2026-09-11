@@ -65,12 +65,7 @@ import type { PaymentCardBlok } from "~/types/blocks";
 
 import type { TextBlok } from "~/types/storyblok";
 
-// `pre_title` and `old_price` are new fields on the Storyblok component,
-// declared here until `npm run types:storyblok` regenerates PaymentCardBlok
-// with them — after that the intersection is a no-op and can go.
-const props = defineProps<{
-	blok: PaymentCardBlok & { pre_title?: string; old_price?: string };
-}>();
+const props = defineProps<{ blok: PaymentCardBlok }>();
 
 // How many benefits show before the list is truncated. The plan runs to a dozen
 // entries, which pushed the price and CTA below the fold.
