@@ -2,7 +2,7 @@
 // benefitsOverview_block). This file only styles this block's intro text.
 .benefits_block {
 
-    // ── Text — sub_text / title / handwritten sub_title / text / button ─────
+    // ── Text — sub_text / title + sub_title / text / button ─────────────────
     .text-container {
         .subText {
             // Body copy floors at the inherited paragraph size (body in
@@ -12,19 +12,15 @@
             color: @primary;
         }
 
+        // sub_title reads as a second line of the title rather than a
+        // handwritten accent.
         .title-container {
-            .title {
+            .title,
+            .subTitle {
                 font-family: @body;
                 font-size: @vw64;
                 font-weight: @bold;
                 text-transform: uppercase;
-            }
-
-            .subTitle {
-                font-family: @handWritten;
-                font-size: @vw72;
-                color: @primary;
-                margin: -@vw10 0 0 0;
             }
         }
 
@@ -39,6 +35,22 @@
             display: flex;
             gap: @vw24;
             margin: @vw8 0 0 0;
+
+            // The link button reads as a plain underlined link here: white like
+            // the title, no arrow, and the underline always shown rather than
+            // drawn in on hover.
+            .parent-link {
+                color: @white;
+
+                &::after {
+                    content: none;
+                }
+
+                .link-line {
+                    background-color: currentColor;
+                    transform: scaleX(1);
+                }
+            }
         }
     }
 
@@ -79,13 +91,9 @@
             }
 
             .title-container {
-                .title {
-                    font-size: @vw56-1080;
-                }
-
+                .title,
                 .subTitle {
                     font-size: @vw56-1080;
-                    margin: -@vw10-1080 0 0 0;
                 }
             }
 
@@ -114,18 +122,13 @@
             }
 
             .title-container {
-                // @vw40-580 landed at 22px against 16px body copy, and the
-                // handwritten line at 17.6px — barely distinguishable from the
-                // paragraph under it, and the script face reads smaller than its
-                // em size on top of that. Sized so the pair still reads as a
-                // heading, and kept under the hero (48.5px / 37.5px at 320).
-                .title {
-                    font-size: @vw64-580;
-                }
-
+                // @vw40-580 landed at 22px against 16px body copy — barely
+                // distinguishable from the paragraph under it. Sized so the
+                // heading still reads as one, and kept under the hero
+                // (48.5px / 48px at 320).
+                .title,
                 .subTitle {
-                    font-size: @vw72-580;
-                    margin: -@vw10-580 0 0 0;
+                    font-size: @vw64-580;
                 }
             }
 

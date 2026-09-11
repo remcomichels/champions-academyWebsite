@@ -20,13 +20,15 @@
 
 .benefit-card {
     --spot: @vw130;
+    // Padding lives in a property so the split layout at the end of the file
+    // can move it from the card onto .benefit-body at every tier.
+    --card-pad: @vw32;
     position: relative;
     overflow: hidden;
     aspect-ratio: 1 / 1;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    padding: @vw32;
+    padding: var(--card-pad);
     background-color: @secondary;
     border-radius: @vw10;
 
@@ -67,7 +69,7 @@
     transform: translateY(0);
 }
 
-// ── Square image behind the card — dim base under the green trail ───────────
+// ── Image — behind the whole card here, the top half in the split layout ────
 .benefit-media {
     .absolute();
     z-index: 0;
@@ -118,9 +120,17 @@
     pointer-events: none;
 }
 
-.benefit-title {
+// Title and text — title at the top, text at the bottom, both over the scrim.
+.benefit-body {
     position: relative;
     z-index: 2;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.benefit-title {
     font-size: max(1em, @vw18);
     font-family: @body;
     // Overrides the 500 the global heading rule gives every h1-h6.
@@ -131,8 +141,6 @@
 // applies above 1080 where the hover reveal runs, so it needs no smaller-tier
 // variants — the touch rule below resets it to none.
 .benefit-text {
-    position: relative;
-    z-index: 2;
     font-family: @body;
     // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px, so
     // max(1em, …) here would push it past its design size on desktop. The
@@ -152,7 +160,7 @@
 
     .benefit-card {
         --spot: @vw130-1080;
-        padding: @vw24-1080;
+        --card-pad: @vw24-1080;
         border-radius: @vw10-1080;
         transform: translateY(@vw24-1080);
     }
@@ -175,18 +183,11 @@
 }
 
 // One column from here. At two columns a 768px screen gives each card ~287px,
-// and the story text fills nearly the whole card. Full width gives it a much
-// wider measure, so it wraps to fewer lines and the image reads again.
+// which squeezes the story text into a narrow measure. Full width gives it
+// room to wrap to fewer lines.
 @media (max-width: 768px) {
     .benefits-grid {
         grid-template-columns: repeat(1, 1fr);
-    }
-
-    .benefit-card {
-        // Full width, a 1:1 ratio turns the card into a 534px-tall block at 600
-        // and runs the six-card grid to ~3300px. 4:3 keeps the image readable
-        // without the dead height.
-        aspect-ratio: 4 / 3;
     }
 }
 
@@ -198,7 +199,7 @@
 
     .benefit-card {
         --spot: @vw280-580;
-        padding: @vw32-580;
+        --card-pad: @vw32-580;
         border-radius: @vw16-580;
         transform: translateY(@vw24-580);
     }
@@ -209,15 +210,6 @@
 
     .benefit-text {
         font-size: max(1em, @vw14-580);
-    }
-}
-
-// Layout-only: the narrower the card, the more the story text wraps, so 4:3
-// stops being tall enough to hold it — the longest card clips at 320. Back to a
-// square here, which at this width is ~285px and leaves room for the image.
-@media (max-width: 480px) {
-    .benefit-card {
-        aspect-ratio: 1 / 1;
     }
 }
 
@@ -264,14 +256,31 @@
         filter: none;
     }
 
-    // Without the dimmed base the title sits over full-brightness artwork, so
-    // the scrim has to carry the legibility on its own.
-    .benefit-card::after {
-        background: linear-gradient(
-            to top,
-            fade(@black, 75%) 0%,
-            fade(@black, 45%) 45%,
-            fade(@black, 35%) 100%
-        );
+    // Split card: the image on top, the title and text on the card below it,
+    // so the copy — always shown at this tier — never sits over the artwork.
+    // The card takes its height from the content, and without an overlay the
+    // scrim has nothing to do.
+    .benefit-card {
+        aspect-ratio: auto;
+        padding: 0;
+
+        &::after {
+            content: none;
+        }
+    }
+
+    .benefit-media {
+        position: relative;
+        width: 100%;
+        height: auto;
+        // The top half of the old square card.
+        aspect-ratio: 2 / 1;
+        flex-shrink: 0;
+    }
+
+    .benefit-body {
+        justify-content: flex-start;
+        gap: calc(var(--card-pad) / 2);
+        padding: var(--card-pad);
     }
 }

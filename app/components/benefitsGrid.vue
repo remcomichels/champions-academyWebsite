@@ -19,8 +19,10 @@
 					<span class="benefit-blob-shape" />
 				</div>
 			</div>
-			<component :is="headingTag" class="benefit-title">{{ story.name }}</component>
-			<p v-if="story.content?.text" class="benefit-text">{{ story.content.text }}</p>
+			<div class="benefit-body">
+				<component :is="headingTag" class="benefit-title">{{ story.name }}</component>
+				<p v-if="story.content?.text" class="benefit-text">{{ story.content.text }}</p>
+			</div>
 		</article>
 
 		<!-- Gooey filter: blur + alpha threshold merges the trail circles

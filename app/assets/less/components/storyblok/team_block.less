@@ -215,13 +215,26 @@
             margin: @vw8-1080 0 0 0;
         }
 
-        // Set width rather than 40% of the card: stacked the card is full
-        // width, so 40% gave the photo a 253px box to render 66px into and
-        // left 187px blank beside it.
+        // Sized by height, not width. The photos run from 9:16 portraits to
+        // near-square cutouts, and in a fixed-width box `contain` let the
+        // square ones come out shorter than the card. Here the img takes the
+        // card's set height (its min-height) plus the overhang and its width
+        // follows its own aspect ratio; the box shrink-wraps it. In flow and
+        // bottom-aligned rather than absolute, so the negative margins still
+        // pull it flush to the bottom edge and @vw6 above the top — with
+        // border-box sizing the card then comes out exactly at its min-height.
         .team-card-image {
-            flex: 0 0 @vw100-1080;
+            flex: 0 0 auto;
+            align-self: flex-end;
             margin-top: -(@vw32-1080 + @vw6-1080);
             margin-bottom: -(@vw32-1080);
+
+            img {
+                position: static;
+                display: block;
+                width: auto;
+                height: (@vw130-1080 + @vw6-1080);
+            }
         }
 
         .text-card {
@@ -303,10 +316,14 @@
         // Offset tracks this tier's @vw24-580 padding, not the baseline's @vw32 —
         // otherwise it under-cancels and the image sits inside the card instead
         // of breaking above it.
+        // Height tracks this tier's min-height, same as the 1080 rule above.
         .team-card-image {
-            flex: 0 0 @vw100-580;
             margin-top: -(@vw24-580 + @vw6-580);
             margin-bottom: -(@vw24-580);
+
+            img {
+                height: (@vw130-580 + @vw6-580);
+            }
         }
 
         .text-card {

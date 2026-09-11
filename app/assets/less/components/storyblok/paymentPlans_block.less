@@ -62,12 +62,38 @@
         animation: paymentTrail 16s linear infinite;
     }
 
+    // ── Pre-title — small eyebrow above the plan name ────────────────────────
+    .payment-card-preTitle {
+        font-family: @body;
+        // A caption a step below the plan name, floored under the paragraph
+        // size (13px). @vw15 wins at 1440.
+        font-size: max(0.8125em, @vw15);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        // Muted like the caption under the price, rather than a grey token.
+        opacity: 0.6;
+        // Held to part of the card so the line breaks into a short stack
+        // instead of running the full width above the plan name.
+        width: 70%;
+        margin: 0 0 @vw8 0;
+
+        @media (max-width: 1080px) {
+            font-size: max(0.8125em, @vw15-1080);
+            margin: 0 0 @vw8-1080 0;
+        }
+
+        @media (max-width: 600px) {
+            font-size: max(0.8125em, @vw13-580);
+            margin: 0 0 @vw8-580 0;
+        }
+    }
+
+    // Set in the case it's written in the CMS rather than forced to capitals.
     .payment-card-title {
         font-family: @body;
         // Card copy floors at the inherited paragraph size — the raw vw values
-        // fall under 10px on a phone. @vw24 clears it at 1440, so no change there.
-        font-size: max(1em, @vw24);
-        text-transform: uppercase;
+        // fall under 10px on a phone. @vw36 clears it at 1440, so no change there.
+        font-size: max(1em, @vw36);
     }
 
     // ── Price + adjective on its right ───────────────────────────────────────
@@ -85,11 +111,26 @@
             color: @primary;
         }
 
-        .price-adjective {
+        // Old price — ahead of the price, struck through in red.
+        .old-price {
             font-family: @body;
-            font-size: max(1em, @vw18);
-            margin-left: -@vw8;
-            opacity: 0.75;
+            font-size: max(1em, @vw24);
+            line-height: 1;
+            color: @error;
+            text-decoration: line-through;
+            text-decoration-thickness: max(1px, 0.08em);
+        }
+
+        // Screen-reader-only "Was". Same technique as the dashboard's .sr-only,
+        // which lives in the dashboard entry and isn't loaded on this page.
+        .old-price-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
         }
     }
 
@@ -125,13 +166,32 @@
     // clips an element's children but still paints its own padding and border,
     // so on the row they'd survive the collapse and leave a ~33px stub per
     // hidden benefit.
+    // Checkmark glyph for the benefit rows — used as a mask so it takes its
+    // colour from background-color.
+    @checkIcon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 12.5l5 5L20 6.5'/%3E%3C/svg%3E");
+
     .payment-card-benefit .text-item {
+        display: flex;
+        gap: 0.6em;
         font-family: @body;
         // No floor at this tier: @vw16 is 16px at 1440, under body's 17.28px,
         // so max(1em, …) here would push it past its design size on desktop.
         // The mobile tiers below do floor it.
         font-size: @vw16;
         padding: @vw16 0 @vw16 @vw8;
+
+        // Green check before each benefit. Sized in em so it tracks the text at
+        // every tier, and one line tall (1lh) with the glyph centred in it, so
+        // it sits on the first line however far the benefit wraps.
+        &::before {
+            content: '';
+            flex-shrink: 0;
+            width: 1em;
+            height: 1lh;
+            background-color: @primary;
+            -webkit-mask: @checkIcon center / contain no-repeat;
+            mask: @checkIcon center / contain no-repeat;
+        }
     }
 
     .payment-card-benefit:first-child .text-item {
@@ -326,7 +386,7 @@
         }
 
         .payment-card-title {
-            font-size: max(1em, @vw20-1080);
+            font-size: max(1.25em, @vw32-1080);
         }
 
         .payment-card-price {
@@ -337,9 +397,8 @@
                 font-size: @vw48-1080;
             }
 
-            .price-adjective {
-                font-size: max(1em, @vw18-1080);
-                margin-left: -@vw8-1080;
+            .old-price {
+                font-size: max(1em, @vw24-1080);
             }
         }
 
@@ -426,7 +485,7 @@
         }
 
         .payment-card {
-            padding: @vw24-580;
+            padding: @vw36-580;
             border-radius: @vw16-580;
         }
 
@@ -434,8 +493,10 @@
             filter: drop-shadow(0 0 @vw6-580 fade(@primary, 50%));
         }
 
+        // ~24px at 320 — a clear step above the benefit rows, still under the
+        // price (26.5px).
         .payment-card-title {
-            font-size: max(1em, @vw18-580);
+            font-size: max(1.25em, @vw44-580);
         }
 
         .payment-card-price {
@@ -451,9 +512,8 @@
                 font-size: @vw48-580;
             }
 
-            .price-adjective {
-                font-size: max(1em, @vw14-580);
-                margin-left: -@vw8-580;
+            .old-price {
+                font-size: max(1em, @vw24-580);
             }
         }
 
@@ -496,8 +556,26 @@
             }
         }
 
+        // CTA straight under the price on a phone rather than after the whole
+        // benefit list, so it's in view without scrolling the card. `order`
+        // rather than moving the markup, so desktop keeps it pinned to the card
+        // bottom.
+        .payment-card-benefits,
+        .payment-card-more,
+        .payment-card-bonus-container {
+            order: 2;
+        }
+
         .payment-card-footer {
+            order: 1;
+            margin-top: 0;
             padding-top: @vw32-580;
+
+            // Full-width button — same as the hero. The label and plus sit
+            // centred inside (buttons.less, touch tier).
+            .button {
+                width: 100%;
+            }
         }
 
         .payment-card-subText {

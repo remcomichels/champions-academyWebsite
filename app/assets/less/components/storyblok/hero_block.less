@@ -174,7 +174,10 @@
                     }
 
                     .subTitle {
-                        font-size: @vw68-580;
+                        // 48px at 320 — the script face reads smaller than its em
+                        // size, so it sits level with the 48.5px title rather than
+                        // under it.
+                        font-size: @vw87-580;
                         margin: -@vw16-580 0 0 0;
                     }
                 }
@@ -190,6 +193,12 @@
                 flex-wrap: wrap;
                 gap: @vw24-580;
                 margin: @vw32-580 0 0 0;
+
+                // Full-width buttons, one per row. The label and plus sit
+                // centred inside (buttons.less, touch tier).
+                .button {
+                    width: 100%;
+                }
             }
         }
     }

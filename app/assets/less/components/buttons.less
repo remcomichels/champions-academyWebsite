@@ -1,4 +1,11 @@
 .button {
+    // Per-tier values read by the single-pill layout at the end of the file:
+    // the radius moves onto the button, the label's side padding is mirrored
+    // on the far side of the plus, and the font size lets the plus match the
+    // label's cap height.
+    --button-radius: @vw4;
+    --button-pad-x: @vw12;
+    --button-font-size: clamp(12px, @vw14, 14px);
     display: inline-flex;
     align-items: stretch; // label sets the height, .plus always matches it
     cursor: pointer;
@@ -6,11 +13,11 @@
     // Button primary with plus sign
     &__primary {
         background-color: @primary;
-        padding: @vw8 @vw12;
+        padding: @vw8 var(--button-pad-x);
         border-top-left-radius: @vw4;
         border-bottom-left-radius: @vw4;
         text-transform: uppercase;
-        font-size: clamp(12px, @vw14, 14px);
+        font-size: var(--button-font-size);
         color: @black;
         .transition();
         transition-property: border-radius;
@@ -84,14 +91,17 @@
 
 @media (max-width: 1080px) {
     .button {
+        --button-radius: @vw4-1080;
+        --button-pad-x: clamp(15px, @vw16-1080, 20px);
+        --button-font-size: clamp(12px, @vw14-1080, 14px);
+
         // Button primary with plus sign. Floored like the mobile tier: the raw
         // vw padding collapses to 4px/7px at the low end of this range, which
         // left a 27px-tall button against 43px just below the breakpoint.
         &__primary {
-            padding: clamp(9px, @vw10-1080, 12px) clamp(15px, @vw16-1080, 20px);
+            padding: clamp(9px, @vw10-1080, 12px) var(--button-pad-x);
             border-top-left-radius: @vw4-1080;
             border-bottom-left-radius: @vw4-1080;
-            font-size: clamp(12px, @vw14-1080, 14px);
         }
 
         .plus {
@@ -126,15 +136,18 @@
 
 @media (max-width: 768px) {
     .button {
+        --button-radius: @vw4-580;
+        --button-pad-x: clamp(14px, @vw16-580, 18px);
+        --button-font-size: clamp(12px, @vw14-580, 14px);
+
         // Button primary with plus sign — the two segments stay attached here, so
         // only the outer corners are rounded (no gap, no full radius on each half).
         &__primary {
             // Floored to track the floored font-size — the raw vw padding collapses
             // to ~3px at 320 and leaves a 12px label in a 24px-tall button.
-            padding: clamp(8px, @vw10-580, 11px) clamp(14px, @vw16-580, 18px);
+            padding: clamp(8px, @vw10-580, 11px) var(--button-pad-x);
             border-top-left-radius: @vw4-580;
             border-bottom-left-radius: @vw4-580;
-            font-size: clamp(12px, @vw14-580, 14px);
         }
 
         .plus {
@@ -163,6 +176,63 @@
             padding: clamp(8px, @vw10-580, 11px) clamp(14px, @vw16-580, 18px);
             border-radius: @vw4-580;
             font-size: clamp(12px, @vw14-580, 14px);
+        }
+    }
+}
+
+// Touch / below the desktop tier: the primary becomes one solid pill with the
+// plus sitting right after the label, the pair centred — the detached-plus
+// hover the two segments exist for never runs without a pointer. The green and
+// the radius move from the segments onto the button. Same query as the touch
+// tier in benefits_grid.less, for the same reason: a phone in Safari's "Request
+// Desktop Website" mode answers (hover: hover).
+@media (hover: none), (max-width: 1080px) {
+    // :has(> .plus) — secondary buttons are .button too, and keep their own look.
+    .button:has(> .plus) {
+        justify-content: center;
+        background-color: @primary;
+        border-radius: var(--button-radius);
+    }
+
+    .button {
+        .button__primary {
+            background: none;
+            border-radius: 0;
+            padding-right: 0;
+        }
+
+        // Mirrors the label's left padding so the pair sits centred.
+        .plus {
+            background: none;
+            border-radius: 0;
+            margin-left: 0;
+            padding: 0 var(--button-pad-x) 0 0.4em;
+
+            // Drawn rather than the icon glyph, which fills its whole em box and
+            // renders ~16px tall beside ~10px capitals. Sized to the label's cap
+            // height: `cap` resolves against this element's own font, so it
+            // takes the label's family and size (the icon font's !important
+            // family sits on .plus, not on its pseudo-element). The em line is
+            // the fallback where `cap` isn't supported — Plus Jakarta Sans'
+            // capitals are close to 0.7em.
+            &::before {
+                content: '';
+                font-family: @body;
+                font-size: var(--button-font-size);
+                width: 0.7em;
+                height: 0.7em;
+                width: 1cap;
+                height: 1cap;
+                background:
+                    linear-gradient(currentColor, currentColor) center / 100% max(1.5px, 0.1em) no-repeat,
+                    linear-gradient(currentColor, currentColor) center / max(1.5px, 0.1em) 100% no-repeat;
+            }
+        }
+
+        // A narrow desktop window still hovers — keep the glyph's rotation but
+        // not the slide, which would push the plus off-centre inside the pill.
+        &:hover .plus {
+            transform: none;
         }
     }
 }

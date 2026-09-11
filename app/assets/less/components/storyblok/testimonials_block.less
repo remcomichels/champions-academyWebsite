@@ -1,7 +1,7 @@
 .testimonials_block {
     overflow: hidden;
 
-    // ── Text — pre_title / title / handwritten sub_title ────────────────────
+    // ── Text — pre_title / title + sub_title ────────────────────────────────
     .text-container {
         .preTitle {
             // Copy floors at the inherited paragraph size — the raw vw values
@@ -12,18 +12,14 @@
             color: @primary;
         }
 
-        .title {
+        // sub_title reads as a second line of the title rather than a
+        // handwritten accent.
+        .title,
+        .subTitle {
             font-family: @body;
             font-size: @vw64;
             font-weight: @bold;
             text-transform: uppercase;
-        }
-
-        .subTitle {
-            font-family: @handWritten;
-            font-size: @vw72;
-            color: @primary;
-            margin: -@vw10 0 0 0;
         }
     }
 
@@ -148,13 +144,9 @@
                 font-size: max(1em, @vw18-1080);
             }
 
-            .title {
-                font-size: @vw56-1080;
-            }
-
+            .title,
             .subTitle {
                 font-size: @vw56-1080;
-                margin: -@vw10-1080 0 0 0;
             }
         }
 
@@ -215,13 +207,9 @@
                 font-size: max(1em, @vw14-580);
             }
 
-            .title {
-                font-size: @vw64-580;
-            }
-
+            .title,
             .subTitle {
-                font-size: @vw72-580;
-                margin: -@vw10-580 0 0 0;
+                font-size: @vw64-580;
             }
         }
 

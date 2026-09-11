@@ -9,13 +9,28 @@
             display: none;
         }
 
+        // 2x2 grid from here down. The dividers are hidden (see statistic.less);
+        // instead the cells draw the inner lines — a left border on the
+        // right-hand column, a top border on every row after the first — and
+        // the list itself closes off the top and bottom (no sides). No gap, or
+        // the lines wouldn't meet.
         @media (max-width: 600px) {
-            // `flex` rather than `inline-flex` so the stacked list fills the
-            // container — as inline-flex it hugs its widest label and the rules
-            // end at an arbitrary content-driven width.
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            border-top: 1px solid @buttonSecondary;
+            border-bottom: 1px solid @buttonSecondary;
+
+            .statistic-container {
+                padding: clamp(20px, @vw32-580, 32px) clamp(12px, @vw16-580, 16px);
+
+                &:nth-child(even) {
+                    border-left: 1px solid @buttonSecondary;
+                }
+
+                &:nth-child(n+3) {
+                    border-top: 1px solid @buttonSecondary;
+                }
+            }
         }
     }
 
@@ -25,5 +40,6 @@
 
     @media (max-width: 600px) {
         padding: @vw64-580 0 0 0;
+        text-align: center;
     }
 }

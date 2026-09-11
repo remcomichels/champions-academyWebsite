@@ -1,10 +1,15 @@
 <template>
 	<article v-editable="blok" class="payment-card">
+		<p v-if="blok.pre_title" class="payment-card-preTitle">{{ blok.pre_title }}</p>
 		<h3 class="payment-card-title">{{ blok.title }}</h3>
 
 		<div class="payment-card-price">
+			<!-- The strike isn't announced by screen readers, so the hidden
+			     label says it: "Was $2997 $1497". -->
+			<s v-if="blok.old_price" class="old-price">
+				<span class="old-price-label">Was </span>{{ blok.old_price }}
+			</s>
 			<span class="price">{{ blok.price }}</span>
-			<span class="price-adjective">{{ blok.price_adjative }}</span>
 		</div>
 
 		<ul
@@ -60,7 +65,12 @@ import type { PaymentCardBlok } from "~/types/blocks";
 
 import type { TextBlok } from "~/types/storyblok";
 
-const props = defineProps<{ blok: PaymentCardBlok }>();
+// `pre_title` and `old_price` are new fields on the Storyblok component,
+// declared here until `npm run types:storyblok` regenerates PaymentCardBlok
+// with them — after that the intersection is a no-op and can go.
+const props = defineProps<{
+	blok: PaymentCardBlok & { pre_title?: string; old_price?: string };
+}>();
 
 // How many benefits show before the list is truncated. The plan runs to a dozen
 // entries, which pushed the price and CTA below the fold.
