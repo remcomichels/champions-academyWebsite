@@ -60,7 +60,7 @@ project/
 │   ├─ lenis.client.js
 │   └─ main.client.js
 ├─ public/
-├─ keys/                          # HTTPS certificates for local development
+├─ keys/                          # HTTPS certificates for local development (gitignored)
 │   ├─ localhost.pem
 │   ├─ localhost-key.pem
 ├─ error.vue
@@ -86,11 +86,12 @@ NUXT_STORYBLOK_API_KEY=your_storyblok_token
 ```
 
 ### 3. HTTPS Certificates for Local Development
-Place your certificates in:
+`keys/` is gitignored, so each machine generates its own with [mkcert](https://github.com/FiloSottile/mkcert):
 
 ```
-keys/localhost.pem
-keys/localhost-key.pem
+mkcert -install
+mkdir -p keys
+mkcert -key-file keys/localhost-key.pem -cert-file keys/localhost.pem localhost
 ```
 
 Or change the dev script to plain HTTP.

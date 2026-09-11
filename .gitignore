@@ -25,9 +25,16 @@ logs
 .env.*
 !.env.example
 
-# Https localhost development keys
-.keys
-.keys.*
+# Certificates and private keys: the HTTPS dev certs in keys/ (each machine
+# makes its own with mkcert), and client certificates for outside APIs, which
+# live base64-encoded in .env and never as files in the repo.
+/keys/
+*.pem
+*.key
+*.crt
+*.csr
+*.p12
+*.pfx
 # Claude Code checks worktrees out in-repo; they are local scratch, never committed.
 .claude/worktrees/
 
