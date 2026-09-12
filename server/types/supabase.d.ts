@@ -112,6 +112,9 @@ export type Database = {
           created_by: string | null
           display_name: string
           first_name: string | null
+          herofx_code: string | null
+          herofx_code_source: string | null
+          herofx_linked_at: string | null
           house_share: boolean
           id: string
           last_name: string | null
@@ -133,6 +136,9 @@ export type Database = {
           created_by?: string | null
           display_name: string
           first_name?: string | null
+          herofx_code?: string | null
+          herofx_code_source?: string | null
+          herofx_linked_at?: string | null
           house_share?: boolean
           id?: string
           last_name?: string | null
@@ -154,6 +160,9 @@ export type Database = {
           created_by?: string | null
           display_name?: string
           first_name?: string | null
+          herofx_code?: string | null
+          herofx_code_source?: string | null
+          herofx_linked_at?: string | null
           house_share?: boolean
           id?: string
           last_name?: string | null
@@ -353,6 +362,231 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      herofx_clients: {
+        Row: {
+          country_iso2: string | null
+          deposits_usd: number
+          email_fingerprint: string | null
+          ftd_date: string | null
+          last_seen: string | null
+          live_balance_usd: number
+          name: string | null
+          own_codes: string[]
+          path_codes: string[]
+          referrer_code: string | null
+          registration_date: string | null
+          status: string | null
+          user_id: number
+          withdrawals_usd: number
+        }
+        Insert: {
+          country_iso2?: string | null
+          deposits_usd?: number
+          email_fingerprint?: string | null
+          ftd_date?: string | null
+          last_seen?: string | null
+          live_balance_usd?: number
+          name?: string | null
+          own_codes?: string[]
+          path_codes?: string[]
+          referrer_code?: string | null
+          registration_date?: string | null
+          status?: string | null
+          user_id: number
+          withdrawals_usd?: number
+        }
+        Update: {
+          country_iso2?: string | null
+          deposits_usd?: number
+          email_fingerprint?: string | null
+          ftd_date?: string | null
+          last_seen?: string | null
+          live_balance_usd?: number
+          name?: string | null
+          own_codes?: string[]
+          path_codes?: string[]
+          referrer_code?: string | null
+          registration_date?: string | null
+          status?: string | null
+          user_id?: number
+          withdrawals_usd?: number
+        }
+        Relationships: []
+      }
+      herofx_commissions_daily: {
+        Row: {
+          available_usd: number
+          calculated_usd: number
+          code: string
+          id: number
+          period: string
+          program: string | null
+          status: string | null
+        }
+        Insert: {
+          available_usd?: number
+          calculated_usd?: number
+          code: string
+          id?: number
+          period: string
+          program?: string | null
+          status?: string | null
+        }
+        Update: {
+          available_usd?: number
+          calculated_usd?: number
+          code?: string
+          id?: number
+          period?: string
+          program?: string | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      herofx_freshness: {
+        Row: {
+          cadence_seconds: number | null
+          job: string
+          last_success_at: string | null
+          seconds_since_success: number | null
+          status: string | null
+        }
+        Insert: {
+          cadence_seconds?: number | null
+          job: string
+          last_success_at?: string | null
+          seconds_since_success?: number | null
+          status?: string | null
+        }
+        Update: {
+          cadence_seconds?: number | null
+          job?: string
+          last_success_at?: string | null
+          seconds_since_success?: number | null
+          status?: string | null
+        }
+        Relationships: []
+      }
+      herofx_metrics_daily: {
+        Row: {
+          code: string
+          day: string
+          demo_accounts: number
+          deposited_users: number
+          deposits_usd: number
+          joined_users: number
+          kyc_verified: number
+          real_accounts: number
+          traded_volume: number
+          withdrawals_usd: number
+        }
+        Insert: {
+          code: string
+          day: string
+          demo_accounts?: number
+          deposited_users?: number
+          deposits_usd?: number
+          joined_users?: number
+          kyc_verified?: number
+          real_accounts?: number
+          traded_volume?: number
+          withdrawals_usd?: number
+        }
+        Update: {
+          code?: string
+          day?: string
+          demo_accounts?: number
+          deposited_users?: number
+          deposits_usd?: number
+          joined_users?: number
+          kyc_verified?: number
+          real_accounts?: number
+          traded_volume?: number
+          withdrawals_usd?: number
+        }
+        Relationships: []
+      }
+      herofx_payments: {
+        Row: {
+          amount_usd: number
+          created_at: string
+          kind: string
+          path_codes: string[]
+          payment_id: number
+          psp: string | null
+          referrer_code: string | null
+          user_id: number | null
+        }
+        Insert: {
+          amount_usd?: number
+          created_at: string
+          kind: string
+          path_codes?: string[]
+          payment_id: number
+          psp?: string | null
+          referrer_code?: string | null
+          user_id?: number | null
+        }
+        Update: {
+          amount_usd?: number
+          created_at?: string
+          kind?: string
+          path_codes?: string[]
+          payment_id?: number
+          psp?: string | null
+          referrer_code?: string | null
+          user_id?: number | null
+        }
+        Relationships: []
+      }
+      herofx_status_changes: {
+        Row: {
+          changed_at: string
+          new_status: string
+          old_status: string | null
+          user_id: number
+        }
+        Insert: {
+          changed_at: string
+          new_status?: string
+          old_status?: string | null
+          user_id: number
+        }
+        Update: {
+          changed_at?: string
+          new_status?: string
+          old_status?: string | null
+          user_id?: number
+        }
+        Relationships: []
+      }
+      herofx_sync_state: {
+        Row: {
+          client_count: number
+          id: boolean
+          last_attempt_at: string | null
+          last_error: string | null
+          last_success_at: string | null
+          payment_count: number
+        }
+        Insert: {
+          client_count?: number
+          id?: boolean
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          payment_count?: number
+        }
+        Update: {
+          client_count?: number
+          id?: boolean
+          last_attempt_at?: string | null
+          last_error?: string | null
+          last_success_at?: string | null
+          payment_count?: number
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
@@ -591,6 +825,25 @@ export type Database = {
           p_timezone?: string
           p_until?: string
         }
+        Returns: Json
+      }
+      herofx_apply_snapshot: {
+        Args: {
+          p_clients: Json
+          p_commissions: Json
+          p_freshness: Json
+          p_metrics: Json
+          p_payments: Json
+          p_status_changes: Json
+        }
+        Returns: Json
+      }
+      herofx_network_figures: {
+        Args: { p_code: string; p_since?: string; p_until?: string }
+        Returns: Json
+      }
+      herofx_sub_ibs: {
+        Args: { p_code: string; p_since?: string; p_until?: string }
         Returns: Json
       }
       is_admin: { Args: never; Returns: boolean }

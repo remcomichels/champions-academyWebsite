@@ -48,6 +48,16 @@ export interface AffiliateRow {
 	created_at: string;
 }
 
+/**
+ * Deliberately not every column on the table.
+ *
+ * `herofx_code` is the obvious candidate and is left out on purpose: this
+ * select runs on every authenticated request, so naming a column here that the
+ * database does not have yet fails `/api/auth/me` and locks everybody out of
+ * the dashboard — which is precisely how a deploy once got ahead of its
+ * migration. Anything whose migration has not certainly landed is read where
+ * it is used, by a query that can fail on its own. See `herofxCodeFor`.
+ */
 const AFFILIATE_COLUMNS = `
 	id, slug, display_name, first_name, last_name, status,
 	lite_telegram_url,

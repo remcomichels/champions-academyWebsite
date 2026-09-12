@@ -1,5 +1,3 @@
-import { timingSafeEqual } from "node:crypto";
-
 /**
  * Carries out deletion requests whose grace period has run out.
  *
@@ -20,11 +18,10 @@ import { timingSafeEqual } from "node:crypto";
  * anybody can ask to be deleted in the first place.
  *
  * ── Authentication ──────────────────────────────────────────────────────────
- * Vercel sends `Authorization: Bearer $CRON_SECRET` on every cron invocation,
- * so the secret never appears in vercel.json or in a schedule anybody can read.
- * Compared in constant time. If it is unset the route answers 503 rather than
- * running unauthenticated: an endpoint that erases accounts is the last place
- * to fail open.
+ * `requireCronSecret` compares the bearer token Vercel sends against
+ * CRON_SECRET in constant time, and answers 503 when the secret is unset
+ * rather than running unauthenticated: an endpoint that erases accounts is the
+ * last place to fail open.
  *
  * ── Why it is safe to run at any time ───────────────────────────────────────
  * It selects only rows past `execute_after`, and `purgeAffiliate` is idempotent,
@@ -34,20 +31,7 @@ import { timingSafeEqual } from "node:crypto";
  * else's — including people whose fourteen days ran out earlier.
  */
 export default defineEventHandler(async (event) => {
-	const secret = useRuntimeConfig().cronSecret as string;
-
-	if (!secret) {
-		throw createError({ statusCode: 503, statusMessage: "Purge is not configured" });
-	}
-
-	const a = Buffer.from(getRequestHeader(event, "authorization") ?? "");
-	const b = Buffer.from(`Bearer ${secret}`);
-
-	// Length is compared first because timingSafeEqual throws on a mismatch;
-	// that leaks the length of the secret and nothing else.
-	if (a.length !== b.length || !timingSafeEqual(a, b)) {
-		throw createError({ statusCode: 401, statusMessage: "Not authorised" });
-	}
+	requireCronSecret(event, "Purge");
 
 	const { data: due, error } = await db()
 		.from("gdpr_requests")

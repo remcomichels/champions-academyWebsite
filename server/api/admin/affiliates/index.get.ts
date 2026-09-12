@@ -93,6 +93,28 @@ export default defineEventHandler(async (event) => {
 		});
 	}
 
+	// The HeroFX linkage, in a query of its own rather than in the select above.
+	// Those columns arrive with a migration, and naming them in the main select
+	// would turn "the migration has not been applied yet" into an admin panel
+	// that cannot list anybody. Here it degrades to an empty HeroFX column.
+	const herofxById = new Map<string, { code: string | null; source: string | null }>();
+
+	if (ids.length) {
+		const { data: links, error: linkError } = await db()
+			.from("affiliates")
+			.select("id, herofx_code, herofx_code_source")
+			.in("id", ids);
+
+		if (linkError) console.error("[herofx] could not read affiliate links:", linkError.message);
+
+		for (const row of links ?? []) {
+			herofxById.set(row.id as string, {
+				code: (row.herofx_code as string | null) ?? null,
+				source: (row.herofx_code_source as string | null) ?? null,
+			});
+		}
+	}
+
 	const now = Date.now();
 
 	const liveInvites = new Map<string, { prefix: string; expiresAt: string }>();
@@ -136,6 +158,11 @@ export default defineEventHandler(async (event) => {
 				// affiliate's links across an admin list.
 				hasTelegram: Boolean(row.lite_telegram_url),
 				hasLogin: Boolean(row.user_id),
+				// The HeroFX partner code whose downline they see, and how it got
+				// there: `email` means the sync matched their login address
+				// against the feed, `admin` means somebody typed it.
+				herofxCode: herofxById.get(id)?.code ?? null,
+				herofxCodeSource: (herofxById.get(id)?.source ?? null) as "email" | "admin" | null,
 				// Null unless they have asked to be deleted. The date is when the
 				// grace period they were promised runs out, and the reason is
 				// what they picked on the way out — the only place anyone gets
