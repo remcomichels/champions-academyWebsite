@@ -53,14 +53,6 @@
 			<!-- ── The five figures ───────────────────────────────────────── -->
 			<div class="statGrid">
 				<NuxtDashboardStatCard
-					label="Link clicks"
-					:value="clicks"
-					icon="link"
-					:trend="clicksTrend"
-					hint="Tapped through to Telegram"
-					:loading="pending"
-				/>
-				<NuxtDashboardStatCard
 					label="Registered"
 					:value="data.figures.registered"
 					icon="user"
@@ -309,11 +301,6 @@ type HerofxResponse =
 		clientsTruncated: boolean;
 	};
 
-interface TrafficResponse {
-	clickTotal: number;
-	previous: { clickTotal: number };
-}
-
 /** Mirrors the cap in server/api/affiliate/herofx.get.ts. */
 const CLIENT_LIMIT = 500;
 
@@ -342,36 +329,12 @@ const { data, pending, error } = await useAsyncData<HerofxResponse>(
 	{ watch: [range] },
 );
 
-/**
- * Link clicks come from our own traffic figures, not from HeroFX.
- *
- * The broker's feed has no concept of a click — affiliates send their HeroFX
- * link inside Telegram, where nothing of ours can see it. What this counts is
- * the step before: people tapping through from the site to Telegram. It is the
- * top of the same funnel, which is why it sits with the rest rather than on
- * Analytics alone.
- *
- * Its own request, so a slow or failed traffic query leaves the network
- * figures untouched.
- */
-const { data: traffic } = await useAsyncData<TrafficResponse>(
-	"herofx-clicks",
-	() => $fetch<TrafficResponse>("/api/affiliate/traffic", {
-		query: rangeQuery.value,
-		headers: headers(),
-	}),
-	{ watch: [range] },
-);
-
-const clicks = computed(() => traffic.value?.clickTotal ?? 0);
-
+// Link clicks deliberately do not appear here. The figure exists on Analytics
+// already, counted from our own server, and the same number on two tabs over
+// two different ranges reads as two numbers that disagree. Nothing on this tab
+// comes from anywhere but the HeroFX copy.
 const priorLabel = computed(() =>
 	(range.value === "all" ? "vs before" : `vs previous ${range.value} days`));
-
-const clicksTrend = computed(() =>
-	(traffic.value && range.value !== "all"
-		? trend(traffic.value.clickTotal, traffic.value.previous.clickTotal, priorLabel.value)
-		: null));
 
 /**
  * The change on one figure against the equally long window before it.
