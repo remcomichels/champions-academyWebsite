@@ -1,4 +1,4 @@
-import { displayName, object, optional, str, uuid } from "../../../../utils/validate";
+import { displayName, object, optional, str, uuid, whenPresent } from "../../../../utils/validate";
 import type { TablesUpdate } from "#server/types/supabase";
 
 /**
@@ -30,6 +30,9 @@ export default defineEventHandler(async (event) => {
 		slug: optional(str({ min: 2, max: 32 })),
 		displayName: optional(displayName({ min: 1, max: 80 })),
 		notes: optional(str({ max: 1000 })),
+		// `whenPresent`, not `optional`: this is clearable, and the two differ
+		// exactly on an empty string — see the note in utils/validate.ts.
+		herofxCode: whenPresent(str({ max: 32 })),
 	}));
 
 	const { data: affiliate, error: loadError } = await db()
@@ -49,6 +52,49 @@ export default defineEventHandler(async (event) => {
 	// instruction — the min:1 above rejects it before this.
 	if (body.displayName !== null) update.display_name = body.displayName;
 	if (body.notes !== undefined) update.notes = body.notes;
+
+	// ── The HeroFX partner code ─────────────────────────────────────────────
+	// The fallback to automatic linking, which matches an affiliate's login
+	// address against the HeroFX client who owns the code. This is for the
+	// affiliates whose two addresses differ, so it is marked `admin` and the
+	// sync then leaves it alone for good.
+	let herofxCodeKnown: boolean | null = null;
+
+	if (body.herofxCode !== undefined) {
+		const code = body.herofxCode || null;
+
+		if (code && !/^[A-Za-z0-9_-]{1,32}$/.test(code)) {
+			throw createError({
+				statusCode: 400,
+				statusMessage: "A partner code is letters, numbers, dashes and underscores",
+				data: { field: "herofxCode", message: "Letters, numbers, dashes and underscores only" },
+			});
+		}
+
+		// Read separately, because this column arrives with a migration and the
+		// select above runs for every edit — see `herofxCodeFor`.
+		if (code !== await herofxCodeFor(affiliateId)) {
+			update.herofx_code = code;
+			update.herofx_code_source = code ? "admin" : null;
+			update.herofx_linked_at = code ? new Date().toISOString() : null;
+
+			// Checked, not enforced. A code that is not in the feed yet is a
+			// plausible state — a brand new sub-IB, or a copy that has not synced
+			// since they were added — but it is also exactly what a typo looks
+			// like, and a typo shows the affiliate an empty dashboard with no
+			// explanation. So it saves, and the panel says it could not find it.
+			if (code) {
+				const { data: owner } = await db()
+					.from("herofx_clients")
+					.select("user_id")
+					.contains("own_codes", [code])
+					.limit(1)
+					.maybeSingle();
+
+				herofxCodeKnown = Boolean(owner);
+			}
+		}
+	}
 
 	let aliasExpiresAt: string | null = null;
 	const slug = body.slug === null ? null : normalizeSlug(body.slug);
@@ -85,6 +131,17 @@ export default defineEventHandler(async (event) => {
 		// The unique index is the backstop for a slug that was free a moment ago
 		// and is not any more.
 		if (error.code === "23505") {
+			// Two unique columns can raise this now, and they need different
+			// sentences: one is a public URL, the other would show this
+			// affiliate somebody else's downline.
+			if (update.herofx_code && error.message.includes("herofx_code")) {
+				throw createError({
+					statusCode: 409,
+					statusMessage: "Another affiliate is already linked to that partner code",
+					data: { field: "herofxCode", message: "Already linked to someone else" },
+				});
+			}
+
 			throw createError({
 				statusCode: 409,
 				statusMessage: "That link is already taken",
@@ -121,6 +178,12 @@ export default defineEventHandler(async (event) => {
 		slug: data!.slug as string,
 		displayName: data!.display_name as string,
 		notes: data!.notes as string | null,
+		// Null unless a code was set in this request. False means it saved but
+		// matches nobody in the copy of the feed — most likely a typo. The code
+		// itself is not echoed back: the panel reloads the list either way, and
+		// a field that reads null whenever the edit did not touch it is worse
+		// than no field.
+		herofxCodeKnown,
 		...(renaming ? { previousSlug, previousWorksUntil: aliasExpiresAt } : {}),
 	};
 });

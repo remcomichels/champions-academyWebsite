@@ -229,6 +229,20 @@ export default defineNuxtConfig({
 		otpPepper: process.env.OTP_PEPPER || "",
 		visitPepper: process.env.VISIT_PEPPER || "",
 
+		// The HeroFX IB feed: a read-only Postgres database reached over mutual
+		// TLS. Only the cron sync opens it — the dashboard reads our own copy —
+		// and the client key is as sensitive as the password beside it, so none
+		// of this goes anywhere near `public`. The three PEMs may be base64 (what
+		// .env holds) or pasted whole; see server/utils/herofx.ts.
+		herofxHost: process.env.HEROFX_DB_HOST || "",
+		herofxPort: process.env.HEROFX_DB_PORT || "5432",
+		herofxDatabase: process.env.HEROFX_DB_NAME || "",
+		herofxUser: process.env.HEROFX_DB_USER || "",
+		herofxPassword: process.env.HEROFX_DB_PASSWORD || "",
+		herofxCa: process.env.HEROFX_DB_CA || "",
+		herofxCert: process.env.HEROFX_DB_CERT || "",
+		herofxKey: process.env.HEROFX_DB_KEY || "",
+
 		// Outbound mail (MailerSend). Server-side only: the token can send as
 		// our verified domain, so it never belongs anywhere the browser can
 		// read it. From-address and name are config rather than constants so a

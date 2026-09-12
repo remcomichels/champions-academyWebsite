@@ -18,6 +18,14 @@ export interface AdminAffiliate {
 	notes: string | null;
 	hasTelegram: boolean;
 	hasLogin: boolean;
+	/** The HeroFX partner code whose downline they see, or null if unlinked. */
+	herofxCode: string | null;
+	/**
+	 * How that code got there. `email` is the sync matching their login address
+	 * against the feed; `admin` is somebody typing it, which the sync then
+	 * never overwrites.
+	 */
+	herofxCodeSource: "email" | "admin" | null;
 	createdAt: string;
 	visits: number;
 	liveInvite: { prefix: string; expiresAt: string } | null;
@@ -105,7 +113,7 @@ export function useAdmin() {
 	 * length of the closing frame.
 	 */
 	const editingName = ref("");
-	const editForm = reactive({ slug: "", displayName: "", notes: "" });
+	const editForm = reactive({ slug: "", displayName: "", notes: "", herofxCode: "" });
 	const editErrors = ref<Record<string, string | undefined>>({});
 	const saving = ref(false);
 
@@ -243,6 +251,7 @@ export function useAdmin() {
 		editForm.slug = affiliate.slug;
 		editForm.displayName = affiliate.displayName;
 		editForm.notes = affiliate.notes ?? "";
+		editForm.herofxCode = affiliate.herofxCode ?? "";
 	}
 
 	function cancelEdit() {
@@ -264,6 +273,7 @@ export function useAdmin() {
 				slug?: string;
 				previousSlug?: string;
 				previousWorksUntil?: string;
+				herofxCodeKnown?: boolean | null;
 			}>(`/api/admin/affiliates/${affiliate.id}`, {
 				method: "PATCH",
 				body: {
@@ -271,6 +281,7 @@ export function useAdmin() {
 					displayName: editForm.displayName,
 					// Empty string clears a nullable field; the server maps it to null.
 					notes: editForm.notes,
+					herofxCode: editForm.herofxCode,
 				},
 			});
 
@@ -288,6 +299,17 @@ export function useAdmin() {
 						}.`
 						: `${affiliate.displayName} updated.`,
 			};
+
+			// Saved, but the code matches nobody in the copy of the feed. Most
+			// often a typo; occasionally a sub-IB added since the last sync. Said
+			// out loud either way, because the symptom otherwise is an affiliate
+			// staring at an empty dashboard.
+			if (data.herofxCodeKnown === false) {
+				banner.value = {
+					variant: "error",
+					text: `Saved, but partner code ${editForm.herofxCode} isn't in the HeroFX data yet. Check it for typos — if it's new, it should appear after the next sync.`,
+				};
+			}
 
 			editing.value = null;
 			await load();

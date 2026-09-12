@@ -44,6 +44,12 @@ export interface DashboardNavItem {
 export const affiliateNav: DashboardNavItem[] = [
 	{ to: "/dashboard", label: "Overview", icon: "home" },
 	{ to: "/dashboard/analytics", label: "Analytics", icon: "chart" },
+	// Everything that comes from the broker rather than from our own site: the
+	// affiliate's IB network, their clients and their sub-IBs. A tab of its own
+	// rather than tiles on Overview, because the two answer different questions
+	// — Overview is "is my link working", this is "what is my network doing" —
+	// and because the figures here arrive on a sync rather than live.
+	{ to: "/dashboard/herofx", label: "HeroFX IB", icon: "globe" },
 	{ to: "/dashboard/links", label: "Links & Assets", icon: "link" },
 	// Account, Settings and Support all used to sit here, below a rule. They
 	// are not places you work — you go, do one thing, and leave — so they live

@@ -59,6 +59,9 @@
 @import './components/dashboard/pages/support/_inbox.less';
 @import './components/dashboard/pages/analytics/_funnel.less';
 @import './components/dashboard/pages/admin/_lists.less';
+// After the admin lists on purpose: the HeroFX tables reuse `.dataTable` and
+// `.adminTableWrap` from there, and the overrides have to land after them.
+@import './components/dashboard/pages/herofx/_herofx.less';
 @import './components/dashboard/pages/analytics/_breakdown.less';
 @import './components/dashboard/pages/analytics/_heatmap.less';
 @import './components/dashboard/pages/account/_security.less';

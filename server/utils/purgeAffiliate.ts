@@ -116,6 +116,13 @@ export async function purgeAffiliate(affiliateId: string): Promise<PurgeResult> 
 			slug_changed_at: new Date().toISOString(),
 			onboarding: {},
 			notification_prefs: {},
+			// The link to their HeroFX account goes with them. The feed's own
+			// rows are not ours to delete — they describe a structure that still
+			// exists at the broker — but nothing here should still say which
+			// partner code belonged to this person.
+			herofx_code: null,
+			herofx_code_source: null,
+			herofx_linked_at: null,
 		})
 		.eq("id", affiliateId);
 

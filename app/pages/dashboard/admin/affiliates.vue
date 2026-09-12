@@ -101,7 +101,18 @@
 								<ul class="adminChecks">
 									<li :class="{ 'is-done': affiliate.hasLogin }">Login</li>
 									<li :class="{ 'is-done': affiliate.hasTelegram }">Telegram</li>
+									<li :class="{ 'is-done': Boolean(affiliate.herofxCode) }">HeroFX</li>
 								</ul>
+
+								<!-- The code itself, and how it got there. "Matched"
+								     means the sync recognised their login address in
+								     the feed; "set by hand" is the fallback, and the
+								     one worth being able to spot when a figure looks
+								     wrong. -->
+								<span v-if="affiliate.herofxCode" class="adminTable-slug">
+									IB {{ affiliate.herofxCode }} ·
+									{{ affiliate.herofxCodeSource === "admin" ? "set by hand" : "matched" }}
+								</span>
 								<!-- The prefix, not the code. Only the first group is stored —
 								     enough to tell two outstanding invites apart, never enough
 								     to redeem one. Worded so it cannot be mistaken for a
@@ -251,6 +262,13 @@
 							label="Name"
 							:error="editErrors.displayName"
 							required
+						/>
+						<NuxtAuthField
+							v-model="editForm.herofxCode"
+							label="HeroFX partner code"
+							placeholder="2189546"
+							:error="editErrors.herofxCode"
+							hint="Only needed when the automatic match fails — that happens when they signed up here with a different email than at HeroFX. Clear it to unlink."
 						/>
 						<div class="field adminForm-wide">
 							<label class="field-label" for="affiliateNotes">Notes</label>
